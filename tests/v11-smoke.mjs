@@ -13,7 +13,7 @@ const checks = [
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['charcoal champagne theme', /v18\.0 — Deep charcoal/.test(html) && /--gold:#d8c18a/.test(html)],
-  ['version constants', /APP_VERSION=['"]17.2.0['"]/.test(html)],
+  ['version constants', /APP_VERSION=['"]18.0.0['"]/.test(html)],
   ['professional billing balance breakdown', /Last Balance/.test(html) && /Total Balance/.test(html) && /Remaining Balance/.test(html) && /lastBalance,totalBalance,balanceDue/.test(html)],
   ['business profile fields', /Business address/.test(html) && /Primary phone number/.test(html) && /Secondary phone number/.test(html)],
   ['business logo and signature upload', /Upload business logo/.test(html) && /Upload signature image/.test(html)],
