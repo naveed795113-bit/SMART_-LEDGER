@@ -30,6 +30,14 @@ assert.match(window.document.querySelector('#view').textContent, /Sales overview
 window.go('Items');
 assert.match(window.document.querySelector('#view').textContent, /Items & inventory/, 'Inventory page navigation works');
 assert.ok(window.document.querySelector('#view table'), 'Inventory table renders');
+const moreButton = window.document.querySelector('#view .section-more');
+assert.ok(moreButton, 'Items page displays Show more tile');
+moreButton.click();
+assert.match(window.document.querySelector('#modal').textContent, /Item insights/, 'Show more opens item tools launcher');
+window.closeModal();
+window.go('Item Insights');
+assert.match(window.document.querySelector('#view').textContent, /Item insights/, 'Item insights page renders');
+assert.match(window.document.querySelector('#view').textContent, /Stock cost value/, 'Item insights calculates stock valuation');
 window.go('Sales');
 assert.match(window.document.querySelector('#view').textContent, /Sales/, 'Sales page navigation works');
 window.go('Purchases');
@@ -68,9 +76,9 @@ assert.ok(alerts.some(x => x.includes('This backup belongs to a different applic
 
 console.log('PASS app boot');
 console.log('PASS dashboard and sales overview graph');
-console.log('PASS inventory, sales, purchases, reports and ledger navigation');
+console.log('PASS inventory, show-more launcher, item insights, sales, purchases, reports and ledger navigation');
 console.log('PASS v11.0 settings and backup controls');
-console.log('PASS responsive layout breakpoints');
+console.log('PASS responsive layout breakpoints and isolated content scrolling');
 console.log('PASS valid backup restore and business profile');
 console.log('PASS invalid backup rejection without data loss');
 console.log('TOTAL 7 runtime groups passed');
