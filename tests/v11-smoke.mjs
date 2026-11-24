@@ -9,8 +9,8 @@ assert.ok(inlineScripts.length, 'Inline application script exists');
 for (const [i, source] of inlineScripts.entries()) new Script(source, { filename: 'index-inline-' + i + '.js' });
 
 const checks = [
-  ['release badge', /SMARTLEDGER v12\.0/.test(html)],
-  ['version constants', /APP_VERSION=['"]12.0.0['"]/.test(html)],
+  ['release badge', /SMARTLEDGER v13\.0/.test(html)],
+  ['version constants', /APP_VERSION=['"]13.0.0['"]/.test(html)],
   ['dashboard renderer', /function render\(\)/.test(html)],
   ['inventory page', /function listItems\(\)/.test(html)],
   ['sales and purchases', /function transactionForm\(k\)/.test(html)],
@@ -26,14 +26,18 @@ const checks = [
   ['service worker registration', /serviceWorker\.register/.test(html)],
   ['isolated page scrolling', /html,body\{height:100%;min-height:100%;overflow:hidden\}/.test(html) && /overscroll-behavior-y:contain/.test(html)],
   ['responsive show-more section launcher', /function openSectionMore\(\)/.test(html) && /section-more/.test(html)],
-  ['item insights page', /function itemInsights\(\)/.test(html)]
+  ['item insights page', /function itemInsights\(\)/.test(html)],
+  ['batch and expiry register', /function batchExpiryPage\(\)/.test(html)],
+  ['sales and purchase returns', /function saveReturn\(e,kind\)/.test(html)],
+  ['item barcode scanner', /function scanBarcodeFor\(target\)/.test(html)],
+  ['v13 backup registers', /batches:'sl_batches'.*salesReturns:'sl_sales_returns'.*purchaseReturns:'sl_purchase_returns'/.test(html)]
 ];
 for (const [name, ok] of checks) {
   assert.ok(ok, 'Missing or changed required feature: ' + name);
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.match(sw, /smartledger-v12\.0/, 'Service worker cache version');
+assert.match(sw, /smartledger-v13\.0/, 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
