@@ -1,6 +1,6 @@
-# SmartLedger — Version 11.0
+# SmartLedger — Version 12.0
 
-**Release track:** SmartLedger v11.0 major upgrade. The v11.0 development branch is `release/smartledger-v11.0`; changes are being validated before merging to the live `main` branch.
+**Release track:** SmartLedger v12.0 mobile workspace upgrade. The v11.0 development branch is `release/smartledger-v11.0`; changes are being validated before merging to the live `main` branch.
 
 SmartLedger is a mobile-first business manager for Indian retail and wholesale shops.
 
@@ -40,6 +40,13 @@ The workflow at `.github/workflows/deploy-pages.yml` deploys the repository when
 3. Set the deployment source to **GitHub Actions**.
 4. Open **Actions** and wait for **Deploy SmartLedger to GitHub Pages** to complete.
 5. Open the Pages URL shown by the deployment.
+
+## Version 12.0 mobile workspace upgrade
+
+- Fixed app-shell scrolling: the header and navigation stay in place while only the active page content scrolls. Dialogs keep their own scroll area.
+- Replaced horizontal section shortcuts with responsive shortcut grids and a **Show more** tile that opens a full section launcher.
+- Expanded item tools with stock summary, low-stock alerts, stock adjustments, spreadsheet import, and a new Item Insights page showing recorded sales/purchase movement, current stock cost value, retail value, and indicative unit margin.
+- Added section-specific expanded action launchers across the main work areas.
 
 ## Version 11.0 data safety update
 

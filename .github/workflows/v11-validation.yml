@@ -1,7 +1,7 @@
-name: SmartLedger v11.0 validation
+name: SmartLedger v12.0 validation
 on:
   push:
-    branches: [release/smartledger-v11.0]
+    branches: [release/smartledger-v12-mobile-workspace]
   pull_request:
     branches: [main]
   workflow_dispatch:
