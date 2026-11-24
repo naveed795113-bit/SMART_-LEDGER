@@ -26,7 +26,11 @@ const checks = [
   ['service worker registration', /serviceWorker\.register/.test(html)],
   ['isolated page scrolling', /html,body\{height:100%;min-height:100%;overflow:hidden\}/.test(html) && /overscroll-behavior-y:contain/.test(html)],
   ['responsive show-more section launcher', /function openSectionMore\(\)/.test(html) && /section-more/.test(html)],
-  ['item insights page', /function itemInsights\(\)/.test(html)]
+  ['item insights page', /function itemInsights\(\)/.test(html)],
+  ['batch and expiry register', /function batchExpiryPage\(\)/.test(html)],
+  ['sales and purchase returns', /function saveReturn\(e,kind\)/.test(html)],
+  ['item barcode scanner', /function scanBarcodeFor\(target\)/.test(html)],
+  ['v13 backup registers', /batches:'sl_batches'.*salesReturns:'sl_sales_returns'.*purchaseReturns:'sl_purchase_returns'/.test(html)]
 ];
 for (const [name, ok] of checks) {
   assert.ok(ok, 'Missing or changed required feature: ' + name);
