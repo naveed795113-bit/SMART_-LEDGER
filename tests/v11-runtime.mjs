@@ -39,7 +39,7 @@ assert.match(window.document.querySelector('#view').textContent, /Reports/, 'Rep
 window.go('Ledgers');
 assert.match(window.document.querySelector('#view').textContent, /Ledger/i, 'Ledger page navigation works');
 window.go('Settings');
-assert.match(window.document.querySelector('#view').textContent, /SmartLedger v11\\.0/, 'Version settings render');
+assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v11.0'), 'Version settings render');
 assert.ok(window.document.querySelector('#view').textContent.includes('Download full backup'), 'Backup control renders');
 
 const css = [...window.document.querySelectorAll('style')].map(x => x.textContent).join('\\n');
