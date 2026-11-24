@@ -70,3 +70,12 @@ SmartLedger is an original product and interface. It is not a pixel-for-pixel co
 ## Hosting
 
 The app is published from the `main` branch using the GitHub Actions workflow in `.github/workflows/deploy-pages.yml` when GitHub Pages is configured to use GitHub Actions.
+
+
+## v13.0 — Advanced Inventory & Billing
+- Purchase batches and optional expiry dates are recorded against purchase bills.
+- Batch register highlights expired and near-expiry stock.
+- Sales consume tracked batches by earliest expiry first; sales returns restore original batch allocations when available.
+- Sales and purchase returns validate quantities against original transactions and update on-hand stock and cash movement.
+- Barcode scan action is available while creating an inventory item where the browser supports BarcodeDetector and camera permission.
+- Backup schema v3 includes batch and return registers while remaining compatible with v12 backups.
