@@ -1,4 +1,6 @@
-# SmartLedger
+# SmartLedger — Version 11.0
+
+**Release track:** SmartLedger v11.0 major upgrade. The v11.0 development branch is `release/smartledger-v11.0`; changes are being validated before merging to the live `main` branch.
 
 SmartLedger is a mobile-first business manager for Indian retail and wholesale shops.
 
@@ -38,6 +40,14 @@ The workflow at `.github/workflows/deploy-pages.yml` deploys the repository when
 3. Set the deployment source to **GitHub Actions**.
 4. Open **Actions** and wait for **Deploy SmartLedger to GitHub Pages** to complete.
 5. Open the Pages URL shown by the deployment.
+
+## Version 11.0 data safety update
+
+- Backup exports carry the SmartLedger app version, backup schema version, and export timestamp.
+- Restore checks the app identity and supported backup schema before writing records.
+- Existing SmartLedger backup files without version metadata remain supported.
+- Before restoring, the app prompts to download a backup of the current records.
+- The service-worker cache version is bumped so installed app shells can receive the v11.0 build.
 
 ## Data safety and production requirements
 
