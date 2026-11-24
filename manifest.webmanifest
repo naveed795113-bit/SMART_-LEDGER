@@ -1,0 +1,17 @@
+{
+  "name": "SmartLedger Business Manager",
+  "short_name": "SmartLedger",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3f6fb",
+  "theme_color": "#1457d9",
+  "description": "Business accounting and inventory manager",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
