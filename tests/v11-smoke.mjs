@@ -23,7 +23,10 @@ const checks = [
   ['pre-restore safety backup', /exportData\(\);\s*keys\.forEach/.test(html)],
   ['legacy backup compatibility', /data\.schemaVersion!==undefined/.test(html)],
   ['theme controls', /function setTheme\(mode\)/.test(html)],
-  ['service worker registration', /serviceWorker\.register/.test(html)]
+  ['service worker registration', /serviceWorker\.register/.test(html)],
+  ['isolated page scrolling', /html,body\{height:100%;min-height:100%;overflow:hidden\}/.test(html) && /overscroll-behavior-y:contain/.test(html)],
+  ['responsive show-more section launcher', /function openSectionMore\(\)/.test(html) && /section-more/.test(html)],
+  ['item insights page', /function itemInsights\(\)/.test(html)]
 ];
 for (const [name, ok] of checks) {
   assert.ok(ok, 'Missing or changed required feature: ' + name);
