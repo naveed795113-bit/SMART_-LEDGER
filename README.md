@@ -1,6 +1,6 @@
 # SmartLedger — Version 40.0
 
-**Release track:** SmartLedger v12.0 mobile workspace upgrade. The v11.0 development branch is `release/smartledger-v11.0`; changes are being validated before merging to the live `main` branch.
+**Release track:** SmartLedger v40.0 unified business suite. This is a consolidated major release on the existing main branch.
 
 SmartLedger is a mobile-first business manager for Indian retail and wholesale shops.
 
