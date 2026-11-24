@@ -1,0 +1,23 @@
+name: SmartLedger v11.0 validation
+on:
+  push:
+    branches: [release/smartledger-v11.0]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install browserless DOM test dependency
+        run: npm install --no-save jsdom@26
+      - name: Validate application structure and syntax
+        run: node tests/v11-smoke.mjs
+      - name: Run application interaction smoke tests
+        run: node tests/v11-runtime.mjs
