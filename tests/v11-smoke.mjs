@@ -13,7 +13,8 @@ const checks = [
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['premium matte theme', /v14\.0 premium matte metallic maroon/.test(html)],
-  ['version constants', /APP_VERSION=['"]15.0.0['"]/.test(html)],
+  ['version constants', /APP_VERSION=['"]16.0.0['"]/.test(html)],
+  ['professional billing balance breakdown', /Last Balance/.test(html) && /Total Balance/.test(html) && /Remaining Balance/.test(html) && /lastBalance,totalBalance,balanceDue/.test(html)],
   ['business profile fields', /Business address/.test(html) && /Primary phone number/.test(html) && /Secondary phone number/.test(html)],
   ['business logo and signature upload', /Upload business logo/.test(html) && /Upload signature image/.test(html)],
   ['business profile backup', /address:localStorage\.bizaddress/.test(html) && /signature:localStorage\.bizsignature/.test(html)],
@@ -44,7 +45,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.match(sw, /smartledger-v15\.0/, 'Service worker cache version');
+assert.match(sw, /smartledger-v16\.0/, 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
