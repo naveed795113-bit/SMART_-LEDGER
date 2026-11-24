@@ -9,11 +9,11 @@ assert.ok(inlineScripts.length, 'Inline application script exists');
 for (const [i, source] of inlineScripts.entries()) new Script(source, { filename: 'index-inline-' + i + '.js' });
 
 const checks = [
-  ['release badge', /SMARTLEDGER v18\.0/.test(html)],
+  ['release badge', /SMARTLEDGER v40\\.0/.test(html)],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
-  ['charcoal champagne theme', /v17\.2 — Deep charcoal/.test(html) && /--gold:#d8c18a/.test(html)],
-  ['version constants', /APP_VERSION=['"]18.0.0['"]/.test(html)],
+  ['charcoal champagne theme', /--gold:#d8c18a/.test(readFileSync('business-suite-v40.js','utf8')) && /#101418/.test(readFileSync('business-suite-v40.js','utf8'))],
+  ['version constants', /APP_VERSION=['\"]40.0.0['\"]/.test(html)],
   ['accounting module loaded', html.includes('<script src="./accounting.js"></script>')],
   ['v40 business suite module loaded', html.includes('<script src="./business-suite-v40.js"></script>')],
   ['accounting backup compatibility', html.includes('chartOfAccounts:JSON.parse') && html.includes('accountJournals:JSON.parse') && html.includes('BACKUP_SCHEMA_VERSION=5')],
@@ -53,7 +53,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.match(sw, /smartledger-v18\.0/, 'Service worker cache version');
+assert.match(sw, /smartledger-v40\\.0/, 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
