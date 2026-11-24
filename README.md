@@ -48,3 +48,8 @@ This repository does not yet provide cloud accounts, server-side synchronization
 GST and profit figures are management estimates based on the data entered. They are not certified accounting statements or statutory tax returns. Verify tax treatment and reports with a qualified accountant before filing.
 
 SmartLedger is an original product and interface. It is not a pixel-for-pixel copy of Vyapar and does not use Vyapar's proprietary branding or assets.
+
+
+## Hosting
+
+The app is published from the `main` branch using the GitHub Actions workflow in `.github/workflows/deploy-pages.yml` when GitHub Pages is configured to use GitHub Actions.
