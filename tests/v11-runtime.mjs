@@ -1,10 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { JSDOM, VirtualConsole } from 'jsdom';
 import assert from 'node:assert/strict';
 
 const errors = [];
 const vc = new VirtualConsole();
 vc.on('jsdomError', e => errors.push(e.message));
-const dom = await JSDOM.fromFile('index.html', {
+const dom = new JSDOM(readFileSync('index.html', 'utf8'), {
+  url: 'https://smartledger.test/',
   runScripts: 'dangerously',
   pretendToBeVisual: true,
   virtualConsole: vc,
