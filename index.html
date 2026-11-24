@@ -129,7 +129,7 @@ function restoreData(input){
    }
    alert("Backup restored successfully.");
    render();
-  }catch(error){alert(error.message==="Invalid backup structure"||error.message==="This is not a complete SmartLedger backup"||error.message==="Invalid business profile"?error.message+". No data was changed.":"Invalid or unreadable backup. No data was changed.")}
+  }catch(error){const known=["Invalid backup structure","This backup belongs to a different application","Unsupported backup version","This is not a complete SmartLedger backup","Invalid business profile"];alert(known.includes(error.message)?error.message+". No data was changed.":"Invalid or unreadable backup. No data was changed.")}
   reset();
  };
  reader.readAsText(f);
