@@ -1,11 +1,11 @@
 {
-  "name": "SmartLedger Business Manager",
+  "name": "SmartLedger Business Suite",
   "short_name": "SmartLedger",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#111416",
-  "theme_color": "#111416",
-  "description": "Business accounting and inventory manager",
+  "background_color": "#101418",
+  "theme_color": "#101418",
+  "description": "Local-first billing, accounting, inventory and business intelligence suite",
   "icons": [
     {
       "src": "icon.svg",
