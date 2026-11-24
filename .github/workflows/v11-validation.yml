@@ -21,3 +21,7 @@ jobs:
         run: node tests/v11-smoke.mjs
       - name: Run application interaction smoke tests
         run: node tests/v11-runtime.mjs
+      - name: Check accounting module syntax
+        run: node --check accounting.js
+      - name: Run v18 accounting journal tests
+        run: node tests/v18-accounting.mjs
