@@ -218,9 +218,11 @@ function saveBusinessProfile(){
  }catch(error){alert("Could not save the profile. The selected images may be too large; use smaller image files.");}
 }
 function businessPrintHeader(){
- const logo=localStorage.bizlogo||"",name=escapeHTML(localStorage.bizname||"SmartLedger Business"),address=escapeHTML(localStorage.bizaddress||""),phone=escapeHTML(localStorage.bizphone||""),phone2=escapeHTML(localStorage.bizphone2||""),gst=escapeHTML(localStorage.gstin||""),signature=localStorage.bizsignature||"";
- return (logo?'<div style="text-align:center;margin-bottom:8px"><img src="'+logo+'" style="max-width:110px;max-height:75px;object-fit:contain"></div>':'')+'<h2 style="text-align:center;margin:4px 0">'+name+'</h2>'+(address?'<p style="text-align:center;margin:4px 0">'+address+'</p>':'')+'<p style="text-align:center;margin:4px 0">'+[phone,phone2?'Alt: '+phone2:'',gst?'GSTIN: '+gst:''].filter(Boolean).join(' | ')+'</p>'+(signature?'<div style="margin-top:28px;text-align:right"><img src="'+signature+'" style="max-width:150px;max-height:65px;object-fit:contain;display:block;margin-left:auto"><small>Authorised Signature</small></div>':'');
+ const logo=localStorage.bizlogo||"",name=escapeHTML(localStorage.bizname||"SmartLedger Business"),address=escapeHTML(localStorage.bizaddress||""),phone=escapeHTML(localStorage.bizphone||""),phone2=escapeHTML(localStorage.bizphone2||""),gst=escapeHTML(localStorage.gstin||"");
+ return (logo?'<div style="text-align:center;margin-bottom:8px"><img src="'+logo+'" style="max-width:110px;max-height:75px;object-fit:contain"></div>':'')+'<h2 style="text-align:center;margin:4px 0">'+name+'</h2>'+(address?'<p style="text-align:center;margin:4px 0">'+address+'</p>':'')+'<p style="text-align:center;margin:4px 0">'+[phone,phone2?'Alt: '+phone2:'',gst?'GSTIN: '+gst:''].filter(Boolean).join(' | ')+'</p>';
 }
+function businessSignatureHTML(){const signature=localStorage.bizsignature||"";return signature?'<div style="margin-top:34px;text-align:right"><img src="'+signature+'" style="max-width:150px;max-height:65px;object-fit:contain;display:block;margin-left:auto"><small>Authorised Signature</small></div>':''}
+
 function printHTML(title,html){let w=window.open('','_blank');if(!w)return alert('Allow pop-ups to print or save PDF');w.document.write('<html><head><title>'+title+'</title></head><body style="font:14px Arial;padding:20px">'+html+'</body></html>');w.document.close();w.focus();w.print()}
 
 function setTheme(mode){localStorage.slTheme=mode;applyTheme();let x=document.getElementById('themechoice');if(x)x.value=mode}
@@ -398,7 +400,11 @@ function restoreData(input){
    if(data.profile){
     localStorage.bizname=String(data.profile.name||"");
     localStorage.bizphone=String(data.profile.phone||"");
-    localStorage.gstin=String(data.profile.gstin||"");\n    localStorage.bizaddress=String(data.profile.address||"");\n    localStorage.bizphone2=String(data.profile.phone2||"");\n    localStorage.bizlogo=String(data.profile.logo||"");\n    localStorage.bizsignature=String(data.profile.signature||"");
+    localStorage.gstin=String(data.profile.gstin||"");
+    localStorage.bizaddress=String(data.profile.address||"");
+    localStorage.bizphone2=String(data.profile.phone2||"");
+    localStorage.bizlogo=String(data.profile.logo||"");
+    localStorage.bizsignature=String(data.profile.signature||"");
    }
    alert("Backup restored successfully.");
    render();
