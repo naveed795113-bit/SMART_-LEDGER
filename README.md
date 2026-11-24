@@ -1,4 +1,4 @@
-# SmartLedger — Version 16.0
+# SmartLedger — Version 18.0
 
 **Release track:** SmartLedger v12.0 mobile workspace upgrade. The v11.0 development branch is `release/smartledger-v11.0`; changes are being validated before merging to the live `main` branch.
 
@@ -101,3 +101,13 @@ The app is published from the `main` branch using the GitHub Actions workflow in
 - Rebuilt the inventory catalogue as responsive product cards with larger, clearer product details.
 - Added a unified matte maroon and metallic light-grey visual system with high-contrast white text on dark surfaces.
 - Updated the service-worker cache to v14.0 while preserving existing local records.
+
+
+## Version 18.0 — Advanced accounting foundation
+
+- Adds a chart of accounts with standard asset, liability, equity, income and expense accounts, plus custom accounts.
+- Adds a balanced double-entry general journal with date, reference, narration and multiple debit/credit lines.
+- Rejects incomplete, duplicate-reference, negative, one-sided and unbalanced journal entries.
+- Adds journal-based trial balance, account ledger, and journal-only profit and balance-sheet summaries with CSV export and print/PDF.
+- Includes the new chart of accounts and journal entries in full JSON backup and restore (schema version 4).
+- Existing sales, purchases, receipts, payments and expenses are preserved but are not automatically posted into the general ledger yet. Financial statements in this release are explicitly journal-only until transaction migration and opening-balance reconciliation are completed.
