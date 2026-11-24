@@ -5,13 +5,14 @@ SmartLedger is a mobile-first business management web app for Indian retailers a
 ## Implemented in this repository
 - Responsive dashboard and Android-installable PWA foundation
 - Product catalogue with SKU/barcode value, purchase and sale prices, GST rate and low-stock threshold
-- Sales and purchase entry with stock movement, discount, GST calculation and payment mode
+- Multi-line sales invoices and purchase bills with stock movement, discounts, weighted-average purchase cost updates, GST calculation and payment mode
+- Intra-state CGST/SGST and inter-state IGST split on new transactions
 - Customer and supplier directories with opening balances
-- Customer/supplier payment register and party balance summaries
+- Customer/supplier payment register and party balance summaries including opening balances
 - Customer-wise gross profit estimate based on recorded item cost
 - Expense register and cash/bank movement register
 - Stock adjustments and low-stock alerts
-- GST summary report (management estimate, not a statutory return)
+- GST summary report with CGST, SGST and IGST breakdown (management estimate, not a statutory return)
 - Invoice preview, browser print / Save as PDF, and WhatsApp text sharing
 - JSON backup and restore
 - Service-worker offline shell
