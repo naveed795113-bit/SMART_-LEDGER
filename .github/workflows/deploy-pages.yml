@@ -27,9 +27,11 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
+      - name: Wait for artifact registration
+        run: sleep 15
       - name: Deploy to Pages
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          timeout: 1800000
+          timeout: 600000
           reporting_interval: 10000
