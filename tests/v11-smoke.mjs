@@ -9,7 +9,7 @@ assert.ok(inlineScripts.length, 'Inline application script exists');
 for (const [i, source] of inlineScripts.entries()) new Script(source, { filename: 'index-inline-' + i + '.js' });
 
 const checks = [
-  ['release badge', /SMARTLEDGER v15\.0/.test(html)],
+  ['release badge', /SMARTLEDGER v16\.0/.test(html)],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['premium matte theme', /v14\.0 premium matte metallic maroon/.test(html)],
