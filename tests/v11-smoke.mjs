@@ -10,7 +10,7 @@ for (const [i, source] of inlineScripts.entries()) new Script(source, { filename
 
 const checks = [
   ['release badge', /SMARTLEDGER v13\.0/.test(html)],
-  ['version constants', /APP_VERSION=['"]12.0.0['"]/.test(html)],
+  ['version constants', /APP_VERSION=['"]13.0.0['"]/.test(html)],
   ['dashboard renderer', /function render\(\)/.test(html)],
   ['inventory page', /function listItems\(\)/.test(html)],
   ['sales and purchases', /function transactionForm\(k\)/.test(html)],
