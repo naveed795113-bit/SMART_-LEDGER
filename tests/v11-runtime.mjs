@@ -50,6 +50,18 @@ assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].name, 'Edite
 assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].qty, 17, 'Edit saves stock quantity');
 window.go('Items');
 assert.match(window.document.querySelector('#itemrows').textContent, /Edited test item/, 'Updated product renders after save');
+window.localStorage.setItem('sl_items', JSON.stringify([
+  {name:'Edited test item',code:'TEST-EDIT-1',qty:17,unit:'pcs',purchase:12,price:18,wholesale:16,gst:5,minStock:4},
+  {name:'Second product',code:'TEST-SECOND',qty:3,unit:'pcs',purchase:20,price:25,wholesale:23,gst:0,minStock:1}
+]));
+window.go('Items');
+window.editItem(0);
+window.document.querySelector('#einame').value = 'Second product';
+window.document.querySelector('#editItemForm').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].name, 'Edited test item', 'Duplicate-name validation preserves the original item');
+assert.ok(alerts.some(x => x.includes('Another item already uses this name')), 'Duplicate item name reports a clear error');
+window.closeModal();
+
 const moreButton = window.document.querySelector('#view .section-more');
 assert.ok(moreButton, 'Items page displays Show more tile');
 moreButton.click();
@@ -69,7 +81,7 @@ assert.match(window.document.querySelector('#view').textContent, /Ledger/i, 'Led
 window.go('Batch & Expiry');
 assert.match(window.document.querySelector('#view').textContent, /Batch & expiry/, 'Batch and expiry page renders');
 window.go('Settings');
-assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v13.0'), 'Version settings render');
+assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v14.0'), 'Version settings render');
 assert.ok(window.document.querySelector('#view').textContent.includes('Download full backup'), 'Backup control renders');
 
 const css = [...window.document.querySelectorAll('style')].map(x => x.textContent).join('\\n');
