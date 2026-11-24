@@ -41,6 +41,13 @@ The workflow at `.github/workflows/deploy-pages.yml` deploys the repository when
 4. Open **Actions** and wait for **Deploy SmartLedger to GitHub Pages** to complete.
 5. Open the Pages URL shown by the deployment.
 
+## Version 15.0 readability and business profile upgrade
+
+- Increased text size, weight and contrast across dashboards, navigation, forms, labels, tables, product details and mobile controls.
+- Expanded Settings → Business Details with business address, primary and secondary phone numbers, GSTIN, logo upload and authorised signature upload.
+- Business logo, address, contact details and signature are included in printed invoice headers.
+- Business profile fields and uploaded images are included in JSON backups and restored with older profile fields remaining compatible.
+
 ## Version 12.0 mobile workspace upgrade
 
 - Fixed app-shell scrolling: the header and navigation stay in place while only the active page content scrolls. Dialogs keep their own scroll area.
