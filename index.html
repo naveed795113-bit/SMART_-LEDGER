@@ -544,6 +544,8 @@ function restoreData(input){
    if(data.app&&data.app!=="SmartLedger")throw new Error("This backup belongs to a different application");
    if(data.schemaVersion!==undefined&&(!Number.isInteger(data.schemaVersion)||data.schemaVersion<1||data.schemaVersion>BACKUP_SCHEMA_VERSION))throw new Error("Unsupported backup version");
    let keys=Object.keys(db),optional=['batches','salesReturns','purchaseReturns','chartOfAccounts','accountJournals'];
+   if(data.chartOfAccounts!==undefined&&(!Array.isArray(data.chartOfAccounts)||data.chartOfAccounts.some(a=>!a||!a.code||!a.name||!['Asset','Liability','Equity','Income','Expense'].includes(a.type))))throw new Error('Invalid accounting backup');
+   if(data.accountJournals!==undefined&&(!Array.isArray(data.accountJournals)||data.accountJournals.some(j=>!j||!Array.isArray(j.lines)||j.lines.length<2||Math.abs(j.lines.reduce((v,l)=>v+Number(l.debit||0),0)-j.lines.reduce((v,l)=>v+Number(l.credit||0),0))>0.004||j.lines.some(l=>!l||!l.account||!data.chartOfAccounts?.some(a=>a.code===l.account)))))throw new Error('Invalid accounting backup');
    if(!keys.filter(k=>!optional.includes(k)).every(k=>Array.isArray(data[k])))throw new Error("This is not a complete SmartLedger backup");
    optional.forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
    if(data.profile!==undefined&&(!data.profile||typeof data.profile!=="object"||Array.isArray(data.profile)))throw new Error("Invalid business profile");
@@ -561,7 +563,7 @@ function restoreData(input){
    }
    alert("Backup restored successfully.");
    render();
-  }catch(error){const known=["Invalid backup structure","This backup belongs to a different application","Unsupported backup version","This is not a complete SmartLedger backup","Invalid business profile"];alert(known.includes(error.message)?error.message+". No data was changed.":"Invalid or unreadable backup. No data was changed.")}
+  }catch(error){const known=["Invalid backup structure","This backup belongs to a different application","Unsupported backup version","This is not a complete SmartLedger backup","Invalid business profile","Invalid accounting backup"];alert(known.includes(error.message)?error.message+". No data was changed.":"Invalid or unreadable backup. No data was changed.")}
   reset();
  };
  reader.readAsText(f);
