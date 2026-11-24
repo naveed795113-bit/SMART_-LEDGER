@@ -1,4 +1,4 @@
-const CACHE = "smartledger-v2";
+const CACHE = "smartledger-v3";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", event => {
