@@ -64,7 +64,7 @@ const invalid = new window.File([JSON.stringify({ app: 'OtherApp' })], 'invalid.
 window.restoreData({ files: [invalid], value: 'invalid.json' });
 await wait(30);
 assert.equal(window.localStorage.getItem('sl_items'), preserved, 'Invalid backup must not change existing records');
-assert.ok(alerts.some(x => x.includes('different application')), 'Invalid backup reports a clear error');
+assert.ok(alerts.some(x => x.includes('This backup belongs to a different application')), 'Invalid backup reports a clear error');
 
 console.log('PASS app boot');
 console.log('PASS dashboard and sales overview graph');
