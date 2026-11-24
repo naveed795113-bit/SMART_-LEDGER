@@ -1,4 +1,4 @@
-# SmartLedger — Version 18.0
+# SmartLedger — Version 40.0
 
 **Release track:** SmartLedger v12.0 mobile workspace upgrade. The v11.0 development branch is `release/smartledger-v11.0`; changes are being validated before merging to the live `main` branch.
 
@@ -111,3 +111,26 @@ The app is published from the `main` branch using the GitHub Actions workflow in
 - Adds journal-based trial balance, account ledger, and journal-only profit and balance-sheet summaries with CSV export and print/PDF.
 - Includes the new chart of accounts and journal entries in full JSON backup and restore (schema version 4).
 - Existing sales, purchases, receipts, payments and expenses are preserved but are not automatically posted into the general ledger yet. Financial statements in this release are explicitly journal-only until transaction migration and opening-balance reconciliation are completed.
+
+
+## Version 40.0 — Unified Business Suite
+
+This consolidated release brings the planned business-management upgrades into one major application update.
+
+- **Business Suite workspace:** overview, finance, inventory, GST, customer insights, supplier insights, reorder planning and data health.
+- **Automatic double-entry posting for new activity:** new sales, purchase bills, customer receipts, supplier payments, expenses and returns post source-linked journal entries. Posting IDs prevent duplicate entries.
+- **Financial intelligence:** recorded sales, sales returns, recorded item cost, expenses, gross profit and estimated net profit.
+- **Inventory intelligence:** stock-at-cost and potential retail valuation, low-stock monitoring, slow-moving candidates, batch expiry watch and reorder suggestions based on current stock and the previous 30 days of sales.
+- **GST management summary:** taxable sales/purchases, output/input GST, CGST/SGST/IGST summary and CSV export.
+- **Customer and supplier analysis:** party sales/purchase totals, invoice counts and outstanding balances.
+- **Data health:** duplicate invoice and SKU checks, negative-stock checks, uncosted sales warnings, journal balance checks and automatic-posting exception list.
+- **Export and recovery:** CSV summaries and full JSON backup/restore including chart of accounts, journals and posting exceptions.
+- **App-wide charcoal / near-black and champagne theme** with higher contrast, responsive Business Suite screens and updated offline cache.
+
+### Accounting and data boundaries
+
+- Existing records are preserved. **Only new transactions saved after v40.0 are automatically posted** to the general ledger; historical records are not migrated automatically.
+- Sales and purchase return journals are simplified management entries. Tax and inventory valuation treatment must be reviewed before using them for statutory books.
+- Profit is an estimate based on saved item costs and saved expenses. Missing historical costs can affect accuracy.
+- GST screens are management summaries, not GST returns or e-filing.
+- The app remains local-first on this device. Cloud sync, staff accounts, remote access, encrypted server backup, payment gateways, SMS providers and e-invoice integrations require separate backend services and credentials.
