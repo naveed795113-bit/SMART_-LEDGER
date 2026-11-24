@@ -1,4 +1,4 @@
-# SmartLedger — Version 12.0
+# SmartLedger — Version 16.0
 
 **Release track:** SmartLedger v12.0 mobile workspace upgrade. The v11.0 development branch is `release/smartledger-v11.0`; changes are being validated before merging to the live `main` branch.
 
@@ -40,6 +40,14 @@ The workflow at `.github/workflows/deploy-pages.yml` deploys the repository when
 3. Set the deployment source to **GitHub Actions**.
 4. Open **Actions** and wait for **Deploy SmartLedger to GitHub Pages** to complete.
 5. Open the Pages URL shown by the deployment.
+
+## Version 16.0 professional billing upgrade
+
+- Billing displays the selected customer's or supplier's previous outstanding amount as **Last Balance**.
+- **Total Balance** is calculated live as Last Balance plus the current invoice total.
+- **Remaining Balance** updates as the amount paid is entered.
+- The balance breakdown is saved with each new invoice and shown on the invoice preview, print/PDF output, and WhatsApp/SMS invoice message.
+- Existing transactions and older invoices remain compatible; older invoices without a saved previous balance display zero for that field.
 
 ## Version 15.0 readability and business profile upgrade
 
