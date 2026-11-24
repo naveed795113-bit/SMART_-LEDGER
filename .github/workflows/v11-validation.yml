@@ -1,7 +1,7 @@
-name: SmartLedger v16.0 validation
+name: SmartLedger v40.0 validation
 on:
   push:
-    branches: [release/smartledger-v16-professional-billing]
+    branches: [release/smartledger-v40-unified-business-suite]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -25,3 +25,7 @@ jobs:
         run: node --check accounting.js
       - name: Run v18 accounting journal tests
         run: node tests/v18-accounting.mjs
+      - name: Check v40 business suite syntax
+        run: node --check business-suite-v40.js
+      - name: Run v40 business suite tests
+        run: node tests/v40-business-suite.mjs
