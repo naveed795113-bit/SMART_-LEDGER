@@ -27,9 +27,41 @@ assert.equal(errors.length, 0, 'App boot should not throw: ' + errors.join('; ')
 assert.match(window.document.querySelector('#view').textContent, /Business overview/, 'Dashboard renders');
 assert.match(window.document.querySelector('#view').textContent, /Sales overview/, 'Dashboard sales graph renders');
 
+window.localStorage.setItem('sl_items', JSON.stringify([{name:'Original test item',code:'TEST-ORIG',qty:5,unit:'pcs',purchase:10,price:15,wholesale:13,gst:0,minStock:2}]));
 window.go('Items');
 assert.match(window.document.querySelector('#view').textContent, /Items & inventory/, 'Inventory page navigation works');
-assert.ok(window.document.querySelector('#view table'), 'Inventory table renders');
+assert.ok(window.document.querySelectorAll('#itemrows .product-card').length === 1, 'Product detail cards render');
+assert.match(window.document.querySelector('#itemrows').textContent, /Purchase price/, 'Product cards show purchase price');
+assert.match(window.document.querySelector('#itemrows').textContent, /Reorder level/, 'Product cards show reorder level');
+window.editItem(0);
+assert.ok(window.document.querySelector('#editItemForm button[type=submit]'), 'Edit item form has a visible submit button');
+assert.ok(window.document.querySelector('#eimin'), 'Edit item form includes a valid reorder level field');
+window.document.querySelector('#einame').value = 'Edited test item';
+window.document.querySelector('#eicode').value = 'TEST-EDIT-1';
+window.document.querySelector('#eiqty').value = '17';
+window.document.querySelector('#eiunit').value = 'pcs';
+window.document.querySelector('#eipurchase').value = '12';
+window.document.querySelector('#eiprice').value = '18';
+window.document.querySelector('#eiwholesale').value = '16';
+window.document.querySelector('#eimin').value = '4';
+window.document.querySelector('#eigST').value = '5';
+window.document.querySelector('#editItemForm').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].name, 'Edited test item', 'Edit saves item name');
+assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].qty, 17, 'Edit saves stock quantity');
+window.go('Items');
+assert.match(window.document.querySelector('#itemrows').textContent, /Edited test item/, 'Updated product renders after save');
+window.localStorage.setItem('sl_items', JSON.stringify([
+  {name:'Edited test item',code:'TEST-EDIT-1',qty:17,unit:'pcs',purchase:12,price:18,wholesale:16,gst:5,minStock:4},
+  {name:'Second product',code:'TEST-SECOND',qty:3,unit:'pcs',purchase:20,price:25,wholesale:23,gst:0,minStock:1}
+]));
+window.go('Items');
+window.editItem(0);
+window.document.querySelector('#einame').value = 'Second product';
+window.document.querySelector('#editItemForm').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].name, 'Edited test item', 'Duplicate-name validation preserves the original item');
+assert.ok(alerts.some(x => x.includes('Another item already uses this name')), 'Duplicate item name reports a clear error');
+window.closeModal();
+
 const moreButton = window.document.querySelector('#view .section-more');
 assert.ok(moreButton, 'Items page displays Show more tile');
 moreButton.click();
@@ -49,7 +81,7 @@ assert.match(window.document.querySelector('#view').textContent, /Ledger/i, 'Led
 window.go('Batch & Expiry');
 assert.match(window.document.querySelector('#view').textContent, /Batch & expiry/, 'Batch and expiry page renders');
 window.go('Settings');
-assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v13.0'), 'Version settings render');
+assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v14.0'), 'Version settings render');
 assert.ok(window.document.querySelector('#view').textContent.includes('Download full backup'), 'Backup control renders');
 
 const css = [...window.document.querySelectorAll('style')].map(x => x.textContent).join('\\n');

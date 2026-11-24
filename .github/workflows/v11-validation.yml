@@ -1,7 +1,7 @@
-name: SmartLedger v13.0 validation
+name: SmartLedger v14.0 validation
 on:
   push:
-    branches: [release/smartledger-v13-advanced-inventory]
+    branches: [release/smartledger-v14-premium-ui-item-fix]
   pull_request:
     branches: [main]
   workflow_dispatch:
