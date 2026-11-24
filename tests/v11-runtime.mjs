@@ -43,8 +43,8 @@ assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedg
 assert.ok(window.document.querySelector('#view').textContent.includes('Download full backup'), 'Backup control renders');
 
 const css = [...window.document.querySelectorAll('style')].map(x => x.textContent).join('\\n');
-assert.match(css, /@media\\s*\\(max-width:\\s*850px\\)/, 'Tablet/mobile responsive layout rules exist');
-assert.match(css, /@media\\s*\\(max-width:\\s*520px\\)/, 'Small-phone responsive layout rules exist');
+assert.ok(css.includes('@media(max-width:850px)'), 'Tablet/mobile responsive layout rules exist');
+assert.ok(css.includes('@media(max-width:520px)'), 'Small-phone responsive layout rules exist');
 
 window.localStorage.setItem('sl_items', JSON.stringify([{ name: 'before-restore' }]));
 const backup = {
