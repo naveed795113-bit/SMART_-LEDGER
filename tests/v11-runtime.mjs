@@ -81,8 +81,13 @@ assert.match(window.document.querySelector('#view').textContent, /Ledger/i, 'Led
 window.go('Batch & Expiry');
 assert.match(window.document.querySelector('#view').textContent, /Batch & expiry/, 'Batch and expiry page renders');
 window.go('Settings');
-assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v14.0'), 'Version settings render');
+assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v15.0'), 'Version settings render');
 assert.ok(window.document.querySelector('#view').textContent.includes('Download full backup'), 'Backup control renders');
+assert.ok(window.document.querySelector('#view').textContent.includes('Business address'), 'Business address field renders');
+assert.ok(window.document.querySelector('#view').textContent.includes('Primary phone number'), 'Primary phone field renders');
+assert.ok(window.document.querySelector('#view').textContent.includes('Secondary phone number'), 'Secondary phone field renders');
+assert.ok(window.document.querySelector('#view').textContent.includes('Upload business logo'), 'Business logo upload renders');
+assert.ok(window.document.querySelector('#view').textContent.includes('Upload signature image'), 'Signature upload renders');
 
 const css = [...window.document.querySelectorAll('style')].map(x => x.textContent).join('\\n');
 assert.ok(css.includes('@media(max-width:850px)'), 'Tablet/mobile responsive layout rules exist');
