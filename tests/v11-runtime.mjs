@@ -30,7 +30,7 @@ assert.ok(window.document.querySelector('#view table'), 'Inventory table renders
 window.go('Sales');
 assert.match(window.document.querySelector('#view').textContent, /Sales/, 'Sales page navigation works');
 window.go('Purchases');
-assert.match(window.document.querySelector('#view').textContent, /Purchases/, 'Purchases page navigation works');
+assert.match(window.document.querySelector('#view').textContent, /New purchase/, 'Purchases page navigation works');
 window.go('Reports');
 assert.match(window.document.querySelector('#view').textContent, /Reports/, 'Reports page navigation works');
 window.go('Ledgers');
