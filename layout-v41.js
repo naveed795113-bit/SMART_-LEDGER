@@ -6,8 +6,8 @@ const css = `
 :root{--sl-bg:#101418;--sl-surface:#1b2025;--sl-surface-2:#222930;--sl-text:#edf0f2;--sl-muted:#b8c0c7;--sl-line:#3a444d;--sl-gold:#d8c18a}
 html,body{width:100%;max-width:100%;min-width:0;overflow-x:hidden!important}
 body{background:var(--sl-bg);color:var(--sl-text)}
-.app,.main,#view{min-width:0;max-width:100%;width:100%}
-.main{overflow:hidden}
+.app,#view{min-width:0;max-width:100%;width:100%}
+.main{min-width:0;max-width:100%;width:calc(100% - 245px);overflow:hidden}
 .content{min-width:0;max-width:100%;width:100%;padding:clamp(12px,2vw,25px);padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 #view>*{min-width:0;max-width:100%}
 #view .welcome,#view .sectionhead{min-width:0;flex-wrap:wrap;gap:10px}
@@ -41,7 +41,7 @@ body{background:var(--sl-bg);color:var(--sl-text)}
 .v40-tabs{scrollbar-width:thin}
 @media(max-width:850px){
  .side{width:100%;height:62px;inset:0 0 auto 0}
- .main{height:100dvh;min-height:0;padding-top:62px}
+ .main{width:100%;height:100dvh;min-height:0;padding-top:62px}
  .top{height:52px;flex:0 0 52px}
  .content{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;padding:14px 12px calc(92px + env(safe-area-inset-bottom))}
  .mobile-nav{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));height:calc(66px + env(safe-area-inset-bottom));padding-bottom:calc(6px + env(safe-area-inset-bottom))}
