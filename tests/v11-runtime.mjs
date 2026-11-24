@@ -46,8 +46,10 @@ window.go('Reports');
 assert.match(window.document.querySelector('#view').textContent, /Reports/, 'Reports page navigation works');
 window.go('Ledgers');
 assert.match(window.document.querySelector('#view').textContent, /Ledger/i, 'Ledger page navigation works');
+window.go('Batch & Expiry');
+assert.match(window.document.querySelector('#view').textContent, /Batch & expiry/, 'Batch and expiry page renders');
 window.go('Settings');
-assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v12.0'), 'Version settings render');
+assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v13.0'), 'Version settings render');
 assert.ok(window.document.querySelector('#view').textContent.includes('Download full backup'), 'Backup control renders');
 
 const css = [...window.document.querySelectorAll('style')].map(x => x.textContent).join('\\n');
@@ -56,7 +58,7 @@ assert.ok(css.includes('@media(max-width:520px)'), 'Small-phone responsive layou
 
 window.localStorage.setItem('sl_items', JSON.stringify([{ name: 'before-restore' }]));
 const backup = {
-  app: 'SmartLedger', appVersion: '12.0.0', schemaVersion: 2,
+  app: 'SmartLedger', appVersion: '13.0.0', schemaVersion: 3,
   items: [{ name: 'restored-item' }], customers: [], suppliers: [],
   sales: [], purchases: [], expenses: [], cash: [], payments: [], adjustments: [],
   profile: { name: 'Test Shop', phone: '000', gstin: '' }
