@@ -1023,7 +1023,7 @@ function saveReturn(e,kind){
  let already=sum(returns.filter(x=>String(x.originalId)===String(id)&&Number(x.lineIndex??0)===lineIndex),x=>x.qty);
  if(qty>num(line.qty)-already+1e-9)return alert("Return quantity exceeds the unreturned quantity for this item");
  let ratio=qty/Math.max(1e-9,num(line.qty)),stockQty=num(line.stockQty)>0?num(line.stockQty)*ratio:qty*(num(line.unitFactor)||1);
- let discount=num(line.discount)*ratio,amount=Math.max(0,qty*rate-discount),gstRate=num(line.gstRate),tax=gstRate>0?amount*gstRate/100:num(line.tax)*ratio,cost=num(line.cost)*ratio;
+ let discount=num(line.discount)*ratio,amount=Math.max(0,qty*rate-discount),gstRate=num(line.gstRate),tax=gstRate>0?amount*gstRate/100:num(line.tax)*ratio,cost=num(line.cost)*ratio,cgst=tx.supplyType==="intra"?tax/2:(num(tx.cgst)&&num(tx.qty)>0?num(tx.cgst)*stockQty/num(tx.qty):0),sgst=tx.supplyType==="intra"?tax/2:(num(tx.sgst)&&num(tx.qty)>0?num(tx.sgst)*stockQty/num(tx.qty):0),igst=tx.supplyType==="inter"?tax:(num(tx.igst)&&num(tx.qty)>0?num(tx.igst)*stockQty/num(tx.qty):0);
  let items=get("items"),item=items.find(x=>x.name===line.item);
  if(!item)return alert("Original item no longer exists");
  let batches=get("batches");
@@ -1044,7 +1044,7 @@ function saveReturn(e,kind){
  }
  put("items",items);
  put("batches",batches);
- let record={id:Date.now(),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cost,kind:sales?"Sales return":"Purchase return"};
+ let record={id:Date.now(),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cgst,sgst,igst,cost,kind:sales?"Sales return":"Purchase return"};
  returns.push(record);
  put(sales?"salesReturns":"purchaseReturns",returns);
  let cash=get("cash");
