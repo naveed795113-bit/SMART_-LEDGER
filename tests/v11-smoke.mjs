@@ -104,7 +104,7 @@ console.log('PASS service worker cache version');
 const v67 = readFileSync('smartledger-enhancements-v67.js', 'utf8');
 assert.ok(html.includes('smartledger-enhancements-v67.js?v=67') && sw.includes('./smartledger-enhancements-v67.js'), 'v67 enhancement module is loaded and cached');
 assert.ok(v67.includes('txnPartyPhone') && v67.includes('navigator.share') && v67.includes('html2canvas'), 'Party phone and invoice file sharing');
-assert.ok(v67.includes('secondaryUnitFactor') && v67.includes('Primary Unit Conversion') && v67.includes('hsn sac code'), 'Secondary units and mapped import fields');
+assert.ok(v67.includes('secondaryUnitFactor') && v67.includes('Primary Unit Conversion') && v67.includes('hsn sac code') && v67.includes('unit:"kgs"') && v67.includes('unit:"grms"'), 'Secondary units and mapped import fields');
 console.log('PASS v67 contacts, invoice sharing, mapped imports and dual units');
 assert.ok(/id="slSidebarLogout"/.test(html) && !/id="slSidebarLogout"[^>]*onclick=/.test(html), 'Sidebar logout uses the shared delegated handler');
 assert.ok(/id="slMobileLogout"/.test(html) && !/id="slMobileLogout"[^>]*onclick=/.test(html), 'Mobile logout uses the shared delegated handler');
