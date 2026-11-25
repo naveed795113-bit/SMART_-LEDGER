@@ -9,7 +9,7 @@
   box.textContent = "Connecting securely to SmartLedger…";
   document.body.appendChild(box);
   window.smartLedgerModuleState = "loading";
-  const load = import("./login-gate-v50.js?v=63");
+  const load = import("./login-gate-v50.js?v=64");
   const timeout = new Promise((_, reject) => window.setTimeout(() => reject(new Error("Firebase login module took longer than 45 seconds to load. Check your internet connection and reload.")), 45000));
   Promise.race([load, timeout]).then(() => {
     window.smartLedgerModuleState = "ready";
