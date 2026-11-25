@@ -445,6 +445,58 @@ body.module-inventory .tablewrap th,body.module-inventory .tablewrap td,body.mod
   .main{padding-top:62px!important}
   .main>.top{flex-basis:48px!important}
 }
+
+/* v40.5 — Android-safe natural document scrolling.
+   Avoid fixed-height flex scroll regions: several Android WebViews fail to
+   dispatch touch scrolling reliably to nested overflow containers. */
+@media(max-width:850px){
+  html,body{
+    height:auto!important;min-height:100%!important;
+    overflow-x:hidden!important;overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    overscroll-behavior-y:auto!important;
+  }
+  body{position:relative!important}
+  .app{
+    display:block!important;width:100%!important;
+    height:auto!important;min-height:100vh!important;
+    overflow:visible!important;
+  }
+  .side{
+    position:fixed!important;top:0!important;left:0!important;right:0!important;
+    bottom:auto!important;height:62px!important;z-index:40!important;
+  }
+  .main{
+    display:block!important;position:relative!important;
+    width:100%!important;height:auto!important;min-height:100vh!important;
+    max-height:none!important;overflow:visible!important;
+    padding:62px 0 0!important;margin:0!important;
+  }
+  .main>.top{
+    position:sticky!important;top:62px!important;z-index:12!important;
+    display:flex!important;min-height:48px!important;height:48px!important;
+  }
+  .main>.content{
+    display:block!important;position:relative!important;
+    width:100%!important;height:auto!important;min-height:0!important;
+    max-height:none!important;flex:none!important;
+    overflow:visible!important;overflow-y:visible!important;overflow-x:hidden!important;
+    touch-action:pan-y!important;-webkit-overflow-scrolling:auto!important;
+    overscroll-behavior: auto!important;
+    margin:0 auto!important;
+    padding-bottom:calc(110px + env(safe-area-inset-bottom))!important;
+  }
+  #view{
+    display:block!important;position:relative!important;
+    width:100%!important;height:auto!important;min-height:0!important;
+    max-height:none!important;overflow:visible!important;
+    touch-action:pan-y!important;
+  }
+  .mobile-nav{position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:50!important}
+  .modal{position:fixed!important;inset:0!important;overflow-y:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important}
+  .dialog{max-height:calc(100dvh - 16px - env(safe-area-inset-top))!important;overflow-y:auto!important;touch-action:pan-y!important}
+}
+
 </style></head><body><div class="app"><aside class="side"><div class="brand">◈ SmartLedger<small>BUSINESS MANAGER</small></div><nav class="nav" id="nav"><div class="navlabel">Workspace</div><button class="active" data-page="Dashboard">▦ <span class="txt">Dashboard</span></button><button data-page="Sales">▤ <span class="txt">Sales</span></button><button data-page="Purchases">▣ <span class="txt">Purchases</span></button><button data-page="Items">▧ <span class="txt">Items & Stock</span></button><div class="navlabel">People</div><button data-page="Customers">♙ <span class="txt">Customers</span></button><button data-page="Suppliers">♧ <span class="txt">Suppliers</span></button><button data-page="Expenses">₹ <span class="txt">Expenses</span></button><div class="navlabel">Accounts</div><button data-page="Cash & Bank">▤ <span class="txt">Cash & Bank</span></button><button data-page="Ledgers">⇄ <span class="txt">Ledgers & Payments</span></button><button data-page="Stock Alerts">⚑ <span class="txt">Stock Alerts</span></button><button data-page="Tax Reports">▥ <span class="txt">GST Reports</span></button><button data-page="Reports">▥ <span class="txt">Reports</span></button><button data-page="Settings">⚙ <span class="txt">Settings</span></button></nav></aside><main class="main"><header class="top"><strong id="pagetitle">Dashboard</strong><div class="topright"><span class="pill" title="SmartLedger major release">✦ SMARTLEDGER v40.4</span><div class="theme-switch" aria-label="Display mode"><button title="Light mode" onclick="setTheme('light')">☼</button><button title="Dark mode" onclick="setTheme('dark')">◐</button><button title="System mode" onclick="setTheme('system')">▣</button></div><span id="today" class="muted"></span></div></header><div class="content" id="view"></div></main></div><nav class="mobile-nav" id="mobileNav" aria-label="Main navigation"><button class="active" data-page="Dashboard"><span class="mi">⌂</span>Home</button><button data-page="Sales"><span class="mi">▤</span>Sales</button><button data-page="Purchases"><span class="mi">🛒</span>Purchase</button><button data-page="Items"><span class="mi">▦</span>Items</button><button data-page="More"><span class="mi">☰</span>More</button></nav><div class="modal" id="modal"><div class="dialog"><div class="dialoghead"><h2 id="modaltitle">Add</h2><button class="close" onclick="closeModal()">×</button></div><div id="modalbody"></div></div></div><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
 const APP_VERSION='40.4.0', BACKUP_SCHEMA_VERSION=5;
 const $=s=>document.querySelector(s), money=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:2}), db={items:'sl_items',customers:'sl_customers',suppliers:'sl_suppliers',sales:'sl_sales',purchases:'sl_purchases',expenses:'sl_expenses',cash:'sl_cash',payments:'sl_payments',adjustments:'sl_adjustments',batches:'sl_batches',salesReturns:'sl_sales_returns',purchaseReturns:'sl_purchase_returns'};
