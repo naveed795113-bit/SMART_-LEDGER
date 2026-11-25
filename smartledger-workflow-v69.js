@@ -71,9 +71,10 @@
     }
     const save = form.querySelector('button[type="submit"],button:not([type])');
     if (save) {
-      save.type = "submit";
-      save.textContent = window.currentTxn === "purchases" ? "Save purchase bill" : "Save sale invoice";
-      save.setAttribute("aria-label", save.textContent);
+      if (save.type !== "submit") save.type = "submit";
+      const label = window.currentTxn === "purchases" ? "Save purchase bill" : "Save sale invoice";
+      if (save.textContent !== label) save.textContent = label;
+      if (save.getAttribute("aria-label") !== label) save.setAttribute("aria-label", label);
     }
   }
 
