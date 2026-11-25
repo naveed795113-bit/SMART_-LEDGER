@@ -1,0 +1,68 @@
+name: Build SmartLedger Android APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '*.js'
+      - '*.css'
+      - '*.webmanifest'
+      - 'icon.svg'
+      - 'android/**'
+      - '.github/workflows/build-android-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout SmartLedger v68 source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Bundle the complete offline web app
+        shell: bash
+        run: |
+          mkdir -p android/app/src/main/assets/www/vendor
+          rsync -a --exclude='.git' --exclude='.github' --exclude='android' --exclude='README.md' --exclude='*.md' ./ android/app/src/main/assets/www/
+          curl -fL 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js' -o android/app/src/main/assets/www/vendor/xlsx.full.min.js
+          curl -fL 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js' -o android/app/src/main/assets/www/vendor/html2canvas.min.js
+          curl -fL 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js' -o android/app/src/main/assets/www/vendor/jspdf.umd.min.js
+          sed -i 's#https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js#./vendor/xlsx.full.min.js#g' android/app/src/main/assets/www/index.html
+          sed -i 's#https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js#./vendor/html2canvas.min.js#g' android/app/src/main/assets/www/index.html
+          sed -i 's#https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js#./vendor/jspdf.umd.min.js#g' android/app/src/main/assets/www/index.html
+
+      - name: Build debug and release APKs
+        run: |
+          gradle --no-daemon -p android assembleDebug assembleRelease
+
+      - name: Verify APK outputs
+        shell: bash
+        run: |
+          test -s android/app/build/outputs/apk/debug/app-debug.apk
+          test -s android/app/build/outputs/apk/release/app-release-unsigned.apk
+          ls -lh android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+
+      - name: Upload installable APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartLedger-Android-APK-v68
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: error
+          retention-days: 30
