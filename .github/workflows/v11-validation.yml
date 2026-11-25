@@ -19,6 +19,8 @@ jobs:
         run: npm install --no-save jsdom@26
       - name: Validate application structure and syntax
         run: node tests/v11-smoke.mjs
+      - name: Check v67 enhancement module syntax
+        run: node --check smartledger-enhancements-v67.js
       - name: Run application interaction smoke tests
         run: node tests/v11-runtime.mjs
       - name: Check theme contrast runtime syntax
