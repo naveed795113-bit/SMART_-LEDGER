@@ -121,3 +121,4 @@ assert.match(w.document.querySelector("#view").textContent,/Trial balance agrees
 assert.equal(errors.length,0,"No runtime errors: "+errors.join("; "));
 console.log("v40 Business Suite tests passed");
 dom.window.close();
+
