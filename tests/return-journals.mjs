@@ -69,6 +69,11 @@ assert.equal(w.get("items").find(x=>x.name==="Oil").qty,15,"Returned stock is re
 assert.equal(journals.length,3,"Multi-item return creates a third automatic journal");
 assert.equal(journals[2].lines.reduce((s,x)=>s+Number(x.debit),0),1950,"Multi-item return journal debits line revenue, GST and cost");
 assert.equal(journals[2].lines.reduce((s,x)=>s+Number(x.credit),0),1950,"Multi-item return journal credits cash and reverses COGS");
+assert.equal(w.totals().sales,1655,"Net sales include item-level returns and GST");
+assert.equal(w.totals().profit,328,"Gross profit reverses only returned taxable revenue and returned cost");
+assert.equal(w.totals().purchases,94.5,"Net purchases subtract purchase returns and GST");
+assert.equal(w.partyOutstanding("Supplier","Supplier"),-10.5,"Supplier credit balance includes purchase return and GST");
+
 
 assert.equal(errors.length,0,"No runtime errors: "+errors.join("; "));
 console.log("PASS sales and purchase return double-entry journals and proportional GST reversals");
