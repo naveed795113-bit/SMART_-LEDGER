@@ -13,7 +13,7 @@ const checks = [
   ['free phone password account creation and sign-in controls', /slCreatePhoneAccount/.test(readFileSync('login-gate-v50.js','utf8')) && /slPhonePasswordSignIn/.test(readFileSync('login-gate-v50.js','utf8')) && /function phonePasswordAuth\(createAccount\)/.test(readFileSync('login-gate-v50.js','utf8'))],
   ['phone number normalized into private Firebase account identifier', readFileSync('login-gate-v50.js','utf8').includes('function phoneAccountEmail(rawPhone)') && readFileSync('login-gate-v50.js','utf8').includes('@accounts.smartledger.invalid')],
   ['phone password login warns number is not SMS-verified and recovery is not yet available', /not verified by SMS/.test(readFileSync('login-gate-v50.js','utf8')) && /password recovery is not available/.test(readFileSync('login-gate-v50.js','utf8'))],
-  ['authentication v64 loader and service worker cache', readFileSync('login-gate-loader-v60.js','utf8').includes('login-gate-v50.js?v=64') && readFileSync('sw.js','utf8').includes('smartledger-v67.1')],
+  ['authentication v64 loader and service worker cache', readFileSync('login-gate-loader-v60.js','utf8').includes('login-gate-v50.js?v=64') && readFileSync('sw.js','utf8').includes('smartledger-v68.0')],
 
   ['release badge', html.includes('SMARTLEDGER v44.0')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
@@ -99,7 +99,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v67.1') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./interaction-fix-v56.js') && html.includes('./interaction-fix-v56.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
+assert.ok(sw.includes('smartledger-v68.0') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./interaction-fix-v56.js') && html.includes('./interaction-fix-v56.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
 console.log('PASS service worker cache version');
 const v67 = readFileSync('smartledger-enhancements-v67.js', 'utf8');
 assert.ok(html.includes('smartledger-enhancements-v67.js?v=67.1') && sw.includes('./smartledger-enhancements-v67.js'), 'v67 enhancement module is loaded and cached');
@@ -118,6 +118,9 @@ assert.ok(/<script src="\.\/login-gate-loader-v60\.js(?:\?v=\d+)?"><\/script>/.t
 assert.ok(firebaseLogin.includes('LOGOUT_PENDING_KEY') && firebaseLogin.includes('rememberLogoutLock') && firebaseLogin.includes('clearLogoutLock') && firebaseLogin.includes('if (auth.currentUser)'), 'Logout waits for Firebase confirmation and persists a pending lock');
 assert.ok(firebaseLogin.includes('if (logoutInProgress)') && firebaseLogin.includes('window.smartLedgerLogout().catch'), 'Auth observer cannot unlock the app while logout is pending');
 console.log('PASS Firebase phone OTP, Google redirect, persistent auth and guarded logout lifecycle');
+const accountStorage = readFileSync('account-storage-v1.js','utf8');
+assert.ok(html.includes('account-storage-v1.js?v=2') && sw.includes('./account-storage-v1.js?v=2') && accountStorage.includes('isFirebaseKey') && accountStorage.includes('!isFirebaseKey(k)'), 'Firebase auth storage bypasses account namespace and legacy migration');
+console.log('PASS Firebase auth storage is preserved by account isolation');
 
 const v45 = readFileSync('theme-v45-contrast.js', 'utf8');
 assert.ok(html.includes('./theme-v45-contrast.js') && v45.includes('gradientStops') && v45.includes('surfaceSamples') && v45.includes('minContrast'), 'v45 gradient-aware surface contrast runtime');
