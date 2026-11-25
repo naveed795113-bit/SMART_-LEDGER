@@ -23,6 +23,8 @@ jobs:
         run: node tests/v11-runtime.mjs
       - name: Check theme contrast runtime syntax
         run: node --check theme-v45-contrast.js
+      - name: Check complete element-level contrast runtime
+        run: node --check theme-v46-complete-contrast.js
       - name: Check accounting module syntax
         run: node --check accounting.js
       - name: Run v18 accounting journal tests
