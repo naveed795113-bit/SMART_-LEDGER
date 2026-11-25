@@ -36,6 +36,10 @@ const checks = [
   ['dashboard theme exclusion retained', /if\(page==='Dashboard'\)return;if\(page==='More'\)/.test(html)],
   ['Business Suite inherits light and dark palettes', /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8')) && /background:var\(--v40-card\)!important/.test(readFileSync('business-suite-v40.js','utf8')) && /color:var\(--v40-text\)!important/.test(readFileSync('business-suite-v40.js','utf8')) && /#view \.v40-table td/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['Business Suite no longer forces global dark mode', !/:root\{--blue:#171b1f/.test(readFileSync('business-suite-v40.js','utf8')) && !/body\{background:var\(--bg\);color:var\(--text\)\}/.test(readFileSync('business-suite-v40.js','utf8'))],
+
+  ['v43 separate light and dark text contrast runtime', /theme-v43-contrast\.js/.test(html) && /html\[data-sl-theme="light"\]/.test(readFileSync('theme-v43-contrast.js','utf8')) && /html\[data-sl-theme="dark"\]/.test(readFileSync('theme-v43-contrast.js','utf8'))],
+  ['v43 Business Suite text contrast in both modes', /body\.theme-light #view .*v40-stat/.test(readFileSync('theme-v43-contrast.js','utf8')) && /body\.theme-dark #view .*v40-stat/.test(readFileSync('theme-v43-contrast.js','utf8'))],
+  ['v43 independent contrast asset precached', /theme-v43-contrast\.js/.test(readFileSync('sw.js','utf8'))],
   ['modern accessible theme icons', (html.match(/data-theme-mode=/g)||[]).length===3 && /aria-pressed/.test(html) && /<svg viewBox=\"0 0 24 24\"/.test(html)],
   ['light dark and system theme logic', /function setTheme\(mode\)/.test(html) && /prefers-color-scheme: dark/.test(html) && /document\.documentElement\.style\.colorScheme/.test(html)],
 
