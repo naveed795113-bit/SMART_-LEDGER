@@ -73,7 +73,7 @@ jobs:
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           test -x "$SDKMANAGER"
           yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
-          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --install "platforms;android-35" "ndk;27.2.12479018" "cmake;3.22.1"
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platforms;android-35" "ndk;27.2.12479018" "cmake;3.22.1"
 
       - name: Build Tesseract4Android native OCR library
         shell: bash
