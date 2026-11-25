@@ -1,5 +1,5 @@
 const CACHE = "smartledger-v69.0";
-const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./account-storage-v1.js?v=2", "./accounting.js", "./business-suite-v40.js", "./theme-v42.js", "./theme-v43-contrast.js", "./theme-v44-global-contrast.js", "./theme-v45-contrast.js", "./theme-v46-complete-contrast.js", "./theme-v47-theme-aware-text.js", "./theme-v48-more-theme.js", "./google-drive-v49.js", "./login-gate-v50.js", "./login-gate-loader-v60.js", "./ai-assistant-v52.js", "./interaction-fix-v56.js", "./smartledger-enhancements-v67.js", "./offline-ocr-v69.js"];
+const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./account-storage-v1.js?v=2", "./accounting.js", "./business-suite-v40.js", "./theme-v42.js", "./theme-v43-contrast.js", "./theme-v44-global-contrast.js", "./theme-v45-contrast.js", "./theme-v46-complete-contrast.js", "./theme-v47-theme-aware-text.js", "./theme-v48-more-theme.js", "./google-drive-v49.js", "./login-gate-v50.js?v=64", "./login-gate-loader-v60.js?v=65", "./ai-assistant-v52.js", "./interaction-fix-v56.js", "./smartledger-enhancements-v67.js?v=67.1", "./offline-ocr-v69.js?v=69.0"];
 
 self.addEventListener("install", event => {
   event.waitUntil(
