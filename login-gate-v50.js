@@ -236,8 +236,8 @@ async function verifyOtp() {
   }
 }
 function phoneAccountEmail(rawPhone) {
-  const phone = rawPhone.trim().replace(/[\\s()-]/g, "");
-  if (!/^\\+[1-9]\\d{7,14}$/.test(phone)) throw new Error("Enter a valid phone number with country code, for example +91XXXXXXXXXX.");
+  const phone = rawPhone.trim().replace(/[\s()-]/g, "");
+  if (!/^\+[1-9]\d{7,14}$/.test(phone)) throw new Error("Enter a valid phone number with country code, for example +91XXXXXXXXXX.");
   return "slphone_" + phone.slice(1) + "@accounts.smartledger.invalid";
 }
 async function phonePasswordAuth(createAccount) {
@@ -260,7 +260,7 @@ async function phonePasswordAuth(createAccount) {
     const credential = createAccount
       ? await createUserWithEmailAndPassword(auth, email, password)
       : await signInWithEmailAndPassword(auth, email, password);
-    if (credential && credential.user) unlock(credential.user, phoneInput.value.trim().replace(/[\\s()-]/g, ""));
+    if (credential && credential.user) unlock(credential.user, phoneInput.value.trim().replace(/[\s()-]/g, ""));
   } catch (error) {
     status(errorText(error));
   } finally {
