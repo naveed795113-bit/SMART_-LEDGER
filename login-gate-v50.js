@@ -31,7 +31,8 @@ const firebaseSdk = await loadFirebaseSdk();
 const {
   initializeApp, getAuth, setPersistence, browserLocalPersistence,
   GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
-  onAuthStateChanged, signInWithPhoneNumber, RecaptchaVerifier, signOut
+  onAuthStateChanged, signInWithPhoneNumber, RecaptchaVerifier, signOut,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword
 } = firebaseSdk;
 
 const firebaseConfig = {
@@ -91,7 +92,7 @@ css.textContent = `
 #slLoginGate .sl-action.primary{background:#603543;border-color:#603543;color:white}#slLoginGate .sl-action:disabled{opacity:.55;cursor:not-allowed}
 #slLoginGate .sl-divider{display:flex;align-items:center;gap:10px;margin:15px 0;color:#988b8d;font-size:10px}#slLoginGate .sl-divider:before,#slLoginGate .sl-divider:after{content:"";height:1px;background:#e8e0dc;flex:1}
 #slLoginGate .sl-field{width:100%;height:44px;margin:0 0 10px;padding:0 12px;border:1px solid #ded5d0;border-radius:10px;background:#fff;color:#2d2327;outline:none}
-#slLoginGate .sl-field:focus{border-color:#8c5c68;box-shadow:0 0 0 3px #8c5c6818}#slLoginGate .sl-phone-row{display:grid;grid-template-columns:1fr;gap:8px}
+#slLoginGate .sl-field:focus{border-color:#8c5c68;box-shadow:0 0 0 3px #8c5c6818}#slLoginGate .sl-phone-row{display:grid;grid-template-columns:1fr;gap:8px}#slLoginGate .sl-phone-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}#slLoginGate .sl-phone-actions .sl-action{font-size:12px;padding:0 8px}#slLoginGate .sl-phone-help{margin:2px 0 10px;color:#827579;font-size:10px;line-height:1.45;text-align:left}
 #slLoginGate .sl-login-status{min-height:32px;margin:12px 0 0;color:#796b70;font-size:11px;line-height:1.55}
 #slLoginGate .sl-account-note{margin:10px 0 0;color:#827579;font-size:10px;line-height:1.5}#slLoginGate .sl-trust-row{display:flex;justify-content:center;align-items:center;gap:7px;margin:16px 0 0;color:#75696c;font-size:10px;line-height:1.5}
 #slLoginGate .sl-trust-row svg{width:14px;height:14px;flex:0 0 14px;color:#8a5963}#slLoginGate .sl-auth-footer{margin:23px 0 0;padding-top:16px;border-top:1px solid #e5ddd7;color:#8b8081;font-size:10px;line-height:1.7}
@@ -121,17 +122,20 @@ gate.innerHTML = `
  </section>
  <section class="sl-auth-panel" aria-label="Sign in"><div class="sl-auth-inner">
   <p class="sl-auth-kicker">Welcome to SmartLedger</p><h2>Sign in or create account</h2>
-  <p class="sl-auth-desc">Use Google or verify your mobile number. New users are registered automatically after successful verification.</p>
+  <p class="sl-auth-desc">Continue with Google or use your mobile number and a password. No SMS charges for password login.</p>
   <div class="sl-signin-box">
    <button class="sl-action" id="slFirebaseGoogleSignIn" type="button"><span aria-hidden="true">G</span> Continue with Google</button>
-   <div class="sl-divider">OR PHONE NUMBER</div>
-   <div class="sl-phone-row"><input class="sl-field" id="slPhoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+91 98765 43210" aria-label="Phone number in international format">
-    <button class="sl-action primary" id="slSendOtp" type="button">Send verification code</button>
+   <div class="sl-divider">OR PHONE + PASSWORD</div>
+   <div class="sl-phone-row"><input class="sl-field" id="slPhoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+91 98765 43210" aria-label="Phone number with country code">
+    <input class="sl-field" id="slPhonePassword" type="password" autocomplete="current-password" placeholder="Password (minimum 8 characters)" aria-label="Password">
+    <input class="sl-field" id="slPhonePasswordConfirm" type="password" autocomplete="new-password" placeholder="Confirm password for new account" aria-label="Confirm password">
+    <div class="sl-phone-actions"><button class="sl-action primary" id="slCreatePhoneAccount" type="button">Create free account</button><button class="sl-action" id="slPhonePasswordSignIn" type="button">Sign in</button></div>
+    <p class="sl-phone-help">Phone number is used as your account ID but is not verified by SMS. Anyone who knows the number cannot access the account without its password. Keep your password safe; password recovery is not available for this sign-in method yet.</p>
     <div id="slOtpArea" hidden><input class="sl-field" id="slOtpCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="Enter 6-digit OTP" aria-label="Verification code"><button class="sl-action primary" id="slVerifyOtp" type="button">Verify &amp; continue</button></div>
-    <div id="slRecaptcha"></div>
+    <div id="slRecaptcha" hidden></div>
    </div>
    <p id="slLoginStatus" class="sl-login-status" role="status" aria-live="polite">Connecting securely to Firebase…</p>
-   <p class="sl-account-note">First-time Google or phone users will have a new account created automatically. Existing users can sign in with the same method.</p>
+   <p class="sl-account-note">Google login remains available. Phone + password accounts are separate from Google accounts unless both are linked later.</p>
   </div>
   <div class="sl-trust-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>Firebase verifies your sign-in. Never share your OTP with anyone.</span></div>
   <div class="sl-auth-footer"><strong>SmartLedger</strong> · Your business. Your numbers. Your growth.<br>Your app data remains stored in this browser; Firebase authentication does not sync shop records between devices.</div>
@@ -149,6 +153,11 @@ function errorText(error) {
     "auth/operation-not-allowed": "This sign-in method is not enabled in Firebase Console.",
     "auth/billing-not-enabled": "Firebase Phone Authentication requires a linked Cloud Billing account. Link this Firebase project to a billing account and use the Blaze pay-as-you-go plan; SMS charges may apply.",
     "auth/invalid-phone-number": "Enter a valid phone number with country code, for example +91XXXXXXXXXX.",
+    "auth/email-already-in-use": "An account already exists for this phone number. Choose Sign in instead.",
+    "auth/invalid-credential": "Phone number or password is incorrect.",
+    "auth/weak-password": "Use a password with at least 8 characters.",
+    "auth/user-not-found": "No account was found for this phone number. Choose Create free account.",
+    "auth/wrong-password": "Phone number or password is incorrect.",
     "auth/too-many-requests": "Too many attempts. Wait before requesting another code.",
     "auth/captcha-check-failed": "reCAPTCHA verification failed. Reload and try again.",
     "auth/popup-blocked": "The sign-in window was blocked. Allow redirects/pop-ups and try again.",
@@ -158,22 +167,22 @@ function errorText(error) {
   };
   return map[code] || (error && error.message ? error.message.replace(/^Firebase:s*/,"") : "Sign-in failed. Please try again.");
 }
-function profileFor(user) {
+function profileFor(user, loginPhone = "") {
   return {
     name: user.displayName || "",
     email: user.email || "",
     picture: user.photoURL || "",
     sub: user.uid,
-    phoneNumber: user.phoneNumber || ""
+    phoneNumber: user.phoneNumber || loginPhone || ""
   };
 }
-function unlock(user) {
+function unlock(user, loginPhone = "") {
   if (logoutInProgress) {
     window.smartLedgerSignedIn = false;
     showGate();
     return;
   }
-  const profile = profileFor(user);
+  const profile = profileFor(user, loginPhone);
   try { localStorage.setItem("sl_google_profile", JSON.stringify(profile)); } catch (e) {}
   window.smartLedgerSignedIn = true;
   if (gate && gate.isConnected) gate.remove();
@@ -226,11 +235,47 @@ async function verifyOtp() {
     button.disabled = false;
   }
 }
+function phoneAccountEmail(rawPhone) {
+  const phone = rawPhone.trim().replace(/[\\s()-]/g, "");
+  if (!/^\\+[1-9]\\d{7,14}$/.test(phone)) throw new Error("Enter a valid phone number with country code, for example +91XXXXXXXXXX.");
+  return "slphone_" + phone.slice(1) + "@accounts.smartledger.invalid";
+}
+async function phonePasswordAuth(createAccount) {
+  clearLogoutLock();
+  const phoneInput = gate.querySelector("#slPhoneNumber");
+  const passwordInput = gate.querySelector("#slPhonePassword");
+  const confirmInput = gate.querySelector("#slPhonePasswordConfirm");
+  const createButton = gate.querySelector("#slCreatePhoneAccount");
+  const signInButton = gate.querySelector("#slPhonePasswordSignIn");
+  let email;
+  try { email = phoneAccountEmail(phoneInput.value); }
+  catch (error) { status(error.message); return; }
+  const password = passwordInput.value;
+  if (password.length < 8) { status("Use a password with at least 8 characters."); return; }
+  if (createAccount && password !== confirmInput.value) { status("The passwords do not match."); return; }
+  createButton.disabled = true;
+  signInButton.disabled = true;
+  status(createAccount ? "Creating your secure account…" : "Signing in securely…");
+  try {
+    const credential = createAccount
+      ? await createUserWithEmailAndPassword(auth, email, password)
+      : await signInWithEmailAndPassword(auth, email, password);
+    if (credential && credential.user) unlock(credential.user, phoneInput.value.trim().replace(/[\\s()-]/g, ""));
+  } catch (error) {
+    status(errorText(error));
+  } finally {
+    createButton.disabled = false;
+    signInButton.disabled = false;
+  }
+}
+
 // The login gate is built while detached from the document. Resolve controls
 // from the gate itself; document.getElementById() returns null until showGate().
 const googleSignInButton = gate.querySelector("#slFirebaseGoogleSignIn");
 const sendOtpButton = gate.querySelector("#slSendOtp");
 const verifyOtpButton = gate.querySelector("#slVerifyOtp");
+const createPhoneAccountButton = gate.querySelector("#slCreatePhoneAccount");
+const phonePasswordSignInButton = gate.querySelector("#slPhonePasswordSignIn");
 
 if (googleSignInButton) {
   googleSignInButton.addEventListener("click", async () => {
@@ -261,6 +306,8 @@ if (googleSignInButton) {
 }
 if (sendOtpButton) sendOtpButton.addEventListener("click", sendOtp);
 if (verifyOtpButton) verifyOtpButton.addEventListener("click", verifyOtp);
+if (createPhoneAccountButton) createPhoneAccountButton.addEventListener("click", () => phonePasswordAuth(true));
+if (phonePasswordSignInButton) phonePasswordSignInButton.addEventListener("click", () => phonePasswordAuth(false));
 window.smartLedgerLogout = function () {
   if (logoutPromise) return logoutPromise;
   rememberLogoutLock();
@@ -319,7 +366,7 @@ try {
       clearLogoutLock();
       window.smartLedgerSignedIn = false;
       showGate();
-      status("Choose Google or enter your mobile number to continue.");
+      status("Choose Google or use your phone number and password to continue.");
     }
   }, error => {
     authReady = true;
