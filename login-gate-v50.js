@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const CLIENT_ID='300668500980-0tnrrbavikc17s598f3dtsh1hj5vo42u.apps.googleusercontent.com';
-let ready=false;
+let ready=false,started=false;
 const css=document.createElement('style');
 css.textContent=`
 #slLoginGate{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:22px;background:radial-gradient(ellipse at 20% 0%,#87505c 0%,transparent 48%),linear-gradient(145deg,#321923,#542632 58%,#21131a);color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -53,7 +53,8 @@ function load(){
  s.onerror=()=>message('Google sign-in could not load. Check your internet connection and reload.');
  document.head.appendChild(s);
 }
-document.addEventListener('DOMContentLoaded',()=>{document.body.appendChild(gate);load()},{once:true});
-if(document.readyState!=='loading'){document.body.appendChild(gate);load()}
+function start(){if(started)return;started=true;document.body.appendChild(gate);load()}
+document.addEventListener('DOMContentLoaded',start,{once:true});
+if(document.readyState!=='loading')start();
 window.smartLedgerLogout=function(){window.smartLedgerSignedIn=false;location.reload()};
 })();
