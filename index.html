@@ -606,8 +606,22 @@ body.module-more .mobile-nav button{color:#3d4751!important}
 body.module-more .mobile-nav button.active{color:#202830!important}
 body.module-more .mobile-nav button.active .mi{background:#c3c9cf!important;color:#202830!important}
 
-</style></head><body><div class="app"><aside class="side"><div class="brand">◈ SmartLedger<small>BUSINESS MANAGER</small></div><nav class="nav" id="nav"><div class="navlabel">Workspace</div><button class="active" data-page="Dashboard">▦ <span class="txt">Dashboard</span></button><button data-page="Sales">▤ <span class="txt">Sales</span></button><button data-page="Purchases">▣ <span class="txt">Purchases</span></button><button data-page="Items">▧ <span class="txt">Items & Stock</span></button><div class="navlabel">People</div><button data-page="Customers">♙ <span class="txt">Customers</span></button><button data-page="Suppliers">♧ <span class="txt">Suppliers</span></button><button data-page="Expenses">₹ <span class="txt">Expenses</span></button><div class="navlabel">Accounts</div><button data-page="Cash & Bank">▤ <span class="txt">Cash & Bank</span></button><button data-page="Ledgers">⇄ <span class="txt">Ledgers & Payments</span></button><button data-page="Stock Alerts">⚑ <span class="txt">Stock Alerts</span></button><button data-page="Tax Reports">▥ <span class="txt">GST Reports</span></button><button data-page="Reports">▥ <span class="txt">Reports</span></button><button data-page="Settings">⚙ <span class="txt">Settings</span></button></nav></aside><main class="main"><header class="top"><strong id="pagetitle">Dashboard</strong><div class="topright"><span class="pill" title="SmartLedger major release">✦ SMARTLEDGER v40.6</span><div class="theme-switch" aria-label="Display mode"><button title="Light mode" onclick="setTheme('light')">☼</button><button title="Dark mode" onclick="setTheme('dark')">◐</button><button title="System mode" onclick="setTheme('system')">▣</button></div><span id="today" class="muted"></span></div></header><div class="content" id="view"></div></main></div><nav class="mobile-nav" id="mobileNav" aria-label="Main navigation"><button class="active" data-page="Dashboard"><span class="mi">⌂</span>Home</button><button data-page="Sales"><span class="mi">▤</span>Sales</button><button data-page="Purchases"><span class="mi">🛒</span>Purchase</button><button data-page="Items"><span class="mi">▦</span>Items</button><button data-page="More"><span class="mi">☰</span>More</button></nav><div class="modal" id="modal"><div class="dialog"><div class="dialoghead"><h2 id="modaltitle">Add</h2><button class="close" onclick="closeModal()">×</button></div><div id="modalbody"></div></div></div><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
-const APP_VERSION='40.6.0', BACKUP_SCHEMA_VERSION=5;
+
+/* v40.7 modern display-mode controls */
+.theme-switch{display:flex;gap:5px;align-items:center;background:#e9e3df;padding:4px;border:1px solid #d4c8c2;border-radius:13px;box-shadow:inset 0 1px 2px #0000000a}
+.theme-switch button{width:36px;height:34px;display:grid;place-items:center;border:0;border-radius:9px;background:transparent;color:#59434a;padding:0;transition:background .18s ease,color .18s ease,transform .18s ease}
+.theme-switch button svg{width:19px;height:19px;display:block}
+.theme-switch button.selected{background:#702b3a;color:#fff;box-shadow:0 2px 6px #421a2533}
+.theme-switch button:active{transform:scale(.94)}
+.theme-switch button:focus-visible{outline:2px solid #9b7840;outline-offset:2px}
+.theme-dark .theme-switch{background:#292124;border-color:#493a40}
+.theme-dark .theme-switch button{color:#eadde0}
+.theme-dark .theme-switch button.selected{background:#874655;color:#fff}
+</style></head><body><div class="app"><aside class="side"><div class="brand">◈ SmartLedger<small>BUSINESS MANAGER</small></div><nav class="nav" id="nav"><div class="navlabel">Workspace</div><button class="active" data-page="Dashboard">▦ <span class="txt">Dashboard</span></button><button data-page="Sales">▤ <span class="txt">Sales</span></button><button data-page="Purchases">▣ <span class="txt">Purchases</span></button><button data-page="Items">▧ <span class="txt">Items & Stock</span></button><div class="navlabel">People</div><button data-page="Customers">♙ <span class="txt">Customers</span></button><button data-page="Suppliers">♧ <span class="txt">Suppliers</span></button><button data-page="Expenses">₹ <span class="txt">Expenses</span></button><div class="navlabel">Accounts</div><button data-page="Cash & Bank">▤ <span class="txt">Cash & Bank</span></button><button data-page="Ledgers">⇄ <span class="txt">Ledgers & Payments</span></button><button data-page="Stock Alerts">⚑ <span class="txt">Stock Alerts</span></button><button data-page="Tax Reports">▥ <span class="txt">GST Reports</span></button><button data-page="Reports">▥ <span class="txt">Reports</span></button><button data-page="Settings">⚙ <span class="txt">Settings</span></button></nav></aside><main class="main"><header class="top"><strong id="pagetitle">Dashboard</strong><div class="topright"><span class="pill" title="SmartLedger major release">✦ SMARTLEDGER v40.7</span><div class="theme-switch" role="group" aria-label="Display mode">
+<button type="button" data-theme-mode="light" aria-label="Light mode" title="Light mode" onclick="setTheme('light')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
+<button type="button" data-theme-mode="dark" aria-label="Dark mode" title="Dark mode" onclick="setTheme('dark')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.7 8.7 0 1 0 20.2 15.1Z"/><path d="M16 3v4m-2-2h4"/></svg></button>
+<button type="button" data-theme-mode="system" aria-label="System mode" title="Use device appearance" onclick="setTheme('system')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4m-4-12 2 2 4-4"/></svg></button></div><span id="today" class="muted"></span></div></header><div class="content" id="view"></div></main></div><nav class="mobile-nav" id="mobileNav" aria-label="Main navigation"><button class="active" data-page="Dashboard"><span class="mi">⌂</span>Home</button><button data-page="Sales"><span class="mi">▤</span>Sales</button><button data-page="Purchases"><span class="mi">🛒</span>Purchase</button><button data-page="Items"><span class="mi">▦</span>Items</button><button data-page="More"><span class="mi">☰</span>More</button></nav><div class="modal" id="modal"><div class="dialog"><div class="dialoghead"><h2 id="modaltitle">Add</h2><button class="close" onclick="closeModal()">×</button></div><div id="modalbody"></div></div></div><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
+const APP_VERSION='40.7.0', BACKUP_SCHEMA_VERSION=5;
 const $=s=>document.querySelector(s), money=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:2}), db={items:'sl_items',customers:'sl_customers',suppliers:'sl_suppliers',sales:'sl_sales',purchases:'sl_purchases',expenses:'sl_expenses',cash:'sl_cash',payments:'sl_payments',adjustments:'sl_adjustments',batches:'sl_batches',salesReturns:'sl_sales_returns',purchaseReturns:'sl_purchase_returns'};
 const get=k=>JSON.parse(localStorage.getItem(db[k])||'[]'), put=(k,v)=>localStorage.setItem(db[k],JSON.stringify(v)), num=v=>Number(v)||0, sum=(a,f)=>a.reduce((s,x)=>s+num(f(x)),0), today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
 $('#today').textContent=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
@@ -705,10 +719,27 @@ function printHTML(title,html){
 }
 function printHTML(title,html){let w=window.open('','_blank');if(!w)return alert('Allow pop-ups to print or save PDF');w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title>'+pdfThemeStyles()+'</head><body>'+html+'</body></html>');w.document.close();w.focus();setTimeout(()=>w.print(),250)}
 
-function setTheme(mode){localStorage.slTheme=mode;applyTheme();let x=document.getElementById('themechoice');if(x)x.value=mode}
+function setTheme(mode){if(!['light','dark','system'].includes(mode))mode='light';localStorage.slTheme=mode;applyTheme();let x=document.getElementById('themechoice');if(x)x.value=mode}
 function setAccent(c){localStorage.slAccent=c;applyTheme()}
-function applyTheme(){let m=localStorage.slTheme||'light',dark=m==='dark'||(m==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.body.classList.remove('theme-dark','theme-light','theme-custom');document.body.classList.add(dark?'theme-dark':'theme-light');document.documentElement.style.setProperty('--custom-accent',localStorage.slAccent||'#702b3a');document.querySelectorAll('.theme-switch button').forEach((b,i)=>b.classList.toggle('selected',i===(m==='light'?0:m==='dark'?1:2)))}
-if(window.matchMedia)window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if((localStorage.slTheme||'light')==='system')applyTheme()})
+function applyTheme(){
+ let m=localStorage.slTheme||'light';
+ let dark=m==='dark'||(m==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+ document.body.classList.remove('theme-dark','theme-light','theme-custom');
+ document.body.classList.add(dark?'theme-dark':'theme-light');
+ document.documentElement.style.colorScheme=dark?'dark':'light';
+ document.documentElement.style.setProperty('--custom-accent',localStorage.slAccent||'#702b3a');
+ document.querySelectorAll('.theme-switch button[data-theme-mode]').forEach(b=>{
+  let selected=b.dataset.themeMode===m;
+  b.classList.toggle('selected',selected);
+  b.setAttribute('aria-pressed',selected?'true':'false');
+ });
+}
+if(window.matchMedia){
+ const appearanceQuery=window.matchMedia('(prefers-color-scheme: dark)');
+ const onAppearanceChange=()=>{if((localStorage.slTheme||'light')==='system')applyTheme()};
+ if(appearanceQuery.addEventListener)appearanceQuery.addEventListener('change',onAppearanceChange);
+ else if(appearanceQuery.addListener)appearanceQuery.addListener(onAppearanceChange);
+}
 function addSectionQuickLinks(){
  const common={Dashboard:[['New sale','saleForm()'],['New purchase','purchaseForm()'],['Add item','itemForm()'],['AI assistant','openAIAssistant()'],['Reports',"go('Reports')"],['Settings',"go('Settings')"]],
  Sales:[['New sale','saleForm()'],['Customers',"go('Customers')"],['Ledgers',"go('Ledgers')"],['Reports',"go('Reports')"]],
