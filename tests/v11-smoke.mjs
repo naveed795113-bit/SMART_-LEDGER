@@ -41,7 +41,7 @@ const checks = [
 
   ['v41 app-wide scroll owner and section reset', /v41\.0 — one predictable scroll owner/.test(readFileSync('business-suite-v40.js','utf8')) && /window\.go=function\(\)/.test(readFileSync('business-suite-v40.js','utf8')) && /resetWorkspaceScroll/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['v41 modal background lock and dialog-only scrolling', /lockBackground/.test(readFileSync('business-suite-v40.js','utf8')) && /unlockBackground/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.sl-modal-open/.test(readFileSync('business-suite-v40.js','utf8')) && /\.modal\.show \.dialog/.test(readFileSync('business-suite-v40.js','utf8'))],
-  ['v41 native mobile document scroll and desktop workspace scroll', /overflow-y:auto!important/.test(readFileSync('business-suite-v40.js','utf8')) && /overflow-y:visible!important/.test(readFileSync('business-suite-v40.js','utf8')) && /overflow-y:pan-y/.test(readFileSync('business-suite-v40.js','utf8'))],
+  ['v41 native mobile document scroll and desktop workspace scroll', /overflow-y:auto!important/.test(readFileSync('business-suite-v40.js','utf8')) && /overflow-y:visible!important/.test(readFileSync('business-suite-v40.js','utf8')) && /touch-action:pan-y/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['dashboard renderer', /function render\(\)/.test(html)],
   ['inventory page', /function listItems\(\)/.test(html)],
   ['sales and purchases', /function transactionForm\(k\)/.test(html)],
