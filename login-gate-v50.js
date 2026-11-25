@@ -28,6 +28,18 @@ let confirmationResult = null;
 let recaptchaVerifier = null;
 let authReady = false;
 let gate = null;
+let logoutInProgress = false;
+let logoutPromise = null;
+const LOGOUT_PENDING_KEY = "smartledger_logout_pending";
+try { logoutInProgress = sessionStorage.getItem(LOGOUT_PENDING_KEY) === "1"; } catch (e) {}
+function rememberLogoutLock() {
+  logoutInProgress = true;
+  try { sessionStorage.setItem(LOGOUT_PENDING_KEY, "1"); } catch (e) {}
+}
+function clearLogoutLock() {
+  logoutInProgress = false;
+  try { sessionStorage.removeItem(LOGOUT_PENDING_KEY); } catch (e) {}
+}
 
 const css = document.createElement("style");
 css.textContent = `
@@ -130,6 +142,11 @@ function profileFor(user) {
   };
 }
 function unlock(user) {
+  if (logoutInProgress) {
+    window.smartLedgerSignedIn = false;
+    showGate();
+    return;
+  }
   const profile = profileFor(user);
   try { localStorage.setItem("sl_google_profile", JSON.stringify(profile)); } catch (e) {}
   window.smartLedgerSignedIn = true;
@@ -140,6 +157,7 @@ function showGate() {
   if (!gate.isConnected && document.body) document.body.appendChild(gate);
 }
 async function sendOtp() {
+  clearLogoutLock();
   const phone = document.getElementById("slPhoneNumber").value.trim().replace(/[\s()-]/g,"");
   if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
     status("Enter your full phone number with country code, for example +91XXXXXXXXXX.");
@@ -183,6 +201,7 @@ async function verifyOtp() {
   }
 }
 document.getElementById("slFirebaseGoogleSignIn").addEventListener("click", async () => {
+  clearLogoutLock();
   const button = document.getElementById("slFirebaseGoogleSignIn");
   button.disabled = true;
   status("Redirecting to Google sign-in…");
@@ -195,21 +214,34 @@ document.getElementById("slFirebaseGoogleSignIn").addEventListener("click", asyn
 });
 document.getElementById("slSendOtp").addEventListener("click", sendOtp);
 document.getElementById("slVerifyOtp").addEventListener("click", verifyOtp);
-window.smartLedgerLogout = async function () {
-  // Lock the workspace immediately and show the login screen without reloading.
+window.smartLedgerLogout = function () {
+  if (logoutPromise) return logoutPromise;
+  rememberLogoutLock();
   window.smartLedgerSignedIn = false;
   try { localStorage.removeItem("sl_google_profile"); } catch (e) {}
   showGate();
-  status("Signing out…");
-  try {
-    await signOut(auth);
-    showGate();
-    status("You have been signed out. Sign in to continue.");
-  } catch (error) {
-    console.error("SmartLedger sign-out:", error);
-    showGate();
-    status("Sign-out could not be confirmed. Check your connection and try again.");
-  }
+  status("Signing out securely…");
+  logoutPromise = (async () => {
+    try {
+      await signOut(auth);
+      if (auth.currentUser) throw new Error("Firebase still reports an active user after sign-out.");
+      clearLogoutLock();
+      window.smartLedgerSignedIn = false;
+      showGate();
+      status("You have been signed out. Sign in to continue.");
+      return true;
+    } catch (error) {
+      rememberLogoutLock();
+      window.smartLedgerSignedIn = false;
+      showGate();
+      status("Sign-out was not confirmed. Your workspace remains locked. Check your connection and tap Log out again.");
+      console.error("SmartLedger sign-out:", error);
+      throw error;
+    } finally {
+      logoutPromise = null;
+    }
+  })();
+  return logoutPromise;
 };
 
 showGate();
@@ -219,8 +251,20 @@ try {
   catch (redirectError) { status(errorText(redirectError)); }
   onAuthStateChanged(auth, user => {
     authReady = true;
-    if (user) unlock(user);
-    else {
+    if (user) {
+      if (logoutInProgress) {
+        window.smartLedgerSignedIn = false;
+        showGate();
+        if (!logoutPromise) {
+          window.smartLedgerLogout().catch(error => {
+            console.error("SmartLedger pending sign-out retry:", error);
+          });
+        }
+        return;
+      }
+      unlock(user);
+    } else {
+      clearLogoutLock();
       window.smartLedgerSignedIn = false;
       showGate();
       status("Choose Google or enter your mobile number to continue.");
