@@ -321,6 +321,7 @@ window.smartLedgerLogout = function () {
       if (auth.currentUser) throw new Error("Firebase still reports an active user after sign-out.");
       clearLogoutLock();
       window.smartLedgerSignedIn = false;
+      window.dispatchEvent(new CustomEvent("smartledger:logout"));
       showGate();
       status("You have been signed out. Sign in to continue.");
       return true;
@@ -365,6 +366,7 @@ try {
     } else {
       clearLogoutLock();
       window.smartLedgerSignedIn = false;
+      window.dispatchEvent(new CustomEvent("smartledger:logout"));
       showGate();
       status("Choose Google or use your phone number and password to continue.");
     }
