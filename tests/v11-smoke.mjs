@@ -12,7 +12,7 @@ const checks = [
   ['release badge', html.includes('SMARTLEDGER v40.7')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
-  ['charcoal champagne theme', /--gold:#d8c18a/.test(readFileSync('business-suite-v40.js','utf8')) && /#101418/.test(readFileSync('business-suite-v40.js','utf8'))],
+  ['Business Suite theme uses readable light/dark palette tokens', /--v40-accent:#d8c18a/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['version constants', html.includes("APP_VERSION='40.7.0'")],
   ['searchable 3D sales product picker', /txn-product-search/.test(html) && /txn-product-option/.test(html) && /function filterTxnProducts\(/.test(html)],
   ['inventory unit conversion catalogue', /UNIT_CATALOG/.test(html) && /function unitFactorForItem\(/.test(html) && /baseUnit/.test(html)],
