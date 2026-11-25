@@ -30,10 +30,10 @@ w.localStorage.setItem("sl_sales_returns",JSON.stringify([
 w.localStorage.setItem("sl_customers",JSON.stringify([{name:"Return Customer",opening:10}]));
 w.localStorage.setItem("sl_payments",JSON.stringify([{id:701,type:"Customer",party:"Return Customer",amount:5}]));
 const totals=w.totals();
-assert.equal(totals.sales,80,"Net sales subtract returned goods");
+assert.equal(totals.sales,79,"Net invoice sales subtract returned value and its GST");
 assert.equal(totals.profit,27,"Profit reverses returned sales revenue and returned goods cost");
-assert.equal(w.partyOutstanding("Customer","Return Customer"),65,"Customer balance subtracts sales returns");
-assert.equal(w.outstandingTotal("Customer"),65,"Total receivables include sales returns");
+assert.equal(w.partyOutstanding("Customer","Return Customer"),64,"Customer balance subtracts sales returns including GST");
+assert.equal(w.outstandingTotal("Customer"),64,"Total receivables include sales returns including GST");
 w.go("Tax Reports");
 assert.match(w.document.querySelector("#view").textContent,/₹75/,"Taxable sales subtract returned value");
 assert.match(w.document.querySelector("#view").textContent,/₹4/,"Output GST reverses the proportional returned tax");
