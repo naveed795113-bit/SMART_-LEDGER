@@ -51,6 +51,7 @@ jobs:
           node tests/v18-accounting.mjs
           node tests/v40-business-suite.mjs
           node tests/returns-accounting.mjs
+          node tests/return-journals.mjs
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
