@@ -17,11 +17,12 @@
     if (button) { button.dataset.logoutBusy = "1"; button.disabled = true; }
     try {
       let attempts = 0;
-      while (typeof window.smartLedgerLogout !== "function" && attempts < 40) {
+      while (typeof window.smartLedgerLogout !== "function" && attempts < 300) {
         await new Promise(resolve => window.setTimeout(resolve, 150));
+        if (window.smartLedgerModuleState === "failed") throw window.smartLedgerModuleError || new Error("Firebase login module failed to load. Reload SmartLedger.");
         attempts++;
       }
-      if (typeof window.smartLedgerLogout !== "function") throw new Error("The Firebase login module did not finish loading.");
+      if (typeof window.smartLedgerLogout !== "function") throw new Error("Firebase login is still loading. Wait a moment, then tap Log out again.");
       await window.smartLedgerLogout();
     } catch (error) {
       console.error("SmartLedger logout failed:", error);
