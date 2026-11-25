@@ -20,7 +20,7 @@
     const owner=raw.getItem(OWNER);
     if(!owner){
       const legacy=[];
-      for(let i=0;i<raw.length;i++){const k=raw.key(i);if(k&&!GLOBAL.has(k)&&!k.startsWith(PREFIX))legacy.push(k);}
+      for(let i=0;i<raw.length;i++){const k=raw.key(i);if(k&&!GLOBAL.has(k)&&!isFirebaseKey(k)&&!k.startsWith(PREFIX))legacy.push(k);}
       legacy.forEach(k=>{const v=raw.getItem(k);if(v!==null)raw.setItem(PREFIX+encodeURIComponent(userId)+"__"+k,v);});
       legacy.forEach(k=>raw.removeItem(k));
       raw.setItem(OWNER,userId);
