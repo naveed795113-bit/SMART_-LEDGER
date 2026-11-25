@@ -2,12 +2,37 @@
  * Google + phone OTP, Firebase-managed accounts, persistent local auth.
  * Firebase web config is public client configuration; never place service-account secrets here.
  */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import {
-  getAuth, setPersistence, browserLocalPersistence,
+// Load both Firebase modules from one CDN at a time. A failed static import
+// prevents this module from running at all, so use dynamic imports with fallback.
+async function loadFirebaseSdk() {
+  const sources = [
+    {
+      app: "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js",
+      auth: "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"
+    },
+    {
+      app: "https://esm.sh/firebase@11.10.0/app?bundle",
+      auth: "https://esm.sh/firebase@11.10.0/auth?bundle"
+    }
+  ];
+  let lastError;
+  for (const source of sources) {
+    try {
+      const [appSdk, authSdk] = await Promise.all([import(source.app), import(source.auth)]);
+      return { ...appSdk, ...authSdk };
+    } catch (error) {
+      lastError = error;
+      console.warn("SmartLedger: Firebase SDK source failed; trying fallback.", error);
+    }
+  }
+  throw lastError || new Error("No Firebase SDK source could be loaded.");
+}
+const firebaseSdk = await loadFirebaseSdk();
+const {
+  initializeApp, getAuth, setPersistence, browserLocalPersistence,
   GoogleAuthProvider, signInWithRedirect, getRedirectResult,
   onAuthStateChanged, signInWithPhoneNumber, RecaptchaVerifier, signOut
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+} = firebaseSdk;
 
 const firebaseConfig = {
   apiKey: "AIzaSyDlzohhg8W95yVcav46Cv-QFvR_tngzFXE",
@@ -276,6 +301,6 @@ try {
   });
 } catch (error) {
   showGate();
-  status("Firebase could not initialize: " + errorText(error));
+  status("Firebase could not initialize. Both Firebase module sources failed: " + errorText(error) + " Reload the page when your internet connection is stable.");
   console.error("SmartLedger Firebase initialization:", error);
 }
