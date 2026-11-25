@@ -21,6 +21,7 @@ SmartLedger is a mobile-first business manager for Indian retail and wholesale s
 - Printable invoice preview, browser print / Save as PDF, and WhatsApp invoice summary sharing.
 - JSON backup and restore with validation and confirmation.
 - Offline app shell with automatic service-worker cache updates.
+- Android APK: on-device offline supplier-bill OCR for English, Hindi and Urdu. Extracted text stays on the device; review it manually before saving a purchase.
 
 ## Run and install
 
@@ -30,6 +31,11 @@ SmartLedger is a mobile-first business manager for Indian retail and wholesale s
 4. Open SmartLedger from the Android home screen.
 
 Camera barcode scanning requires HTTPS, camera permission and a browser that supports the BarcodeDetector API. Manual SKU/barcode entry remains available.
+
+
+## Android offline bill scanning
+
+The Android APK bundles the Tesseract OCR engine and English, Hindi and Urdu language models. Open a new purchase bill and use **Scan bill** to extract printed text without sending the image to a cloud OCR service. SmartLedger can suggest an invoice number from the extracted text, but supplier, item, quantity, rate, tax and totals must be checked manually before saving. This scanner is available in the Android APK; the browser PWA continues to support manual purchase entry.
 
 ## GitHub Pages deployment
 
