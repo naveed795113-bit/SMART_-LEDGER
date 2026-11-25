@@ -8,14 +8,9 @@
  const css=`
  html[data-sl-theme="light"]{color-scheme:light}
  html[data-sl-theme="dark"]{color-scheme:dark}
- body.theme-light :is(input,select,textarea){color:#101010!important;-webkit-text-fill-color:#101010!important}
- body.theme-dark :is(input,select,textarea){color:#ffffff!important;-webkit-text-fill-color:#ffffff!important}
- body.theme-light :is(input,textarea)::placeholder{color:#454545!important;opacity:1}
- body.theme-dark :is(input,textarea)::placeholder{color:#e2e2e2!important;opacity:1}
- body.theme-light option{background:#fff;color:#101010}
- body.theme-dark option{background:#171717;color:#fff}
- body.theme-light :is(.dialog,.modal) :is(input,select,textarea){background:#fff!important;color:#101010!important;-webkit-text-fill-color:#101010!important}
- body.theme-dark :is(.dialog,.modal) :is(input,select,textarea){background:#171717!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+ :is(input,textarea)::placeholder{color:var(--sl-placeholder-contrast,#555)!important;opacity:1}
+ body.theme-light option{color:#101010}
+ body.theme-dark option{color:#ffffff}
  `;
  let style=document.getElementById(ID);
  if(!style){style=document.createElement("style");style.id=ID;document.head.appendChild(style)}
@@ -59,7 +54,7 @@
  function excluded(el){
   if(!el||!el.tagName)return true;
   if(el.closest("[data-no-auto-contrast],.invoice-paper,.pdf-report"))return true;
-  return /^(script|style|noscript|input|select|textarea|option|canvas|img|video|audio|iframe)$/.test(el.tagName.toLowerCase());
+  return /^(script|style|noscript|option|canvas|img|video|audio|iframe)$/.test(el.tagName.toLowerCase());
  }
  function ownText(el){return [...el.childNodes].some(n=>n.nodeType===3&&n.nodeValue.trim())}
  function visible(el){const s=getComputedStyle(el);return s.display!=="none"&&s.visibility!=="hidden"&&s.opacity!=="0"}
@@ -77,6 +72,7 @@
     const color=chosen(backgrounds(el));
     el.style.setProperty("color",color,"important");
     el.style.setProperty("-webkit-text-fill-color",color,"important");
+    el.style.setProperty("--sl-placeholder-contrast",color===WHITE?"#e8e8e8":"#454545");
    }
   });
  }
