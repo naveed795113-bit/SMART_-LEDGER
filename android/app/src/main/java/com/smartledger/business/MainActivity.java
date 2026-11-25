@@ -2,6 +2,17 @@ package com.smartledger.business;
 
 import android.Manifest;
 import android.app.Activity;
+import android.print.PrintManager;
+import android.print.PrintAttributes;
+import android.content.ContentValues;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Base64;
+import android.webkit.JavascriptInterface;
+import android.widget.Toast;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -56,6 +67,12 @@ public class MainActivity extends Activity {
                 .build();
 
         webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                String bridge = "(function(){if(window.__smartLedgerNativeReady)return;window.__smartLedgerNativeReady=true;window.print=function(){SmartLedgerNative.printPage()};document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[download]'):null;if(!a||!a.href||!a.href.startsWith('blob:'))return;e.preventDefault();var name=a.download||'SmartLedger-export';fetch(a.href).then(function(r){return r.blob()}).then(function(b){var fr=new FileReader();fr.onload=function(){SmartLedgerNative.saveFile(name,b.type||'application/octet-stream',String(fr.result).split(',')[1]||'')};fr.readAsDataURL(b)}).catch(function(){alert('Could not prepare this download. Please try again.')})},true)})();";
+                view.evaluateJavascript(bridge, null);
+            }
+
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return assetLoader.shouldInterceptRequest(request.getUrl());
             }
@@ -72,6 +89,8 @@ public class MainActivity extends Activity {
                 return true;
             }
         });
+
+        webView.addJavascriptInterface(new NativeBridge(), "SmartLedgerNative");
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
@@ -103,6 +122,50 @@ public class MainActivity extends Activity {
             webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html");
         } else {
             webView.restoreState(savedInstanceState);
+        }
+    }
+
+
+    private class NativeBridge {
+        @JavascriptInterface
+        public void saveFile(String requestedName, String mimeType, String base64) {
+            try {
+                String safeName = requestedName == null ? "SmartLedger-export" : requestedName.replaceAll("[^A-Za-z0-9._-]", "_");
+                if (safeName.isEmpty()) safeName = "SmartLedger-export";
+                byte[] bytes = Base64.decode(base64, Base64.DEFAULT);
+                OutputStream output;
+                if (android.os.Build.VERSION.SDK_INT >= 29) {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.Downloads.DISPLAY_NAME, safeName);
+                    values.put(MediaStore.Downloads.MIME_TYPE, mimeType == null ? "application/octet-stream" : mimeType);
+                    values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/SmartLedger");
+                    Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (uri == null) throw new Exception("Unable to create download");
+                    output = getContentResolver().openOutputStream(uri);
+                } else {
+                    File folder = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "SmartLedger");
+                    if (!folder.exists() && !folder.mkdirs()) throw new Exception("Unable to create download folder");
+                    output = new FileOutputStream(new File(folder, safeName));
+                }
+                if (output == null) throw new Exception("Unable to open download");
+                output.write(bytes);
+                output.close();
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Saved to Downloads/SmartLedger", Toast.LENGTH_LONG).show());
+            } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Download failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+            }
+        }
+
+        @JavascriptInterface
+        public void printPage() {
+            runOnUiThread(() -> {
+                try {
+                    PrintManager manager = (PrintManager) getSystemService(PRINT_SERVICE);
+                    manager.print("SmartLedger document", webView.createPrintDocumentAdapter("SmartLedger document"), new PrintAttributes.Builder().build());
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Printing is unavailable on this device", Toast.LENGTH_LONG).show();
+                }
+            });
         }
     }
 
