@@ -93,15 +93,18 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v57.0') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./interaction-fix-v56.js') && html.includes('./interaction-fix-v56.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
+assert.ok(sw.includes('smartledger-v58.0') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./interaction-fix-v56.js') && html.includes('./interaction-fix-v56.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
 console.log('PASS service worker cache version');
-assert.ok(/id="slSidebarLogout"[^>]*onclick="[^"]*window\.smartLedgerLogout/.test(html), 'Sidebar logout has a direct click handler');
-console.log('PASS direct sidebar logout click handler');
+assert.ok(/id="slSidebarLogout"/.test(html) && !/id="slSidebarLogout"[^>]*onclick=/.test(html), 'Sidebar logout uses the shared delegated handler');
+assert.ok(/id="slMobileLogout"/.test(html) && !/id="slMobileLogout"[^>]*onclick=/.test(html), 'Mobile logout uses the shared delegated handler');
+console.log('PASS shared logout entry points without competing inline handlers');
 assert.ok(html.includes('id="slMobileLogout"') && /mobile-logout/.test(html) && /interaction-fix-v56\.js/.test(sw), 'Mobile header logout and touch interaction fix');
 console.log('PASS mobile logout and touch interaction fix');
 const firebaseLogin = readFileSync('login-gate-v50.js', 'utf8');
 assert.ok(html.includes('<script type="module" src="./login-gate-v50.js"></script>') && firebaseLogin.includes('signInWithPhoneNumber') && firebaseLogin.includes('RecaptchaVerifier') && firebaseLogin.includes('browserLocalPersistence') && firebaseLogin.includes('getRedirectResult'), 'Firebase phone OTP, Google redirect and persistent auth integration');
-console.log('PASS Firebase phone OTP, Google redirect and persistent auth integration');
+assert.ok(firebaseLogin.includes('LOGOUT_PENDING_KEY') && firebaseLogin.includes('rememberLogoutLock') && firebaseLogin.includes('clearLogoutLock') && firebaseLogin.includes('if (auth.currentUser)'), 'Logout waits for Firebase confirmation and persists a pending lock');
+assert.ok(firebaseLogin.includes('if (logoutInProgress)') && firebaseLogin.includes('window.smartLedgerLogout().catch'), 'Auth observer cannot unlock the app while logout is pending');
+console.log('PASS Firebase phone OTP, Google redirect, persistent auth and guarded logout lifecycle');
 
 const v45 = readFileSync('theme-v45-contrast.js', 'utf8');
 assert.ok(html.includes('./theme-v45-contrast.js') && v45.includes('gradientStops') && v45.includes('surfaceSamples') && v45.includes('minContrast'), 'v45 gradient-aware surface contrast runtime');
