@@ -90,3 +90,122 @@ window.go=function(p){if(p==="Business Suite"){window.__v40Open=true;styles();$(
 window.render=function(){if(window.__v40Open){render(window.__v40Tab||"overview");return}return oldRender.apply(this,arguments)};
 styles();initAccounts();hooks();window.__SMARTLEDGER_V40__={version:"40.0.0",calc,post};
 })();
+
+/* v41.0 — one predictable scroll owner per device class, all workspaces. */
+(function(){
+  "use strict";
+  const mobile=()=>window.matchMedia("(max-width:850px)").matches;
+  const view=()=>document.getElementById("view");
+  let locked=false, savedY=0, savedViewY=0, bodyStyles=null;
+  function resetWorkspaceScroll(){
+    const v=view();
+    if(v){v.scrollTop=0;v.scrollLeft=0;}
+    if(mobile()&&window.scrollTo)window.scrollTo(0,0);
+  }
+  function lockBackground(){
+    if(locked)return;
+    locked=true;
+    savedY=window.scrollY||window.pageYOffset||0;
+    savedViewY=view()?.scrollTop||0;
+    bodyStyles={position:document.body.style.position,top:document.body.style.top,width:document.body.style.width,overflow:document.body.style.overflow};
+    document.body.classList.add("sl-modal-open");
+    if(mobile()){
+      document.body.style.position="fixed";
+      document.body.style.top=(-savedY)+"px";
+      document.body.style.width="100%";
+      document.body.style.overflow="hidden";
+    }
+  }
+  function unlockBackground(){
+    if(!locked)return;
+    document.body.classList.remove("sl-modal-open");
+    if(bodyStyles){
+      document.body.style.position=bodyStyles.position;
+      document.body.style.top=bodyStyles.top;
+      document.body.style.width=bodyStyles.width;
+      document.body.style.overflow=bodyStyles.overflow;
+    }
+    locked=false;
+    bodyStyles=null;
+    requestAnimationFrame(()=>{
+      if(mobile())window.scrollTo(0,savedY);
+      const v=view();
+      if(v&&!mobile())v.scrollTop=savedViewY;
+    });
+  }
+
+  const originalModal=window.modal;
+  if(typeof originalModal==="function"){
+    window.modal=function(title,html){
+      lockBackground();
+      const result=originalModal.apply(this,arguments);
+      const overlay=document.getElementById("modal"),dialog=overlay?.querySelector(".dialog");
+      if(overlay)overlay.scrollTop=0;
+      if(dialog)dialog.scrollTop=0;
+      return result;
+    };
+  }
+  const originalClose=window.closeModal;
+  if(typeof originalClose==="function"){
+    window.closeModal=function(){
+      const result=originalClose.apply(this,arguments);
+      if(!document.getElementById("modal")?.classList.contains("show"))unlockBackground();
+      return result;
+    };
+  }
+
+  const originalGo=window.go;
+  if(typeof originalGo==="function"){
+    window.go=function(){
+      if(document.getElementById("modal")?.classList.contains("show"))window.closeModal();
+      const result=originalGo.apply(this,arguments);
+      requestAnimationFrame(resetWorkspaceScroll);
+      return result;
+    };
+  }
+  const originalSuiteTab=window.smartSuiteTab;
+  if(typeof originalSuiteTab==="function"){
+    window.smartSuiteTab=function(){
+      const result=originalSuiteTab.apply(this,arguments);
+      requestAnimationFrame(resetWorkspaceScroll);
+      return result;
+    };
+  }
+
+  const style=document.createElement("style");
+  style.id="smartledger-v41-scroll";
+  style.textContent=`
+    html{scroll-behavior:auto!important}
+    /* Desktop/tablet: the workspace content is the only page scroll region. */
+    @media(min-width:851px){
+      html,body{height:100%!important;min-height:100%!important;overflow:hidden!important}
+      .app{height:100dvh!important;min-height:0!important;overflow:hidden!important}
+      .main{height:100dvh!important;min-height:0!important;max-height:100dvh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+      .main>.top{flex:0 0 auto!important}
+      .main>.content{display:block!important;flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}
+      body.sl-modal-open .main>.content{overflow:hidden!important}
+    }
+    /* Android/iOS: use native document scrolling instead of nested flex scrollers. */
+    @media(max-width:850px){
+      html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:auto!important}
+      body{position:relative!important}
+      .app{display:block!important;width:100%!important;height:auto!important;min-height:100vh!important;overflow:visible!important}
+      .side{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:auto!important;height:62px!important;z-index:40!important}
+      .main{display:block!important;position:relative!important;width:100%!important;height:auto!important;min-height:100vh!important;max-height:none!important;overflow:visible!important;padding:62px 0 0!important;margin:0!important}
+      .main>.top{position:sticky!important;top:62px!important;z-index:12!important;display:flex!important;height:48px!important;min-height:48px!important}
+      .main>.content{display:block!important;position:relative!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;flex:none!important;overflow:visible!important;overflow-x:hidden!important;overflow-y:visible!important;touch-action:pan-y!important;overscroll-behavior:auto!important;margin:0 auto!important;padding-bottom:calc(110px + env(safe-area-inset-bottom))!important}
+      #view{display:block!important;position:relative!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;touch-action:pan-y!important}
+      .mobile-nav{position:fixed!important;bottom:0!important;left:0!important;right:0!important;z-index:50!important}
+      body.sl-modal-open{position:fixed!important;left:0!important;right:0!important;overflow:hidden!important}
+    }
+    /* Dialog is the only scrollable surface while a modal is open. */
+    .modal{z-index:100!important;overscroll-behavior:contain!important}
+    .modal.show{position:fixed!important;inset:0!important;overflow:hidden!important;overscroll-behavior:contain!important}
+    .modal.show .dialog{min-height:0!important;max-height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}
+    #modalbody{min-height:0!important}
+    .txn-product-grid{overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+    .v40-tabs{overscroll-behavior-x:contain}
+  `;
+  document.head.appendChild(style);
+  window.__SMARTLEDGER_V41_SCROLL__={resetWorkspaceScroll,lockBackground,unlockBackground};
+})();
