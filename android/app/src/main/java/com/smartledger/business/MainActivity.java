@@ -1,6 +1,10 @@
 package com.smartledger.business;
 
 import android.Manifest;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import com.googlecode.tesseract.android.TessBaseAPI;
+import org.json.JSONObject;
 import android.app.Activity;
 import android.print.PrintManager;
 import android.print.PrintAttributes;
@@ -13,6 +17,9 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.InputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -38,6 +45,7 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> fileCallback;
     private PermissionRequest pendingPermission;
     private WebViewAssetLoader assetLoader;
+    private final ExecutorService ocrExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +134,78 @@ public class MainActivity extends Activity {
     }
 
 
+    private File prepareOcrData(String language) throws Exception {
+        File root = new File(getFilesDir(), "smartledger-ocr");
+        File tessdata = new File(root, "tessdata");
+        if (!tessdata.exists() && !tessdata.mkdirs()) throw new Exception("Cannot create OCR data folder");
+        for (String code : language.split("\\+")) {
+            if (!code.matches("eng|hin|urd")) throw new Exception("Unsupported OCR language");
+            File target = new File(tessdata, code + ".traineddata");
+            if (target.exists() && target.length() > 0) continue;
+            File temp = new File(tessdata, code + ".traineddata.tmp");
+            try (InputStream input = getAssets().open("tessdata/" + code + ".traineddata");
+                 OutputStream output = new FileOutputStream(temp)) {
+                byte[] buffer = new byte[64 * 1024];
+                int count;
+                while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+                output.flush();
+            }
+            if (target.exists() && !target.delete()) throw new Exception("Cannot replace OCR language data");
+            if (!temp.renameTo(target)) throw new Exception("Cannot install OCR language data");
+        }
+        return root;
+    }
+
+    private void deliverOcrResult(String callbackId, String text, String error) {
+        if (webView == null) return;
+        String script = "if(window.SmartLedgerOCR&&window.SmartLedgerOCR.resolve){window.SmartLedgerOCR.resolve("
+                + JSONObject.quote(callbackId == null ? "" : callbackId) + ","
+                + JSONObject.quote(text == null ? "" : text) + ","
+                + JSONObject.quote(error == null ? "" : error) + ")}";
+        runOnUiThread(() -> { if (webView != null) webView.evaluateJavascript(script, null); });
+    }
+
     private class NativeBridge {
+        @JavascriptInterface
+        public void recognizeBill(String base64, String language, String callbackId) {
+            final String requested = language == null ? "eng" : language;
+            if (!requested.matches("eng|hin|urd|eng\\+hin|eng\\+urd|hin\\+urd|eng\\+hin\\+urd")
+                    || base64 == null || base64.length() > 12000000) {
+                deliverOcrResult(callbackId, "", "Invalid image or unsupported OCR language.");
+                return;
+            }
+            ocrExecutor.execute(() -> {
+                Bitmap bitmap = null;
+                TessBaseAPI tess = null;
+                String recognized = "";
+                String failure = "";
+                try {
+                    byte[] bytes = Base64.decode(base64, Base64.DEFAULT);
+                    bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    if (bitmap == null) throw new Exception("The selected file is not a readable image.");
+                    if ((long) bitmap.getWidth() * (long) bitmap.getHeight() > 20000000L) {
+                        throw new Exception("Image is too large. Select a smaller or clearer bill photo.");
+                    }
+                    File dataRoot = prepareOcrData(requested);
+                    tess = new TessBaseAPI();
+                    if (!tess.init(dataRoot.getAbsolutePath(), requested)) {
+                        throw new Exception("OCR language data could not be initialized.");
+                    }
+                    tess.setImage(bitmap);
+                    recognized = tess.getUTF8Text();
+                    if (recognized == null || recognized.trim().isEmpty()) {
+                        throw new Exception("No readable text found. Try a sharper, well-lit photo.");
+                    }
+                } catch (Throwable error) {
+                    failure = error.getMessage() == null ? "Offline OCR failed." : error.getMessage();
+                } finally {
+                    if (tess != null) tess.recycle();
+                    if (bitmap != null && !bitmap.isRecycled()) bitmap.recycle();
+                }
+                deliverOcrResult(callbackId, recognized, failure);
+            });
+        }
+
         @JavascriptInterface
         public void saveFile(String requestedName, String mimeType, String base64) {
             try {
@@ -199,6 +278,7 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        ocrExecutor.shutdownNow();
         if (webView != null) { webView.destroy(); webView = null; }
         super.onDestroy();
     }
