@@ -9,11 +9,11 @@ assert.ok(inlineScripts.length, 'Inline application script exists');
 for (const [i, source] of inlineScripts.entries()) new Script(source, { filename: 'index-inline-' + i + '.js' });
 
 const checks = [
-  ['release badge', html.includes('SMARTLEDGER v40.9')],
+  ['release badge', html.includes('SMARTLEDGER v41.0')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['Business Suite theme uses readable light/dark palette tokens', /--v40-accent:#e2c98e/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8'))],
-  ['version constants', html.includes("APP_VERSION='40.9.0'")],
+  ['version constants', html.includes("APP_VERSION='41.0.0'")],
   ['searchable 3D sales product picker', /txn-product-search/.test(html) && /txn-product-option/.test(html) && /function filterTxnProducts\(/.test(html)],
   ['inventory unit conversion catalogue', /UNIT_CATALOG/.test(html) && /function unitFactorForItem\(/.test(html) && /baseUnit/.test(html)],
   ['premium invoice with logo and signature', /invoice-logo/.test(html) && /invoice-signature-image/.test(html) && /amountInWordsINR/.test(html)],
@@ -38,6 +38,10 @@ const checks = [
   ['Business Suite no longer forces global dark mode', !/:root\{--blue:#171b1f/.test(readFileSync('business-suite-v40.js','utf8')) && !/body\{background:var\(--bg\);color:var\(--text\)\}/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['modern accessible theme icons', (html.match(/data-theme-mode=/g)||[]).length===3 && /aria-pressed/.test(html) && /<svg viewBox=\"0 0 24 24\"/.test(html)],
   ['light dark and system theme logic', /function setTheme\(mode\)/.test(html) && /prefers-color-scheme: dark/.test(html) && /document\.documentElement\.style\.colorScheme/.test(html)],
+
+  ['v41 app-wide scroll owner and section reset', /v41\.0 — one predictable scroll owner/.test(readFileSync('business-suite-v40.js','utf8')) && /window\.go=function\(\)/.test(readFileSync('business-suite-v40.js','utf8')) && /resetWorkspaceScroll/.test(readFileSync('business-suite-v40.js','utf8'))],
+  ['v41 modal background lock and dialog-only scrolling', /lockBackground/.test(readFileSync('business-suite-v40.js','utf8')) && /unlockBackground/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.sl-modal-open/.test(readFileSync('business-suite-v40.js','utf8')) && /\.modal\.show \.dialog/.test(readFileSync('business-suite-v40.js','utf8'))],
+  ['v41 native mobile document scroll and desktop workspace scroll', /overflow-y:auto!important/.test(readFileSync('business-suite-v40.js','utf8')) && /overflow-y:visible!important/.test(readFileSync('business-suite-v40.js','utf8')) && /touch-action:pan-y/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['dashboard renderer', /function render\(\)/.test(html)],
   ['inventory page', /function listItems\(\)/.test(html)],
   ['sales and purchases', /function transactionForm\(k\)/.test(html)],
@@ -69,7 +73,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v40.9'), 'Service worker cache version');
+assert.ok(sw.includes('smartledger-v41.0'), 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
