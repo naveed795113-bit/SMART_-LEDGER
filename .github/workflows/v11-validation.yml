@@ -29,6 +29,8 @@ jobs:
         run: node --check theme-v48-more-theme.js
       - name: Check Google Drive integration syntax
         run: node --check google-drive-v49.js
+      - name: Check mandatory login screen syntax
+        run: node --check login-gate-v50.js
       - name: Check accounting module syntax
         run: node --check accounting.js
       - name: Run v18 accounting journal tests
