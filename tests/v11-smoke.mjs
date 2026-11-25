@@ -11,7 +11,7 @@ for (const [i, source] of inlineScripts.entries()) new Script(source, { filename
 const checks = [
   ['phone password authentication imports Firebase email/password methods', /createUserWithEmailAndPassword/.test(readFileSync('login-gate-v50.js','utf8')) && /signInWithEmailAndPassword/.test(readFileSync('login-gate-v50.js','utf8'))],
   ['free phone password account creation and sign-in controls', /slCreatePhoneAccount/.test(readFileSync('login-gate-v50.js','utf8')) && /slPhonePasswordSignIn/.test(readFileSync('login-gate-v50.js','utf8')) && /function phonePasswordAuth\(createAccount\)/.test(readFileSync('login-gate-v50.js','utf8'))],
-  ['phone number normalized into private Firebase account identifier', /function phoneAccountEmail\\(rawPhone\\)/.test(readFileSync('login-gate-v50.js','utf8')) && readFileSync('login-gate-v50.js','utf8').includes('@accounts.smartledger.invalid')],
+  ['phone number normalized into private Firebase account identifier', readFileSync('login-gate-v50.js','utf8').includes('function phoneAccountEmail(rawPhone)') && readFileSync('login-gate-v50.js','utf8').includes('@accounts.smartledger.invalid')],
   ['phone password login warns number is not SMS-verified and recovery is not yet available', /not verified by SMS/.test(readFileSync('login-gate-v50.js','utf8')) && /password recovery is not available/.test(readFileSync('login-gate-v50.js','utf8'))],
   ['authentication v64 loader and service worker cache', /login-gate-v50\\.js\\?v=64/.test(readFileSync('login-gate-loader-v60.js','utf8')) && /smartledger-v63\\.0/.test(readFileSync('sw.js','utf8'))],
 
