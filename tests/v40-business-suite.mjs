@@ -19,7 +19,7 @@ w.localStorage.setItem("sl_sales",JSON.stringify([{id:11,date:"2026-11-20",invoi
 w.eval(accounting);
 w.eval(suite);
 w.eval(theme);
-assert.ok(html.includes("APP_VERSION='46.0.0'"),"App version is v46.0");
+assert.ok(html.includes("APP_VERSION='47.0.0'"),"App version is v47.0");
 assert.equal(JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]").length,0,"Historical transactions must not be back-posted");
 w.setTheme("light");
 assert.ok(w.document.body.classList.contains("theme-light"),"Light mode is applied before opening Business Suite");
