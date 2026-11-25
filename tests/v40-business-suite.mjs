@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 const html=readFileSync("index.html","utf8").replace('<script src="./accounting.js"></script>','').replace('<script src="./business-suite-v40.js"></script>','');
 const accounting=readFileSync("accounting.js","utf8");
 const suite=readFileSync("business-suite-v40.js","utf8");
+const theme=readFileSync("theme-v42.js","utf8");
 const errors=[],alerts=[];
 const vc=new VirtualConsole();vc.on("jsdomError",e=>errors.push(e.message));
 const dom=new JSDOM(html,{url:"https://smartledger.test/",runScripts:"dangerously",pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
@@ -17,7 +18,8 @@ const w=dom.window;
 w.localStorage.setItem("sl_sales",JSON.stringify([{id:11,date:"2026-11-20",invoice:"OLD-1",party:"Old customer",total:100,paid:100,taxable:100,tax:0,cost:70}]));
 w.eval(accounting);
 w.eval(suite);
-assert.ok(html.includes("APP_VERSION='41.1.0'"),"App version is v41.1");
+w.eval(theme);
+assert.ok(html.includes("APP_VERSION='42.0.0'"),"App version is v42.0");
 assert.equal(JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]").length,0,"Historical transactions must not be back-posted");
 w.setTheme("light");
 assert.ok(w.document.body.classList.contains("theme-light"),"Light mode is applied before opening Business Suite");
@@ -34,6 +36,11 @@ w.setTheme("light");
 assert.ok(w.document.body.classList.contains("theme-light"),"Business Suite responds to light mode");
 w.setTheme("dark");
 assert.ok(w.document.body.classList.contains("theme-dark"),"Business Suite responds to dark mode");
+w.setTheme("system");
+assert.equal(w.localStorage.getItem("slTheme"),"system","System mode preference persists");
+assert.ok(w.document.documentElement.dataset.slTheme==="light","System mode follows the test device light preference");
+w.setTheme("dark");
+assert.ok(w.document.documentElement.dataset.slTheme==="dark","Dark mode updates the document colour scheme");
 
 assert.match(w.document.querySelector("#view").textContent,/Business Suite/);
 for(const tab of ["overview","finance","inventory","gst","customers","suppliers","planning","health"]){

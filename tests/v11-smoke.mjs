@@ -9,11 +9,11 @@ assert.ok(inlineScripts.length, 'Inline application script exists');
 for (const [i, source] of inlineScripts.entries()) new Script(source, { filename: 'index-inline-' + i + '.js' });
 
 const checks = [
-  ['release badge', html.includes('SMARTLEDGER v41.1')],
+  ['release badge', html.includes('SMARTLEDGER v42.0')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['Business Suite theme uses readable light/dark palette tokens', /--v40-accent:#e2c98e/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8'))],
-  ['version constants', html.includes("APP_VERSION='41.1.0'")],
+  ['version constants', html.includes("APP_VERSION='42.0.0'")],
   ['searchable 3D sales product picker', /txn-product-search/.test(html) && /txn-product-option/.test(html) && /function filterTxnProducts\(/.test(html)],
   ['inventory unit conversion catalogue', /UNIT_CATALOG/.test(html) && /function unitFactorForItem\(/.test(html) && /baseUnit/.test(html)],
   ['premium invoice with logo and signature', /invoice-logo/.test(html) && /invoice-signature-image/.test(html) && /amountInWordsINR/.test(html)],
@@ -46,6 +46,11 @@ const checks = [
   ['v41 app-wide scroll owner and section reset', /v41\.0 — one predictable scroll owner/.test(readFileSync('business-suite-v40.js','utf8')) && /window\.go=function\(\)/.test(readFileSync('business-suite-v40.js','utf8')) && /resetWorkspaceScroll/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['v41 modal background lock and dialog-only scrolling', /lockBackground/.test(readFileSync('business-suite-v40.js','utf8')) && /unlockBackground/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.sl-modal-open/.test(readFileSync('business-suite-v40.js','utf8')) && /\.modal\.show \.dialog/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['v41 native mobile document scroll and desktop workspace scroll', /overflow-y:auto!important/.test(readFileSync('business-suite-v40.js','utf8')) && /overflow-y:visible!important/.test(readFileSync('business-suite-v40.js','utf8')) && /touch-action:pan-y/.test(readFileSync('business-suite-v40.js','utf8'))],
+  ['v42 theme runtime loaded after app modules', html.includes('<script src="./theme-v42.js"></script>') && /theme-v42.js/.test(readFileSync('sw.js','utf8'))],
+  ['v42 theme runtime JavaScript syntax', new Script(readFileSync('theme-v42.js','utf8'), { filename: 'theme-v42.js' })],
+  ['v42 explicit light and dark palette tokens', /--sl-page:#f4f6f8/.test(readFileSync('theme-v42.js','utf8')) && /--sl-page:#11171d/.test(readFileSync('theme-v42.js','utf8'))],
+  ['v42 module-aware dark palettes and dashboard preservation', readFileSync('theme-v42.js','utf8').includes('body.theme-dark.module-sales #view') && readFileSync('theme-v42.js','utf8').includes('body.theme-dark.module-inventory #view') && /Keep the existing dashboard burgundy overview cards/.test(readFileSync('theme-v42.js','utf8'))],
+  ['v42 persisted light dark system mode and OS listener', readFileSync('theme-v42.js','utf8').includes('localStorage.setItem("slTheme"') && /prefers-color-scheme: dark/.test(readFileSync('theme-v42.js','utf8')) && /aria-pressed/.test(readFileSync('theme-v42.js','utf8'))],
   ['dashboard renderer', /function render\(\)/.test(html)],
   ['inventory page', /function listItems\(\)/.test(html)],
   ['sales and purchases', /function transactionForm\(k\)/.test(html)],
@@ -77,7 +82,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v41.1'), 'Service worker cache version');
+assert.ok(sw.includes('smartledger-v42.0') && sw.includes('./theme-v42.js'), 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
