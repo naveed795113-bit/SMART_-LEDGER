@@ -101,6 +101,11 @@ for (const [name, ok] of checks) {
 const sw = readFileSync('sw.js', 'utf8');
 assert.ok(sw.includes('smartledger-v63.0') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./interaction-fix-v56.js') && html.includes('./interaction-fix-v56.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
 console.log('PASS service worker cache version');
+const v67 = readFileSync('smartledger-enhancements-v67.js', 'utf8');
+assert.ok(html.includes('smartledger-enhancements-v67.js?v=67') && sw.includes('./smartledger-enhancements-v67.js'), 'v67 enhancement module is loaded and cached');
+assert.ok(v67.includes('txnPartyPhone') && v67.includes('navigator.share') && v67.includes('html2canvas'), 'Party phone and invoice file sharing');
+assert.ok(v67.includes('secondaryUnitFactor') && v67.includes('Primary Unit Conversion') && v67.includes('hsn sac code'), 'Secondary units and mapped import fields');
+console.log('PASS v67 contacts, invoice sharing, mapped imports and dual units');
 assert.ok(/id="slSidebarLogout"/.test(html) && !/id="slSidebarLogout"[^>]*onclick=/.test(html), 'Sidebar logout uses the shared delegated handler');
 assert.ok(/id="slMobileLogout"/.test(html) && !/id="slMobileLogout"[^>]*onclick=/.test(html), 'Mobile logout uses the shared delegated handler');
 console.log('PASS shared logout entry points without competing inline handlers');
