@@ -71,7 +71,7 @@
     }
     const save = form.querySelector('button[type="submit"],button:not([type])');
     if (save) {
-      if (save.type !== "submit") save.type = "submit";
+      if (!save.hasAttribute("type")) save.setAttribute("type", "submit");
       const label = window.currentTxn === "purchases" ? "Save purchase bill" : "Save sale invoice";
       if (save.textContent !== label) save.textContent = label;
       if (save.getAttribute("aria-label") !== label) save.setAttribute("aria-label", label);
