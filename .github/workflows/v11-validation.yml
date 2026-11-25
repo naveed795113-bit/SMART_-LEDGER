@@ -19,6 +19,8 @@ jobs:
         run: npm install --no-save jsdom@26
       - name: Check v67 enhancement module syntax
         run: node --check smartledger-enhancements-v67.js
+      - name: Test Firebase auth persistence with account isolation
+        run: node tests/account-storage-auth.mjs
       - name: Validate application structure and syntax
         run: node tests/v11-smoke.mjs
       - name: Run application interaction smoke tests
