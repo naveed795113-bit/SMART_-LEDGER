@@ -26,11 +26,14 @@ w.localStorage.setItem("sl_items",JSON.stringify([{name:"Rice",qty:2,purchase:6,
 w.localStorage.setItem("sl_sales",JSON.stringify([{id:810,date:"2026-11-25",invoice:"S-810",party:"Customer",item:"Rice",qty:10,rate:10,total:100,taxable:95,tax:5,cost:60,paid:100}]));
 w.localStorage.setItem("sl_purchases",JSON.stringify([{id:811,date:"2026-11-25",invoice:"P-811",party:"Supplier",item:"Rice",qty:10,rate:10,total:105,taxable:100,tax:5,paid:105}]));
 w.localStorage.setItem("sl_batches",JSON.stringify([]));
-assert.equal(w.saveReturn.__v40,true,"Automatic return-journal hook is installed");\nw.returnForm("sales");
+assert.equal(w.saveReturn.__v40,true,"Automatic return-journal hook is installed");
+w.returnForm("sales");
 w.document.querySelector("#returnqty").value="2";
 w.document.querySelector("#returnrate").value="10";
 w.saveReturn({preventDefault(){}}, "sales");
-const savedSalesReturns=JSON.parse(w.localStorage.getItem("sl_sales_returns")||"[]");\nassert.equal(savedSalesReturns.length,1,"Sales return transaction was saved; posting errors: "+w.localStorage.getItem("sl_v40_posting_errors"));\nlet journals=JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]");
+const savedSalesReturns=JSON.parse(w.localStorage.getItem("sl_sales_returns")||"[]");
+assert.equal(savedSalesReturns.length,1,"Sales return transaction was saved; posting errors: "+w.localStorage.getItem("sl_v40_posting_errors"));
+let journals=JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]");
 assert.equal(journals.length,1,"Sales return creates one automatic journal");
 assert.equal(journals[0].sourceType,"return");
 assert.equal(journals[0].lines.reduce((s,x)=>s+Number(x.debit),0),33,"Sales return debits sales returns, output GST and returned stock cost");
