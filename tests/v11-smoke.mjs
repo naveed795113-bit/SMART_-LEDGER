@@ -93,7 +93,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v51.0') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
+assert.ok(sw.includes('smartledger-v52.0') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
 console.log('PASS service worker cache version');
 const v45 = readFileSync('theme-v45-contrast.js', 'utf8');
 assert.ok(html.includes('./theme-v45-contrast.js') && v45.includes('gradientStops') && v45.includes('surfaceSamples') && v45.includes('minContrast'), 'v45 gradient-aware surface contrast runtime');
@@ -106,3 +106,12 @@ assert.ok(html.includes('./theme-v46-complete-contrast.js') && v46.includes('fun
 new Script(v46, { filename: 'theme-v46-complete-contrast.js' });
 console.log('PASS v46 complete element-level contrast runtime');
 
+
+const ai52 = readFileSync('ai-assistant-v52.js', 'utf8');
+new Script(ai52, { filename: 'ai-assistant-v52.js' });
+assert.ok(html.includes('./ai-assistant-v52.js') && sw.includes('./ai-assistant-v52.js'), 'v52 AI assistant loaded and precached');
+for (const feature of ['SmartLedger AI Business Manager','data-ai-tab="chat"','data-ai-tab="insights"','data-ai-tab="inventory"','data-ai-tab="alerts"','data-ai-tab="reports"','smartLedgerVoiceInput','smartLedgerPrintReport','smartLedgerExportCSV','inventoryAdvice','buildAlerts','answerQuestion']) {
+  assert.ok(ai52.includes(feature), 'Missing v52 AI feature: ' + feature);
+}
+assert.ok(ai52.includes('SpeechRecognition') && ai52.includes('sessionStorage') && ai52.includes('No cloud AI model is connected'), 'Voice, session history and local-first disclosure');
+console.log('PASS v52 AI Business Manager syntax and feature coverage');
