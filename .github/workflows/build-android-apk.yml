@@ -10,6 +10,7 @@ on:
       - '*.webmanifest'
       - 'icon.svg'
       - 'android/**'
+      - 'tests/**'
       - '.github/workflows/build-android-apk.yml'
   workflow_dispatch:
 
@@ -22,6 +23,33 @@ jobs:
     steps:
       - name: Checkout SmartLedger v68 source
         uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install DOM test dependency
+        run: npm install --no-save jsdom@26
+
+      - name: Validate JavaScript syntax and authentication isolation
+        run: |
+          node --check smartledger-enhancements-v67.js
+          node --input-type=module --check < login-gate-v50.js
+          node --check accounting.js
+          node --check business-suite-v40.js
+          node --check google-drive-v49.js
+          node --check theme-v45-contrast.js
+          node --check theme-v46-complete-contrast.js
+          node --check theme-v48-more-theme.js
+          node tests/account-storage-auth.mjs
+
+      - name: Run full application regression tests
+        run: |
+          node tests/v11-smoke.mjs
+          node tests/v11-runtime.mjs
+          node tests/v18-accounting.mjs
+          node tests/v40-business-suite.mjs
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -45,6 +73,21 @@ jobs:
           sed -i 's#https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js#./vendor/xlsx.full.min.js#g' android/app/src/main/assets/www/index.html
           sed -i 's#https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js#./vendor/html2canvas.min.js#g' android/app/src/main/assets/www/index.html
           sed -i 's#https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js#./vendor/jspdf.umd.min.js#g' android/app/src/main/assets/www/index.html
+
+      - name: Verify bundled offline app resources
+        shell: bash
+        run: |
+          test -s android/app/src/main/assets/www/index.html
+          test -s android/app/src/main/assets/www/accounting.js
+          test -s android/app/src/main/assets/www/business-suite-v40.js
+          test -s android/app/src/main/assets/www/login-gate-v50.js
+          test -s android/app/src/main/assets/www/vendor/xlsx.full.min.js
+          test -s android/app/src/main/assets/www/vendor/html2canvas.min.js
+          test -s android/app/src/main/assets/www/vendor/jspdf.umd.min.js
+          if grep -E 'https://cdn.jsdelivr.net/npm/(xlsx|html2canvas|jspdf)' android/app/src/main/assets/www/index.html; then
+            echo 'External CDN dependency remains in native app bundle' >&2
+            exit 1
+          fi
 
       - name: Build debug and release APKs
         run: |
