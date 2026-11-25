@@ -214,7 +214,7 @@ public class MainActivity extends Activity {
                 if (safeStem.length() > 80) safeStem = safeStem.substring(0, 80);
                 File pdfFile = writeShareFile(directory, safeStem + ".pdf", pdfBase64);
                 File imageFile = writeShareFile(directory, safeStem + "-HD.png", imageBase64);
-                Uri pdfUri = FileProvider.getUriForFile(this@MainActivity, getPackageName() + ".fileprovider", pdfFile);
+                Uri pdfUri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", pdfFile);
                 Uri imageUri = FileProvider.getUriForFile(this@MainActivity, getPackageName() + ".fileprovider", imageFile);
                 ArrayList<Uri> attachments = new ArrayList<>();
                 attachments.add(pdfUri);
