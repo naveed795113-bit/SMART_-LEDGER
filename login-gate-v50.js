@@ -30,7 +30,7 @@ async function loadFirebaseSdk() {
 const firebaseSdk = await loadFirebaseSdk();
 const {
   initializeApp, getAuth, setPersistence, browserLocalPersistence,
-  GoogleAuthProvider, signInWithRedirect, getRedirectResult,
+  GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
   onAuthStateChanged, signInWithPhoneNumber, RecaptchaVerifier, signOut
 } = firebaseSdk;
 
@@ -147,6 +147,7 @@ function errorText(error) {
   const map = {
     "auth/unauthorized-domain": "This website domain is not authorized in Firebase Authentication settings.",
     "auth/operation-not-allowed": "This sign-in method is not enabled in Firebase Console.",
+    "auth/billing-not-enabled": "Firebase Phone Authentication requires a linked Cloud Billing account. Link this Firebase project to a billing account and use the Blaze pay-as-you-go plan; SMS charges may apply.",
     "auth/invalid-phone-number": "Enter a valid phone number with country code, for example +91XXXXXXXXXX.",
     "auth/too-many-requests": "Too many attempts. Wait before requesting another code.",
     "auth/captcha-check-failed": "reCAPTCHA verification failed. Reload and try again.",
@@ -235,11 +236,25 @@ if (googleSignInButton) {
   googleSignInButton.addEventListener("click", async () => {
     clearLogoutLock();
     googleSignInButton.disabled = true;
-    status("Redirecting to Google sign-in…");
+    status("Opening secure Google sign-in…");
     try {
-      await signInWithRedirect(auth, googleProvider);
+      // Popup avoids the cross-site storage restrictions that can break
+      // Firebase redirect sign-in when the app is hosted on GitHub Pages.
+      const credential = await signInWithPopup(auth, googleProvider);
+      if (credential && credential.user) unlock(credential.user);
     } catch (error) {
-      status(errorText(error));
+      // Keep redirect as a fallback only when the browser blocks popups.
+      if (error && error.code === "auth/popup-blocked") {
+        status("Popup blocked. Switching to secure redirect sign-in…");
+        try {
+          await signInWithRedirect(auth, googleProvider);
+          return;
+        } catch (redirectError) {
+          status(errorText(redirectError));
+        }
+      } else {
+        status(errorText(error));
+      }
       googleSignInButton.disabled = false;
     }
   });
@@ -279,8 +294,13 @@ window.smartLedgerLogout = function () {
 showGate();
 try {
   await setPersistence(auth, browserLocalPersistence);
-  try { await getRedirectResult(auth); }
-  catch (redirectError) { status(errorText(redirectError)); }
+  try {
+    const redirectCredential = await getRedirectResult(auth);
+    if (redirectCredential && redirectCredential.user) unlock(redirectCredential.user);
+  } catch (redirectError) {
+    status(errorText(redirectError));
+    console.error("SmartLedger Google redirect result:", redirectError);
+  }
   onAuthStateChanged(auth, user => {
     authReady = true;
     if (user) {
