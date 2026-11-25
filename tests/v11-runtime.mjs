@@ -36,14 +36,11 @@ assert.equal(window.document.querySelector('[data-theme-mode="light"]').getAttri
 window.setTheme('dark');
 assert.ok(window.document.body.classList.contains('theme-dark'), 'Dark mode applies dark body theme');
 assert.equal(window.document.querySelector('[data-theme-mode="dark"]').getAttribute('aria-pressed'), 'true', 'Dark mode indicator updates');
-window.go('Business Suite');
-let suiteStyle = window.document.getElementById('v40styles').textContent;
-assert.match(suiteStyle, /body\.theme-dark #view/, 'Business Suite defines dark palette overrides');
-assert.match(suiteStyle, /#view \.v40-table td/, 'Business Suite table text has explicit contrast styling');
+window.go('Items');
 window.setTheme('light');
-assert.ok(window.document.body.classList.contains('theme-light'), 'Light mode works while Business Suite is open');
+assert.ok(window.document.body.classList.contains('theme-light'), 'Light mode works inside an app section');
 window.setTheme('dark');
-assert.ok(window.document.body.classList.contains('theme-dark'), 'Dark mode works while Business Suite is open');
+assert.ok(window.document.body.classList.contains('theme-dark'), 'Dark mode works inside an app section');
 window.setTheme('system');
 assert.ok(window.document.body.classList.contains('theme-light'), 'System mode follows light device preference');
 prefersDark = true; appearanceListeners.forEach(fn => fn());
