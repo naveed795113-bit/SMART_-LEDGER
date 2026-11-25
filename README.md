@@ -9,6 +9,7 @@ SmartLedger is a mobile-first business manager for Indian retail and wholesale s
 - Responsive dashboard and installable Progressive Web App (PWA).
 - Product catalogue with SKU/barcode, unit, stock, purchase price, sale price, GST rate and low-stock threshold.
 - Multi-item sales invoices and purchase bills.
+- Item-level sales and purchase returns for multi-product invoices, including unit conversion, batch stock, returned cost, GST reversal and balanced accounting entries.
 - Automatic stock movement when invoices and bills are saved.
 - Weighted-average purchase cost update when stock is purchased.
 - Line-level discounts and GST calculation.
