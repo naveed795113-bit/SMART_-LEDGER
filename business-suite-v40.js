@@ -209,3 +209,73 @@ styles();initAccounts();hooks();window.__SMARTLEDGER_V40__={version:"40.0.0",cal
   document.head.appendChild(style);
   window.__SMARTLEDGER_V41_SCROLL__={resetWorkspaceScroll,lockBackground,unlockBackground};
 })();
+
+
+/* v41.1 — remove legacy nested mobile scroll traps across every page and mini-section. */
+(function(){
+  "use strict";
+  const css=document.createElement("style");
+  css.id="smartledger-v41-1-universal-scroll";
+  css.textContent=`
+    /* Desktop: one workspace scroller; nested content expands naturally. */
+    @media(min-width:851px){
+      html,body{height:100%!important;min-height:100%!important;overflow:hidden!important}
+      .app{height:100dvh!important;min-height:0!important;overflow:hidden!important}
+      .main{height:100dvh!important;min-height:0!important;max-height:100dvh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+      .main>.content{flex:1 1 auto!important;height:auto!important;min-height:0!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+      #view{height:auto!important;min-height:max-content!important;max-height:none!important;overflow:visible!important}
+      .modal.show .dialog{max-height:calc(100dvh - 24px)!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important}
+    }
+    /* Mobile: the document is the only vertical scroll owner. */
+    @media(max-width:850px){
+      html{height:auto!important;min-height:100%!important;overflow-x:clip!important;overflow-y:auto!important;scroll-behavior:auto!important}
+      body{height:auto!important;min-height:100%!important;overflow-x:clip!important;overflow-y:auto!important;position:relative!important;top:auto!important;width:100%!important;overscroll-behavior-y:auto!important}
+      body.sl-modal-open{position:fixed!important;top:var(--sl-modal-scroll-top,0px)!important;left:0!important;right:0!important;width:100%!important;overflow:hidden!important}
+      .app{display:block!important;width:100%!important;height:auto!important;min-height:100svh!important;overflow:visible!important}
+      .side{position:fixed!important;inset:0 0 auto 0!important;width:100%!important;height:62px!important;overflow:visible!important;z-index:40!important}
+      .main{display:block!important;position:relative!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;margin:0!important;padding:62px 0 0!important}
+      .main>.top{position:sticky!important;top:62px!important;z-index:12!important;display:flex!important;height:48px!important;min-height:48px!important}
+      .main>.content{display:block!important;position:relative!important;width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:none!important;flex:none!important;overflow:visible!important;overflow-x:clip!important;overflow-y:visible!important;touch-action:pan-y!important;overscroll-behavior:initial!important;-webkit-overflow-scrolling:auto!important;margin:0 auto!important;padding-bottom:calc(112px + env(safe-area-inset-bottom))!important}
+      #view{display:block!important;position:relative!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:max-content!important;max-height:none!important;overflow:visible!important;touch-action:pan-y!important}
+      #view>*{max-width:100%;min-width:0}
+      /* Expand compact lists and sub-panels so the page/modal scrolls, not a nested box. */
+      #view .txn-product-grid{display:grid!important;max-height:none!important;height:auto!important;overflow:visible!important;overscroll-behavior:initial!important;touch-action:pan-y!important}
+      #view .section-quick{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;overflow:visible!important;flex-wrap:wrap!important}
+      #view .v40-tabs{display:flex!important;flex-wrap:wrap!important;overflow:visible!important;white-space:normal!important}
+      #view .tablewrap,#view .v40-table{max-height:none!important;height:auto!important;overflow:visible!important;overscroll-behavior:initial!important}
+      #view .v40-table table{width:100%!important;min-width:0!important;table-layout:fixed!important}
+      #view .v40-table th,#view .v40-table td{white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important}
+      .mobile-nav{position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:50!important}
+      /* The dialog is the only vertical scroll area while it is open. */
+      .modal{position:fixed!important;inset:0!important;z-index:100!important;overflow:hidden!important;overscroll-behavior:contain!important}
+      .modal.show{display:flex!important;align-items:flex-start!important;justify-content:center!important;padding:calc(8px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom))!important;overflow:hidden!important}
+      .modal.show .dialog{display:block!important;width:100%!important;max-width:620px!important;height:auto!important;min-height:0!important;max-height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;touch-action:pan-y!important;-webkit-overflow-scrolling:touch!important}
+      #modalbody{min-height:0!important}
+    }
+  `;
+  document.head.appendChild(css);
+  const modal=document.getElementById("modal");
+  let y=0;
+  const oldModal=window.modal;
+  if(typeof oldModal==="function"){
+    window.modal=function(){
+      y=window.scrollY||document.documentElement.scrollTop||0;
+      document.body.style.setProperty("--sl-modal-scroll-top",(-y)+"px");
+      const result=oldModal.apply(this,arguments);
+      requestAnimationFrame(()=>{const d=modal?.querySelector(".dialog");if(d)d.scrollTop=0;});
+      return result;
+    };
+  }
+  const oldClose=window.closeModal;
+  if(typeof oldClose==="function"){
+    window.closeModal=function(){
+      const result=oldClose.apply(this,arguments);
+      if(!modal?.classList.contains("show")){
+        document.body.style.removeProperty("--sl-modal-scroll-top");
+        requestAnimationFrame(()=>window.scrollTo(0,y));
+      }
+      return result;
+    };
+  }
+  window.__SMARTLEDGER_V41_1_SCROLL__={version:"41.1.0",reset:()=>window.scrollTo(0,0)};
+})();
