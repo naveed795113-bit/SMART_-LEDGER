@@ -39,6 +39,11 @@ css.textContent=`
 #slLoginGate #slLoginGoogle{display:flex;justify-content:center;align-items:center;min-height:46px;margin:0 auto}
 #slLoginGate #slLoginGoogle iframe{max-width:100%}
 #slLoginGate .sl-login-status{min-height:34px;margin:13px 0 0;color:#796b70;font-size:11px;line-height:1.55}
+#slLoginGate .sl-account-options{display:grid;gap:12px;margin-top:16px;font-size:12px}
+#slLoginGate .sl-account-options a{color:#70404e;font-weight:750;text-decoration:none}
+#slLoginGate .sl-account-options a:hover{text-decoration:underline}
+#slLoginGate .sl-account-options button{border:1px solid #e5ddd7;border-radius:12px;padding:11px;background:#f4f0ec;color:#8b8081;font-weight:650}
+#slLoginGate .sl-phone-note{margin:8px 0 0;color:#8b8081;font-size:10px;line-height:1.5}
 #slLoginGate .sl-trust-row{display:flex;justify-content:center;align-items:center;gap:7px;margin:20px 0 0;color:#75696c;font-size:10px;line-height:1.5}
 #slLoginGate .sl-trust-row svg{width:14px;height:14px;flex:0 0 14px;color:#8a5963}
 #slLoginGate .sl-auth-footer{margin:34px 0 0;padding-top:18px;border-top:1px solid #e5ddd7;color:#8b8081;font-size:10px;line-height:1.7}
@@ -103,6 +108,11 @@ gate.innerHTML=`
     <p class="sl-signin-label">Continue with your Google account</p>
     <div id="slLoginGoogle"></div>
     <p id="slLoginStatus" class="sl-login-status" role="status" aria-live="polite">Loading Google sign-in…</p>
+    <div class="sl-account-options">
+     <a href="https://accounts.google.com/signup" target="_blank" rel="noopener noreferrer">Create a new Google account</a>
+     <button type="button" disabled aria-disabled="true" title="Phone OTP sign-in requires secure backend setup">Phone number login · Coming soon</button>
+    </div>
+    <p class="sl-phone-note">Phone sign-in will be enabled after secure OTP verification is configured.</p>
    </div>
    <div class="sl-trust-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3"/></svg><span>Sign-in is handled by Google. Your password is never shared with SmartLedger.</span></div>
    <div class="sl-auth-footer"><strong>SmartLedger</strong> · Your business. Your numbers. Your growth.<br>Business data is stored in this browser unless you create a Google Drive backup.</div>
@@ -137,8 +147,25 @@ function load(){
  s.onerror=()=>message('Google sign-in could not load. Check your internet connection and reload.');
  document.head.appendChild(s);
 }
-function start(){if(started)return;started=true;document.body.appendChild(gate);load()}
+function savedProfile(){
+ try{const p=JSON.parse(localStorage.getItem('sl_google_profile')||'null');return p&&p.email&&p.sub?p:null}catch(e){return null}
+}
+function start(){
+ if(started)return;started=true;
+ const profile=savedProfile();
+ if(profile){
+  window.smartLedgerSignedIn=true;
+  window.dispatchEvent(new CustomEvent('smartledger:login',{detail:profile}));
+  return;
+ }
+ document.body.appendChild(gate);load();
+}
 document.addEventListener('DOMContentLoaded',start,{once:true});
 if(document.readyState!=='loading')start();
-window.smartLedgerLogout=function(){window.smartLedgerSignedIn=false;location.reload()};
+window.smartLedgerLogout=function(){
+ window.smartLedgerSignedIn=false;
+ try{localStorage.removeItem('sl_google_profile')}catch(e){}
+ if(window.google&&google.accounts&&google.accounts.id)google.accounts.id.disableAutoSelect();
+ location.reload();
+};
 })();
