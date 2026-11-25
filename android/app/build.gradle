@@ -1,0 +1,27 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.smartledger.business'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.smartledger.business'
+        minSdk 23
+        targetSdk 35
+        versionCode 68
+        versionName '68.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
