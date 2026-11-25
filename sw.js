@@ -1,4 +1,4 @@
-const CACHE = "smartledger-v40.6";
+const CACHE = "smartledger-v40.7";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./accounting.js", "./business-suite-v40.js"];
 
 self.addEventListener("install", event => {

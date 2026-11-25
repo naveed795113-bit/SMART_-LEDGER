@@ -38,7 +38,36 @@ const oldGo=window.go,oldMore=window.morePage,oldRender=window.render;
 window.smartSuiteTab=t=>{window.__v40Tab=t;render(t)};
 window.v40Export=t=>download(t);
 window.morePage=function(){if(oldMore)oldMore();let v=$("#view");if(v&&!v.querySelector("[data-v40-link]"))v.insertAdjacentHTML("beforeend",'<button data-v40-link class="more-card" onclick="go(\'Business Suite\')"><span class="more-icon">✦</span><span><b>Business Suite · v40.0</b><small>Advanced accounts, stock intelligence, GST, CRM and planning</small></span></button>')};
-window.go=function(p){if(p==="Business Suite"){window.__v40Open=true;styles();$("#pagetitle").textContent="Business Suite";document.querySelectorAll(".nav button,.mobile-nav button").forEach(b=>b.classList.toggle("active",b.dataset.page==="More"));render(window.__v40Tab||"overview");return}window.__v40Open=false;return oldGo.apply(this,arguments)};
+window.go=function(p){if(p==="Business Suite"){window.__v40Open=true;document.body.classList.add("v40-open");styles();$("#pagetitle").textContent="Business Suite";document.querySelectorAll(".nav button,.mobile-nav button").forEach(b=>b.classList.toggle("active",b.dataset.page==="More"));render(window.__v40Tab||"overview");return}window.__v40Open=false;document.body.classList.remove("v40-open");return oldGo.apply(this,arguments)};
 window.render=function(){if(window.__v40Open){render(window.__v40Tab||"overview");return}return oldRender.apply(this,arguments)};
-styles();initAccounts();hooks();window.__SMARTLEDGER_V40__={version:"40.0.0",calc,post};
+styles();
+const contrast=document.createElement("style");contrast.id="v40-contrast-fix";contrast.textContent=`
+body.v40-open #view .v40-head h1,
+body.v40-open #view .v40-card h2,
+body.v40-open #view .v40-stat strong,
+body.v40-open #view .v40-table td,
+body.v40-open #view .v40-chips span,
+body.v40-open #view .v40-card,
+body.v40-open #view .v40-stat{color:#f7f9fb!important}
+body.v40-open #view .v40-head p,
+body.v40-open #view .v40-muted,
+body.v40-open #view .v40-stat small,
+body.v40-open #view .v40-stat span,
+body.v40-open #view .v40-bar span,
+body.v40-open #view .v40-bar small,
+body.v40-open #view .v40-table th{color:#e0e6eb!important}
+body.v40-open #view .v40-kicker,
+body.v40-open #view .v40-version{color:#f0dca9!important}
+body.v40-open #view .v40-tab{background:#252c32!important;color:#f7f9fb!important;border-color:#59636d!important}
+body.v40-open #view .v40-tab.active{background:#d8c18a!important;color:#17191b!important;border-color:#d8c18a!important}
+body.v40-open #view .v40-actions button,
+body.v40-open #view .v40-card>button{background:#252c32!important;color:#f7f9fb!important;border-color:#d8c18a!important}
+body.v40-open #view .v40-good{color:#8ce0b2!important}
+body.v40-open #view .v40-warn,
+body.v40-open #view .v40-issues{color:#ffd08a!important}
+body.v40-open #view .v40-table th,
+body.v40-open #view .v40-table td{border-color:#59636d!important}
+`;
+document.head.appendChild(contrast);
+initAccounts();hooks();window.__SMARTLEDGER_V40__={version:"40.0.0",calc,post};
 })();
