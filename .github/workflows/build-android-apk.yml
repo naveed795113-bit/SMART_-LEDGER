@@ -66,10 +66,14 @@ jobs:
         with:
           gradle-version: '8.13'
 
-      - name: Set up Android NDK and CMake
-        uses: android-actions/setup-android@v3
-        with:
-          packages: 'platforms;android-35,ndk;27.2.12479018,cmake;3.22.1'
+      - name: Install Android NDK and CMake
+        shell: bash
+        run: |
+          echo "Android SDK: $ANDROID_HOME"
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --install "platforms;android-35" "ndk;27.2.12479018" "cmake;3.22.1"
 
       - name: Build Tesseract4Android native OCR library
         shell: bash
