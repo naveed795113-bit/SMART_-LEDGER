@@ -109,7 +109,7 @@ window.go('More');
 assert.ok(window.document.body.classList.contains('module-more'), 'More page receives dedicated platinum theme class');
 assert.match(window.document.querySelector('#view').textContent, /More tools/, 'More tools page renders');
 window.go('Settings');
-assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v40.6'), 'Version settings render');
+assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v40.7'), 'Version settings render');
 assert.ok(window.document.querySelector('#view').textContent.includes('Download full backup'), 'Backup control renders');
 assert.ok(window.document.querySelector('#view').textContent.includes('Business address'), 'Business address field renders');
 assert.ok(window.document.querySelector('#view').textContent.includes('Primary phone number'), 'Primary phone field renders');
