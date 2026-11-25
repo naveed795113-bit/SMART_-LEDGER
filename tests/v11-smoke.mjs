@@ -9,11 +9,11 @@ assert.ok(inlineScripts.length, 'Inline application script exists');
 for (const [i, source] of inlineScripts.entries()) new Script(source, { filename: 'index-inline-' + i + '.js' });
 
 const checks = [
-  ['release badge', html.includes('SMARTLEDGER v40.6')],
+  ['release badge', html.includes('SMARTLEDGER v40.7')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
-  ['charcoal champagne theme', /--gold:#d8c18a/.test(readFileSync('business-suite-v40.js','utf8')) && /#101418/.test(readFileSync('business-suite-v40.js','utf8'))],
-  ['version constants', html.includes("APP_VERSION='40.6.0'")],
+  ['Business Suite theme uses readable light/dark palette tokens', /--v40-accent:#d8c18a/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8'))],
+  ['version constants', html.includes("APP_VERSION='40.7.0'")],
   ['searchable 3D sales product picker', /txn-product-search/.test(html) && /txn-product-option/.test(html) && /function filterTxnProducts\(/.test(html)],
   ['inventory unit conversion catalogue', /UNIT_CATALOG/.test(html) && /function unitFactorForItem\(/.test(html) && /baseUnit/.test(html)],
   ['premium invoice with logo and signature', /invoice-logo/.test(html) && /invoice-signature-image/.test(html) && /amountInWordsINR/.test(html)],
@@ -31,9 +31,13 @@ const checks = [
   ['business logo and signature upload', /Upload business logo/.test(html) && /Upload signature image/.test(html)],
   ['business profile backup', /address:localStorage\.bizaddress/.test(html) && /signature:localStorage\.bizsignature/.test(html)],
   ['high visibility typography', /app-wide high-visibility typography/.test(html) && /font-size:16px;line-height:1\.5/.test(html)],
-  ['app-wide contrast palette', /v40.6 — app-wide text contrast/.test(html) && /--module-ink:#fff/.test(html) && /--module-field-ink/.test(html)],
+  ['app-wide contrast palette', /v40.7 — Business Suite contrast and theme switching/.test(html) && /--module-ink:#fff/.test(html) && /--module-field-ink/.test(html)],
   ['platinum More workspace', /body\.module-more\{--module-bg:#d5d8dc/.test(html) && /body\.module-more #view \.more-link/.test(html) && /b\.classList\.add\('module-more'\)/.test(html)],
   ['dashboard theme exclusion retained', /if\(page==='Dashboard'\)return;if\(page==='More'\)/.test(html)],
+  ['Business Suite inherits light and dark palettes', /#view\{--v40-text:var\(--text/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8')) && /#view \.v40-table td/.test(readFileSync('business-suite-v40.js','utf8'))],
+  ['Business Suite no longer forces global dark mode', !/:root\{--blue:#171b1f/.test(readFileSync('business-suite-v40.js','utf8')) && !/body\{background:var\(--bg\);color:var\(--text\)\}/.test(readFileSync('business-suite-v40.js','utf8'))],
+  ['modern accessible theme icons', (html.match(/data-theme-mode=/g)||[]).length===3 && /aria-pressed/.test(html) && /<svg viewBox=\"0 0 24 24\"/.test(html)],
+  ['light dark and system theme logic', /function setTheme\(mode\)/.test(html) && /prefers-color-scheme: dark/.test(html) && /document\.documentElement\.style\.colorScheme/.test(html)],
   ['dashboard renderer', /function render\(\)/.test(html)],
   ['inventory page', /function listItems\(\)/.test(html)],
   ['sales and purchases', /function transactionForm\(k\)/.test(html)],
@@ -65,7 +69,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v40.6'), 'Service worker cache version');
+assert.ok(sw.includes('smartledger-v40.7'), 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');

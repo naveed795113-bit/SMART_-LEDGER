@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 
 const errors = [];
 const alerts = [];
+let prefersDark = false;
+const appearanceListeners = [];
 const vc = new VirtualConsole();
 vc.on('jsdomError', e => errors.push(e.message));
 const dom = new JSDOM(readFileSync('index.html', 'utf8'), {
@@ -12,7 +14,7 @@ const dom = new JSDOM(readFileSync('index.html', 'utf8'), {
   pretendToBeVisual: true,
   virtualConsole: vc,
   beforeParse(window) {
-    window.matchMedia = () => ({ matches: false, addEventListener() {} });
+    window.matchMedia = query => ({ matches: query.includes('prefers-color-scheme: dark') ? prefersDark : false, addEventListener: (event, fn) => appearanceListeners.push(fn), addListener: fn => appearanceListeners.push(fn) });
     window.alert = message => alerts.push(String(message));
     window.confirm = () => true;
     window.URL.createObjectURL = () => 'blob:test';
@@ -26,6 +28,26 @@ await wait(50);
 assert.equal(errors.length, 0, 'App boot should not throw: ' + errors.join('; '));
 assert.match(window.document.querySelector('#view').textContent, /Business overview/, 'Dashboard renders');
 assert.match(window.document.querySelector('#view').textContent, /Sales overview/, 'Dashboard sales graph renders');
+const themeButtons = window.document.querySelectorAll('.theme-switch button[data-theme-mode]');
+assert.equal(themeButtons.length, 3, 'Three modern display mode controls render');
+window.setTheme('light');
+assert.ok(window.document.body.classList.contains('theme-light'), 'Light mode applies light body theme');
+assert.equal(window.document.querySelector('[data-theme-mode="light"]').getAttribute('aria-pressed'), 'true', 'Light mode indicator updates');
+window.setTheme('dark');
+assert.ok(window.document.body.classList.contains('theme-dark'), 'Dark mode applies dark body theme');
+assert.equal(window.document.querySelector('[data-theme-mode="dark"]').getAttribute('aria-pressed'), 'true', 'Dark mode indicator updates');
+window.go('Items');
+window.setTheme('light');
+assert.ok(window.document.body.classList.contains('theme-light'), 'Light mode works inside an app section');
+window.setTheme('dark');
+assert.ok(window.document.body.classList.contains('theme-dark'), 'Dark mode works inside an app section');
+window.setTheme('system');
+assert.ok(window.document.body.classList.contains('theme-light'), 'System mode follows light device preference');
+prefersDark = true; appearanceListeners.forEach(fn => fn());
+assert.ok(window.document.body.classList.contains('theme-dark'), 'System mode responds to device switching to dark');
+prefersDark = false; appearanceListeners.forEach(fn => fn());
+assert.ok(window.document.body.classList.contains('theme-light'), 'System mode responds to device switching to light');
+window.setTheme('light');
 
 window.localStorage.setItem('sl_items', JSON.stringify([{name:'Original test item',code:'TEST-ORIG',qty:5,unit:'pcs',purchase:10,price:15,wholesale:13,gst:0,minStock:2}]));
 window.go('Items');
@@ -109,7 +131,7 @@ window.go('More');
 assert.ok(window.document.body.classList.contains('module-more'), 'More page receives dedicated platinum theme class');
 assert.match(window.document.querySelector('#view').textContent, /More tools/, 'More tools page renders');
 window.go('Settings');
-assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v40.6'), 'Version settings render');
+assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v40.7'), 'Version settings render');
 assert.ok(window.document.querySelector('#view').textContent.includes('Download full backup'), 'Backup control renders');
 assert.ok(window.document.querySelector('#view').textContent.includes('Business address'), 'Business address field renders');
 assert.ok(window.document.querySelector('#view').textContent.includes('Primary phone number'), 'Primary phone field renders');
