@@ -225,20 +225,27 @@ async function verifyOtp() {
     button.disabled = false;
   }
 }
-document.getElementById("slFirebaseGoogleSignIn").addEventListener("click", async () => {
-  clearLogoutLock();
-  const button = document.getElementById("slFirebaseGoogleSignIn");
-  button.disabled = true;
-  status("Redirecting to Google sign-in…");
-  try {
-    await signInWithRedirect(auth, googleProvider);
-  } catch (error) {
-    status(errorText(error));
-    button.disabled = false;
-  }
-});
-document.getElementById("slSendOtp").addEventListener("click", sendOtp);
-document.getElementById("slVerifyOtp").addEventListener("click", verifyOtp);
+// The login gate is built while detached from the document. Resolve controls
+// from the gate itself; document.getElementById() returns null until showGate().
+const googleSignInButton = gate.querySelector("#slFirebaseGoogleSignIn");
+const sendOtpButton = gate.querySelector("#slSendOtp");
+const verifyOtpButton = gate.querySelector("#slVerifyOtp");
+
+if (googleSignInButton) {
+  googleSignInButton.addEventListener("click", async () => {
+    clearLogoutLock();
+    googleSignInButton.disabled = true;
+    status("Redirecting to Google sign-in…");
+    try {
+      await signInWithRedirect(auth, googleProvider);
+    } catch (error) {
+      status(errorText(error));
+      googleSignInButton.disabled = false;
+    }
+  });
+}
+if (sendOtpButton) sendOtpButton.addEventListener("click", sendOtp);
+if (verifyOtpButton) verifyOtpButton.addEventListener("click", verifyOtp);
 window.smartLedgerLogout = function () {
   if (logoutPromise) return logoutPromise;
   rememberLogoutLock();
