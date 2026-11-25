@@ -29,6 +29,8 @@ w.localStorage.setItem("sl_purchases",JSON.stringify([{id:811,date:"2026-11-25",
 w.localStorage.setItem("sl_batches",JSON.stringify([]));
 assert.equal(w.saveReturn.__v40,true,"Automatic return-journal hook is installed");
 w.returnForm("sales");
+w.document.querySelector("#returntx").value="810";
+w.setReturnMax();
 w.document.querySelector("#returnqty").value="2";
 w.document.querySelector("#returnrate").value="10";
 w.saveReturn({preventDefault(){}}, "sales");
