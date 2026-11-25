@@ -35,6 +35,7 @@ jobs:
       - name: Validate JavaScript syntax and authentication isolation
         run: |
           node --check smartledger-enhancements-v67.js
+          node --check offline-ocr-v69.js
           node --input-type=module --check < login-gate-v50.js
           node --check accounting.js
           node --check business-suite-v40.js
