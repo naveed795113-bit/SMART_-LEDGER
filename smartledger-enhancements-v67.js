@@ -3,7 +3,7 @@
 "use strict";
 const baseTxn=window.transactionForm,baseSave=window.saveTransaction,baseUnits=window.unitFieldsHTML,baseReadUnits=window.readUnitFields,baseUnitFactor=window.unitFactorForItem,baseTxnUnits=window.transactionUnitOptions,baseItemForm=window.itemForm,baseSaveItem=window.saveItem,baseEditItem=window.editItem,baseSaveEditItem=window.saveEditItem,baseShowInvoice=window.showInvoice;
 const $=s=>document.querySelector(s),E=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),norm=v=>String(v??"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(),phone=v=>String(v||"").trim();
-const whatsappPhone=v=>{let d=String(v||"").replace(/\\D/g,"");if(d.length===10)d="91"+d;else if(d.length===11&&d[0]==="0")d="91"+d.slice(1);return d};
+const whatsappPhone=v=>{let d=String(v||"").replace(/\D/g,"");if(d.length===10)d="91"+d;else if(d.length===11&&d[0]==="0")d="91"+d.slice(1);return d};
 const party=(k,n)=>get(k).find(x=>String(x.name||"").toLowerCase()===String(n||"").toLowerCase());
 window.SmartLedgerShare={pending:new Map(),resolve(id,error){const job=this.pending.get(id);if(!job)return;this.pending.delete(id);if(error)job.reject(new Error(error));else job.resolve()}};
 /* Common shop-language unit spellings used in Indian stock sheets. */
