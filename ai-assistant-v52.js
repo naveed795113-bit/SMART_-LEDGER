@@ -30,7 +30,7 @@
     const month=s.filter(x=>(x.date||"").slice(0,7)===m),day=s.filter(x=>x.date===d);
     const costed= s.filter(x=>x.cost!==undefined && x.cost!==null && (n(x.cost)>0 || n(x.total)===0));
     const gross=sumBy(costed,x=>n(x.taxable??x.total)-n(x.cost));
-    const missing=s.filter(x=>x.cost===undefined||x.cost===null).length;
+    const missing=s.filter(x=>x.cost===undefined||x.cost===null||(n(x.cost)===0&&n(x.total)>0)).length;
     const productMap={};
     s.forEach(t=>(t.lines&&t.lines.length?t.lines:[{item:t.item,qty:t.qty,total:t.total,cost:t.cost}]).forEach(l=>{
       const key=l.item||"Unspecified"; const z=productMap[key]||(productMap[key]={name:key,qty:0,revenue:0,cost:0,transactions:0});
@@ -80,7 +80,8 @@
     if(/top customer|best customer|valuable customer/.test(q))return m.customerRows.length?"Top customers by recorded sales: "+m.customerRows.slice(0,5).map((x,i)=>(i+1)+". "+x.name+" — "+moneyFmt(x.sales)).join("; "):"No named-customer sales are recorded yet.";
     if(/top sell|fast mov|most sold|best product/.test(q))return m.products.length?"Fastest-moving products by recorded quantity: "+m.products.slice(0,7).map((x,i)=>(i+1)+". "+x.name+" — "+x.qty+" units").join("; "):"No product-level sales history is available.";
     if(/expense/.test(q))return "Recorded expenses: "+moneyFmt(sumBy(m.e,x=>x.amount))+". Net profit estimate after these expenses: "+moneyFmt(m.net)+".";
-    if(/supplier|purchase price|buying price/.test(q))return "Recorded supplier purchases: "+moneyFmt(sumBy(m.p,x=>x.total))+". Supplier payables: "+moneyFmt(m.payable)+". Use Supplier Analysis to compare recorded purchase history; the app cannot compare unrecorded market prices.";
+    if(/price|pricing|sell for|selling price/.test(q)){const p=m.it.find(x=>q.includes(String(x.name||"").toLowerCase()));if(!p)return "Include the product name, for example: What selling price should I use for rice?";const cost=n(p.purchase),price=n(p.price);if(cost<=0)return "There is no recorded purchase cost for "+p.name+". Add its cost before calculating a selling-price suggestion.";return p.name+" — recorded purchase cost "+moneyFmt(cost)+", current selling price "+moneyFmt(price)+". For a 3% gross margin, suggested price is "+moneyFmt(cost/.97)+"; for 4%, "+moneyFmt(cost/.96)+". These exclude expenses, tax and market-rate checks.";}
+    if(/supplier|purchase price|buying price/.test(q))return "Recorded supplier purchases: "+moneyFmt(sumBy(m.p,x=>x.total))+". Supplier payables: "+moneyFmt(m.payable)+". Supplier-wise purchase totals are available in saved records; unrecorded market prices are not available.";
     if(/alert|problem|warning|business health/.test(q))return alerts.length?alerts.length+" business alert(s): "+alerts.slice(0,5).map(a=>a.title+" — "+a.detail).join(" "):"No alerts were detected from the currently recorded data.";
     return "I can analyse today's/monthly sales, month-on-month change, gross and net profit estimates, expenses, top products/customers, stock cover, reorder quantities, customer receivables and supplier payables. Try: “Compare this month with last month” or “Which products may run out?”";
   }
