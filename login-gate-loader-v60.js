@@ -1,4 +1,4 @@
-/* SmartLedger Firebase module bootstrap — v63.
+/* SmartLedger Firebase module bootstrap — v64.
  * Reports the complete runtime stack so login initialization failures can be traced.
  */
 (function () {
