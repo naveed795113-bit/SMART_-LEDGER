@@ -36,4 +36,4 @@ jobs:
           timeout: 600000
           reporting_interval: 10000
 
-# Redeploy current main branch after the phone-login validation fix.
+# Redeploy current main branch after the phone-login validation fix. Retry 2.
