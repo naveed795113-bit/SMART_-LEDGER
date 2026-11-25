@@ -64,7 +64,21 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.13'
+
+      - name: Set up Android NDK and CMake
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-35,ndk;27.2.12479018,cmake;3.22.1'
+
+      - name: Build Tesseract4Android native OCR library
+        shell: bash
+        run: |
+          git clone --depth 1 --branch 4.9.0 https://github.com/adaptech-cz/Tesseract4Android.git /tmp/Tesseract4Android
+          gradle --no-daemon -p /tmp/Tesseract4Android :tesseract4android:assembleOpenmpRelease
+          mkdir -p android/app/libs
+          cp /tmp/Tesseract4Android/tesseract4android/build/outputs/aar/tesseract4android-openmp-release.aar android/app/libs/
+          test -s android/app/libs/tesseract4android-openmp-release.aar
 
       - name: Bundle the complete offline web app
         shell: bash
