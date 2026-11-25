@@ -105,3 +105,4 @@ const v46 = readFileSync('theme-v46-complete-contrast.js', 'utf8');
 assert.ok(html.includes('./theme-v46-complete-contrast.js') && v46.includes('function dashboardOnly') && v46.includes('function samples') && v46.includes('characterData:true') && v46.includes('svg text'), 'v46 complete element-level contrast runtime');
 new Script(v46, { filename: 'theme-v46-complete-contrast.js' });
 console.log('PASS v46 complete element-level contrast runtime');
+
