@@ -74,7 +74,7 @@ jobs:
       - name: Build Tesseract4Android native OCR library
         shell: bash
         run: |
-          git clone --depth 1 --branch 4.9.0 https://github.com/adaptech-cz/Tesseract4Android.git /tmp/Tesseract4Android
+          git clone --depth 1 --recurse-submodules --branch 4.9.0 https://github.com/adaptech-cz/Tesseract4Android.git /tmp/Tesseract4Android
           gradle --no-daemon -p /tmp/Tesseract4Android :tesseract4android:assembleOpenmpRelease
           mkdir -p android/app/libs
           cp /tmp/Tesseract4Android/tesseract4android/build/outputs/aar/tesseract4android-openmp-release.aar android/app/libs/
@@ -109,6 +109,7 @@ jobs:
           test -s android/app/src/main/assets/www/vendor/xlsx.full.min.js
           test -s android/app/src/main/assets/www/vendor/html2canvas.min.js
           test -s android/app/src/main/assets/www/vendor/jspdf.umd.min.js
+          test -s android/app/libs/tesseract4android-openmp-release.aar
           test -s android/app/src/main/assets/tessdata/eng.traineddata
           test -s android/app/src/main/assets/tessdata/hin.traineddata
           test -s android/app/src/main/assets/tessdata/urd.traineddata
@@ -132,6 +133,10 @@ jobs:
         run: |
           test -s android/app/build/outputs/apk/debug/app-debug.apk
           test -s android/app/build/outputs/apk/release/app-release-unsigned.apk
+          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/eng.traineddata'
+          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/hin.traineddata'
+          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/urd.traineddata'
+          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'lib/arm64-v8a/libtesseract.so'
           mkdir -p apk-output
           cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v68.apk
           cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v68-release-unsigned.apk
