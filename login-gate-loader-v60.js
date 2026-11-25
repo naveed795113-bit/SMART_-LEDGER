@@ -1,5 +1,5 @@
-/* SmartLedger Firebase module bootstrap — v60.
- * Starts the Firebase auth module and reports real import failures visibly.
+/* SmartLedger Firebase module bootstrap — v62.
+ * Reports the complete runtime stack so login initialization failures can be traced.
  */
 (function () {
   const box = document.createElement("div");
@@ -9,7 +9,7 @@
   box.textContent = "Connecting securely to SmartLedger…";
   document.body.appendChild(box);
   window.smartLedgerModuleState = "loading";
-  const load = import("./login-gate-v50.js?v=61");
+  const load = import("./login-gate-v50.js?v=62");
   const timeout = new Promise((_, reject) => window.setTimeout(() => reject(new Error("Firebase login module took longer than 45 seconds to load. Check your internet connection and reload.")), 45000));
   Promise.race([load, timeout]).then(() => {
     window.smartLedgerModuleState = "ready";
@@ -26,8 +26,10 @@
     title.textContent = "Secure login could not load";
     title.style.cssText = "font-size:21px;font-weight:800;margin-bottom:10px";
     const detail = document.createElement("p");
-    detail.textContent = error && error.message ? error.message : "Firebase could not be reached. Check your internet connection and try again.";
-    detail.style.cssText = "font-size:14px;font-weight:500;color:#f0dfe3;overflow-wrap:anywhere";
+    const message = error && error.message ? error.message : "Firebase could not be reached. Check your internet connection and try again.";
+    const stack = error && error.stack ? error.stack : "No JavaScript stack was provided by the browser.";
+    detail.textContent = message + "\n\nDiagnostic details:\n" + stack;
+    detail.style.cssText = "font-size:12px;font-weight:500;color:#f0dfe3;overflow-wrap:anywhere;white-space:pre-wrap;max-height:45vh;overflow:auto;text-align:left";
     const retry = document.createElement("button");
     retry.type = "button";
     retry.textContent = "Reload SmartLedger";
