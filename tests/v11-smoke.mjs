@@ -90,7 +90,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v43.0') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js'), 'Service worker cache version');
+assert.ok(sw.includes('smartledger-v44.0') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js'), 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
