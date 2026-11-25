@@ -6,8 +6,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.net.Uri;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.core.content.FileProvider;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.googlecode.tesseract.android.TessBaseAPI;
@@ -25,6 +27,21 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class OfflineOcrSmokeTest {
+    @Test
+    public void invoiceAttachmentsCanBeSharedThroughPrivateFileProvider() throws Exception {
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        File directory = new File(context.getCacheDir(), "shared-invoices");
+        assertTrue(directory.mkdirs() || directory.isDirectory());
+        File invoice = new File(directory, "provider-smoke.pdf");
+        try (FileOutputStream output = new FileOutputStream(invoice)) {
+            output.write(new byte[]{37, 80, 68, 70});
+        }
+        Uri uri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", invoice);
+        assertNotNull("FileProvider did not create an invoice content URI", uri);
+        assertTrue("Invoice must be shared through a content URI", "content".equals(uri.getScheme()));
+        invoice.delete();
+    }
+
     @Test
     public void readsPrintedInvoiceTextWithoutNetwork() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
