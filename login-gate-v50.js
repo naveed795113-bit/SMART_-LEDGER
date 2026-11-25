@@ -196,10 +196,20 @@ document.getElementById("slFirebaseGoogleSignIn").addEventListener("click", asyn
 document.getElementById("slSendOtp").addEventListener("click", sendOtp);
 document.getElementById("slVerifyOtp").addEventListener("click", verifyOtp);
 window.smartLedgerLogout = async function () {
+  // Lock the workspace immediately and show the login screen without reloading.
   window.smartLedgerSignedIn = false;
-  try { await signOut(auth); } catch (error) { console.error("SmartLedger sign-out:", error); }
   try { localStorage.removeItem("sl_google_profile"); } catch (e) {}
-  location.reload();
+  showGate();
+  status("Signing out…");
+  try {
+    await signOut(auth);
+    showGate();
+    status("You have been signed out. Sign in to continue.");
+  } catch (error) {
+    console.error("SmartLedger sign-out:", error);
+    showGate();
+    status("Sign-out could not be confirmed. Check your connection and try again.");
+  }
 };
 
 showGate();
