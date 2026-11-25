@@ -106,7 +106,7 @@ assert.match(window.document.querySelector('#view').textContent, /Ledger/i, 'Led
 window.go('Batch & Expiry');
 assert.match(window.document.querySelector('#view').textContent, /Batch & expiry/, 'Batch and expiry page renders');
 window.go('Settings');
-assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v40.2'), 'Version settings render');
+assert.ok(window.document.querySelector('#view').textContent.includes('SmartLedger v40.3'), 'Version settings render');
 assert.ok(window.document.querySelector('#view').textContent.includes('Download full backup'), 'Backup control renders');
 assert.ok(window.document.querySelector('#view').textContent.includes('Business address'), 'Business address field renders');
 assert.ok(window.document.querySelector('#view').textContent.includes('Primary phone number'), 'Primary phone field renders');

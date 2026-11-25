@@ -17,7 +17,7 @@ const w=dom.window;
 w.localStorage.setItem("sl_sales",JSON.stringify([{id:11,date:"2026-11-20",invoice:"OLD-1",party:"Old customer",total:100,paid:100,taxable:100,tax:0,cost:70}]));
 w.eval(accounting);
 w.eval(suite);
-assert.ok(html.includes("APP_VERSION='40.2.0'"),"App version is v40.2");
+assert.ok(html.includes("APP_VERSION='40.3.0'"),"App version is v40.3");
 assert.equal(JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]").length,0,"Historical transactions must not be back-posted");
 w.go("Business Suite");
 assert.match(w.document.querySelector("#view").textContent,/Business Suite/);

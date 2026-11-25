@@ -9,16 +9,19 @@ assert.ok(inlineScripts.length, 'Inline application script exists');
 for (const [i, source] of inlineScripts.entries()) new Script(source, { filename: 'index-inline-' + i + '.js' });
 
 const checks = [
-  ['release badge', html.includes('SMARTLEDGER v40.2')],
+  ['release badge', html.includes('SMARTLEDGER v40.3')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['charcoal champagne theme', /--gold:#d8c18a/.test(readFileSync('business-suite-v40.js','utf8')) && /#101418/.test(readFileSync('business-suite-v40.js','utf8'))],
-  ['version constants', html.includes("APP_VERSION='40.2.0'")],
+  ['version constants', html.includes("APP_VERSION='40.3.0'")],
   ['searchable 3D sales product picker', /txn-product-search/.test(html) && /txn-product-option/.test(html) && /function filterTxnProducts\(/.test(html)],
   ['inventory unit conversion catalogue', /UNIT_CATALOG/.test(html) && /function unitFactorForItem\(/.test(html) && /baseUnit/.test(html)],
   ['premium invoice with logo and signature', /invoice-logo/.test(html) && /invoice-signature-image/.test(html) && /amountInWordsINR/.test(html)],
   ['purchase rust and denim palette', /module-purchases\{--module-bg:#a64e32;--module-card:#315a7b/.test(html)],
   ['responsive module layout', /Compact responsive tables/.test(html)],
+  ['mobile table cards across modules', /Attach semantic labels/.test(html) && /data-label/.test(html) && /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/.test(html)],
+  ['mobile invoice filters and action layout', /sales-filters #salesSearch/.test(html) && /sales-action \.btn/.test(html)],
+  ['safe mobile dialogs and viewport fitting', /max-height:calc\(100dvh/.test(html) && /overscroll-behavior:contain/.test(html)],
   ['accounting module loaded', html.includes('<script src="./accounting.js"></script>')],
   ['v40 business suite module loaded', html.includes('<script src="./business-suite-v40.js"></script>')],
   ['accounting backup compatibility', html.includes('chartOfAccounts:JSON.parse') && html.includes('accountJournals:JSON.parse') && html.includes('BACKUP_SCHEMA_VERSION=5')],
@@ -58,7 +61,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v40.2'), 'Service worker cache version');
+assert.ok(sw.includes('smartledger-v40.3'), 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
