@@ -86,7 +86,7 @@ gate.innerHTML = `
   <p class="sl-auth-kicker">Welcome to SmartLedger</p><h2>Sign in or create account</h2>
   <p class="sl-auth-desc">Use Google or verify your mobile number. New users are registered automatically after successful verification.</p>
   <div class="sl-signin-box">
-   <button class="sl-action" id="slGoogleSignIn" type="button"><span aria-hidden="true">G</span> Continue with Google</button>
+   <button class="sl-action" id="slFirebaseGoogleSignIn" type="button"><span aria-hidden="true">G</span> Continue with Google</button>
    <div class="sl-divider">OR PHONE NUMBER</div>
    <div class="sl-phone-row"><input class="sl-field" id="slPhoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+91 98765 43210" aria-label="Phone number in international format">
     <button class="sl-action primary" id="slSendOtp" type="button">Send verification code</button>
@@ -182,8 +182,8 @@ async function verifyOtp() {
     button.disabled = false;
   }
 }
-document.getElementById("slGoogleSignIn").addEventListener("click", async () => {
-  const button = document.getElementById("slGoogleSignIn");
+document.getElementById("slFirebaseGoogleSignIn").addEventListener("click", async () => {
+  const button = document.getElementById("slFirebaseGoogleSignIn");
   button.disabled = true;
   status("Redirecting to Google sign-in…");
   try {
