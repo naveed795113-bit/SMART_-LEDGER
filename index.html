@@ -1043,7 +1043,7 @@ function saveReturn(e,kind){
   item.qty=num(item.qty)-stockQty;
  }
  put("items",items);
- if(!sales)put("batches",batches);
+ put("batches",batches);
  let record={id:Date.now(),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cost,kind:sales?"Sales return":"Purchase return"};
  returns.push(record);
  put(sales?"salesReturns":"purchaseReturns",returns);
