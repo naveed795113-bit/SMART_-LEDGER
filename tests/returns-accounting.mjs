@@ -37,6 +37,11 @@ assert.equal(w.outstandingTotal("Customer"),64,"Total receivables include sales 
 w.taxReports();
 assert.match(w.document.querySelector("#view").textContent,/₹75/,"Taxable sales subtract returned value");
 assert.match(w.document.querySelector("#view").textContent,/₹4/,"Output GST reverses the proportional returned tax");
+w.reports();
+assert.match(w.document.querySelector("#view").textContent,/₹27/,"Profit report includes returned sales and returned cost");
+w.ledgerPage();
+assert.match(w.document.querySelector("#ledgerrows").textContent,/₹27/,"Customer ledger gross profit includes returned goods");
+assert.match(w.document.querySelector("#ledgerrows").textContent,/₹64/,"Customer ledger balance includes returned invoice value and GST");
 assert.equal(errors.length,0,"No runtime errors: "+errors.join("; "));
 console.log("PASS sales-return net sales, gross profit, GST and customer outstanding calculations");
 dom.window.close();
