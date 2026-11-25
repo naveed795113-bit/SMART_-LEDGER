@@ -84,14 +84,9 @@
       const result = originalTxnForm.apply(this, arguments);
       window.currentTxn = kind;
       enhanceTransactionDialog();
-      requestAnimationFrame(enhanceTransactionDialog);
       return result;
     };
   }
-
-  const observer = new MutationObserver(() => enhanceTransactionDialog());
-  const modalRoot = $("#modal");
-  if (modalRoot) observer.observe(modalRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
 
   const originalShowSales = window.showInvoice;
   if (typeof originalShowSales === "function") {
