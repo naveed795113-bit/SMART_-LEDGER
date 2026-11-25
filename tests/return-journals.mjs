@@ -65,7 +65,7 @@ assert.equal(saved.item,"Oil","Return selects the correct item from a multi-item
 assert.equal(saved.stockQty,15,"Return converts invoice units back into stock units");
 assert.equal(saved.cost,900,"Return reverses the exact line-level purchase cost");
 assert.equal(saved.tax,50,"Return reverses the exact line-level GST");
-assert.equal(w.get("items").find(x=>x.name==="Oil").qty,15,"Returned stock is restored to the correct item");
+assert.equal(JSON.parse(w.localStorage.getItem("sl_items")).find(x=>x.name==="Oil").qty,15,"Returned stock is restored to the correct item");
 assert.equal(journals.length,3,"Multi-item return creates a third automatic journal");
 assert.equal(journals[2].lines.reduce((s,x)=>s+Number(x.debit),0),1950,"Multi-item return journal debits line revenue, GST and cost");
 assert.equal(journals[2].lines.reduce((s,x)=>s+Number(x.credit),0),1950,"Multi-item return journal credits cash and reverses COGS");
