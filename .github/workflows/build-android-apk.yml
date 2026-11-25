@@ -55,14 +55,16 @@ jobs:
         run: |
           test -s android/app/build/outputs/apk/debug/app-debug.apk
           test -s android/app/build/outputs/apk/release/app-release-unsigned.apk
-          ls -lh android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+          mkdir -p apk-output
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v68.apk
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v68-release-unsigned.apk
+          ls -lh apk-output/
 
       - name: Upload installable APKs
         uses: actions/upload-artifact@v4
         with:
           name: SmartLedger-Android-APK-v68
           path: |
-            android/app/build/outputs/apk/debug/app-debug.apk
-            android/app/build/outputs/apk/release/app-release-unsigned.apk
+            apk-output/*.apk
           if-no-files-found: error
           retention-days: 30
