@@ -34,7 +34,7 @@ assert.equal(totals.sales,79,"Net invoice sales subtract returned value and its 
 assert.equal(totals.profit,27,"Profit reverses returned sales revenue and returned goods cost");
 assert.equal(w.partyOutstanding("Customer","Return Customer"),64,"Customer balance subtracts sales returns including GST");
 assert.equal(w.outstandingTotal("Customer"),64,"Total receivables include sales returns including GST");
-w.go("Tax Reports");
+w.taxReports();
 assert.match(w.document.querySelector("#view").textContent,/₹75/,"Taxable sales subtract returned value");
 assert.match(w.document.querySelector("#view").textContent,/₹4/,"Output GST reverses the proportional returned tax");
 assert.equal(errors.length,0,"No runtime errors: "+errors.join("; "));
