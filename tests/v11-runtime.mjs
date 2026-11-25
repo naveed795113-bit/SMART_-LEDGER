@@ -139,6 +139,38 @@ assert.ok(window.document.querySelector('#view').textContent.includes('Secondary
 assert.ok(window.document.querySelector('#view').textContent.includes('Upload business logo'), 'Business logo upload renders');
 assert.ok(window.document.querySelector('#view').textContent.includes('Upload signature image'), 'Signature upload renders');
 
+
+/* v48: More launcher and its linked child pages retain readable theme contrast. */
+window.go('More');
+window.eval(readFileSync('theme-v48-more-theme.js', 'utf8'));
+await wait(40);
+assert.ok(window.document.body.classList.contains('module-more'), 'More launcher keeps its dedicated theme scope');
+assert.ok(window.document.getElementById('smartledger-v48-more-theme'), 'More dark/light surface theme loads');
+window.setTheme('dark');
+await wait(50);
+assert.ok(window.document.querySelector('#view .more-link'), 'More launcher cards render in dark mode');
+assert.ok(window.document.getElementById('smartledger-v48-more-theme').textContent.includes('body.theme-dark.module-more') && window.document.getElementById('smartledger-v48-more-theme').textContent.includes('color:#fff'), 'More dark-mode stylesheet uses white text on graphite surfaces');
+window.setTheme('light');
+await wait(50);
+assert.ok([...window.document.querySelectorAll('style')].some(s=>s.textContent.includes('body.module-more #view .more-link b') && s.textContent.includes('color:#252c33')), 'More light-mode stylesheet uses graphite text on platinum surfaces');
+const moreChildPages = ['Customers','Accounts','Suppliers','Expenses','Cash & Bank','Ledgers','Stock Alerts','Tax Reports','Reports','Stock Summary','Item Insights','Settings'];
+for (const childPage of moreChildPages) {
+  window.go(childPage);
+  await wait(35);
+  const heading = window.document.querySelector('#view h1, #view h2');
+  assert.ok(heading, childPage + ' child section renders a heading');
+  window.setTheme('dark');
+  await wait(15);
+  assert.ok(window.document.body.classList.contains('theme-dark'), childPage + ' opens in dark mode');
+  window.setTheme('light');
+  await wait(15);
+  assert.ok(window.document.body.classList.contains('theme-light'), childPage + ' opens in light mode');
+}
+window.setTheme('light');
+window.go('More');
+await wait(35);
+console.log('PASS v48 More launcher dark/light surfaces and linked child-section text contrast');
+
 const css = [...window.document.querySelectorAll('style')].map(x => x.textContent).join('\\n');
 assert.ok(css.includes('@media(max-width:850px)'), 'Tablet/mobile responsive layout rules exist');
 assert.ok(css.includes('@media(max-width:520px)'), 'Small-phone responsive layout rules exist');
