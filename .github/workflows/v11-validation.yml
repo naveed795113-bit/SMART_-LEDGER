@@ -17,6 +17,8 @@ jobs:
           node-version: 22
       - name: Install browserless DOM test dependency
         run: npm install --no-save jsdom@26
+      - name: Check v67 enhancement module syntax
+        run: node --check smartledger-enhancements-v67.js
       - name: Validate application structure and syntax
         run: node tests/v11-smoke.mjs
       - name: Run application interaction smoke tests

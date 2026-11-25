@@ -13,7 +13,7 @@ const checks = [
   ['free phone password account creation and sign-in controls', /slCreatePhoneAccount/.test(readFileSync('login-gate-v50.js','utf8')) && /slPhonePasswordSignIn/.test(readFileSync('login-gate-v50.js','utf8')) && /function phonePasswordAuth\(createAccount\)/.test(readFileSync('login-gate-v50.js','utf8'))],
   ['phone number normalized into private Firebase account identifier', readFileSync('login-gate-v50.js','utf8').includes('function phoneAccountEmail(rawPhone)') && readFileSync('login-gate-v50.js','utf8').includes('@accounts.smartledger.invalid')],
   ['phone password login warns number is not SMS-verified and recovery is not yet available', /not verified by SMS/.test(readFileSync('login-gate-v50.js','utf8')) && /password recovery is not available/.test(readFileSync('login-gate-v50.js','utf8'))],
-  ['authentication v64 loader and service worker cache', readFileSync('login-gate-loader-v60.js','utf8').includes('login-gate-v50.js?v=64') && readFileSync('sw.js','utf8').includes('smartledger-v63.0')],
+  ['authentication v64 loader and service worker cache', readFileSync('login-gate-loader-v60.js','utf8').includes('login-gate-v50.js?v=64') && readFileSync('sw.js','utf8').includes('smartledger-v67.0')],
 
   ['release badge', html.includes('SMARTLEDGER v44.0')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
@@ -99,8 +99,13 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v63.0') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./interaction-fix-v56.js') && html.includes('./interaction-fix-v56.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
+assert.ok(sw.includes('smartledger-v67.0') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./interaction-fix-v56.js') && html.includes('./interaction-fix-v56.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
 console.log('PASS service worker cache version');
+const v67 = readFileSync('smartledger-enhancements-v67.js', 'utf8');
+assert.ok(html.includes('smartledger-enhancements-v67.js?v=67') && sw.includes('./smartledger-enhancements-v67.js'), 'v67 enhancement module is loaded and cached');
+assert.ok(v67.includes('txnPartyPhone') && v67.includes('navigator.share') && v67.includes('html2canvas'), 'Party phone and invoice file sharing');
+assert.ok(v67.includes('secondaryUnitFactor') && v67.includes('Primary Unit Conversion') && v67.includes('hsn sac code'), 'Secondary units and mapped import fields');
+console.log('PASS v67 contacts, invoice sharing, mapped imports and dual units');
 assert.ok(/id="slSidebarLogout"/.test(html) && !/id="slSidebarLogout"[^>]*onclick=/.test(html), 'Sidebar logout uses the shared delegated handler');
 assert.ok(/id="slMobileLogout"/.test(html) && !/id="slMobileLogout"[^>]*onclick=/.test(html), 'Mobile logout uses the shared delegated handler');
 console.log('PASS shared logout entry points without competing inline handlers');
@@ -109,7 +114,7 @@ console.log('PASS mobile logout and touch interaction fix');
 const firebaseLogin = readFileSync('login-gate-v50.js', 'utf8');
 assert.ok(firebaseLogin.includes('async function loadFirebaseSdk()') && firebaseLogin.includes('https://esm.sh/firebase@11.10.0/app?bundle') && firebaseLogin.includes('https://esm.sh/firebase@11.10.0/auth?bundle'), 'Firebase SDK uses dynamic primary and fallback CDN loading');
 console.log('PASS Firebase SDK fallback loading');
-assert.ok(html.includes('<script src="./login-gate-loader-v60.js"></script>') && firebaseLogin.includes('signInWithPhoneNumber') && firebaseLogin.includes('RecaptchaVerifier') && firebaseLogin.includes('browserLocalPersistence') && firebaseLogin.includes('getRedirectResult') && firebaseLogin.includes('signInWithPopup') && firebaseLogin.includes('auth/billing-not-enabled'), 'Firebase phone OTP, popup/redirect Google sign-in, billing guidance and persistent auth integration');
+assert.ok(/<script src="\.\/login-gate-loader-v60\.js(?:\?v=\d+)?"><\/script>/.test(html) && firebaseLogin.includes('signInWithPhoneNumber') && firebaseLogin.includes('RecaptchaVerifier') && firebaseLogin.includes('browserLocalPersistence') && firebaseLogin.includes('getRedirectResult') && firebaseLogin.includes('signInWithPopup') && firebaseLogin.includes('auth/billing-not-enabled'), 'Firebase phone OTP, popup/redirect Google sign-in, billing guidance and persistent auth integration');
 assert.ok(firebaseLogin.includes('LOGOUT_PENDING_KEY') && firebaseLogin.includes('rememberLogoutLock') && firebaseLogin.includes('clearLogoutLock') && firebaseLogin.includes('if (auth.currentUser)'), 'Logout waits for Firebase confirmation and persists a pending lock');
 assert.ok(firebaseLogin.includes('if (logoutInProgress)') && firebaseLogin.includes('window.smartLedgerLogout().catch'), 'Auth observer cannot unlock the app while logout is pending');
 console.log('PASS Firebase phone OTP, Google redirect, persistent auth and guarded logout lifecycle');
