@@ -149,10 +149,10 @@ assert.ok(window.document.getElementById('smartledger-v48-more-theme'), 'More da
 window.setTheme('dark');
 await wait(50);
 assert.ok(window.document.querySelector('#view .more-link'), 'More launcher cards render in dark mode');
-assert.match(window.document.getElementById('smartledger-v48-more-theme').textContent, /body\\.theme-dark\\.module-more[\\s\\S]*color:#fff/i, 'More dark-mode stylesheet uses white text on graphite surfaces');
+assert.ok(window.document.getElementById('smartledger-v48-more-theme').textContent.includes('body.theme-dark.module-more') && window.document.getElementById('smartledger-v48-more-theme').textContent.includes('color:#fff'), 'More dark-mode stylesheet uses white text on graphite surfaces');
 window.setTheme('light');
 await wait(50);
-assert.match([...window.document.querySelectorAll('style')].map(s=>s.textContent).join('\\n'), /body\\.module-more #view \\.more-link b[\\s\\S]*color:#252c33/i, 'More light-mode stylesheet uses graphite text on platinum surfaces');
+assert.ok([...window.document.querySelectorAll('style')].some(s=>s.textContent.includes('body.module-more #view .more-link b') && s.textContent.includes('color:#252c33')), 'More light-mode stylesheet uses graphite text on platinum surfaces');
 const moreChildPages = ['Customers','Accounts','Suppliers','Expenses','Cash & Bank','Ledgers','Stock Alerts','Tax Reports','Reports','Stock Summary','Item Insights','Settings'];
 for (const childPage of moreChildPages) {
   window.go(childPage);
