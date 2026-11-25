@@ -37,6 +37,7 @@ const checks = [
   ['Business Suite inherits light and dark palettes', /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8')) && /background:var\(--v40-card\)!important/.test(readFileSync('business-suite-v40.js','utf8')) && /color:var\(--v40-text\)!important/.test(readFileSync('business-suite-v40.js','utf8')) && /#view \.v40-table td/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['Business Suite no longer forces global dark mode', !/:root\{--blue:#171b1f/.test(readFileSync('business-suite-v40.js','utf8')) && !/body\{background:var\(--bg\);color:var\(--text\)\}/.test(readFileSync('business-suite-v40.js','utf8'))],
 
+  ['v43 contrast runtime JavaScript syntax', new Script(readFileSync('theme-v43-contrast.js','utf8'), { filename: 'theme-v43-contrast.js' })],
   ['v43 separate light and dark text contrast runtime', /theme-v43-contrast\.js/.test(html) && /html\[data-sl-theme="light"\]/.test(readFileSync('theme-v43-contrast.js','utf8')) && /html\[data-sl-theme="dark"\]/.test(readFileSync('theme-v43-contrast.js','utf8'))],
   ['v43 Business Suite text contrast in both modes', /body\.theme-light #view .*v40-stat/.test(readFileSync('theme-v43-contrast.js','utf8')) && /body\.theme-dark #view .*v40-stat/.test(readFileSync('theme-v43-contrast.js','utf8'))],
   ['v43 independent contrast asset precached', /theme-v43-contrast\.js/.test(readFileSync('sw.js','utf8'))],
@@ -86,7 +87,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v42.0') && sw.includes('./theme-v42.js'), 'Service worker cache version');
+assert.ok(sw.includes('smartledger-v43.0') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js'), 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
