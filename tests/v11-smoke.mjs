@@ -13,7 +13,7 @@ const checks = [
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['Business Suite theme uses readable light/dark palette tokens', /--v40-accent:#e2c98e/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8'))],
-  ['version constants', html.includes("APP_VERSION='44.0.0'")],
+  ['version constants', html.includes("APP_VERSION='46.0.0'")],
   ['searchable 3D sales product picker', /txn-product-search/.test(html) && /txn-product-option/.test(html) && /function filterTxnProducts\(/.test(html)],
   ['inventory unit conversion catalogue', /UNIT_CATALOG/.test(html) && /function unitFactorForItem\(/.test(html) && /baseUnit/.test(html)],
   ['premium invoice with logo and signature', /invoice-logo/.test(html) && /invoice-signature-image/.test(html) && /amountInWordsINR/.test(html)],
@@ -90,10 +90,15 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v45.0') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js'), 'Service worker cache version');
+assert.ok(sw.includes('smartledger-v46.0') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js'), 'Service worker cache version');
 console.log('PASS service worker cache version');
 const v45 = readFileSync('theme-v45-contrast.js', 'utf8');
 assert.ok(html.includes('./theme-v45-contrast.js') && v45.includes('gradientStops') && v45.includes('surfaceSamples') && v45.includes('minContrast'), 'v45 gradient-aware surface contrast runtime');
 console.log('PASS v45 gradient-aware surface contrast runtime');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
+
+const v46 = readFileSync('theme-v46-complete-contrast.js', 'utf8');
+assert.ok(html.includes('./theme-v46-complete-contrast.js') && v46.includes('function dashboardOnly') && v46.includes('function samples') && v46.includes('characterData:true') && v46.includes('svg text'), 'v46 complete element-level contrast runtime');
+new Script(v46, { filename: 'theme-v46-complete-contrast.js' });
+console.log('PASS v46 complete element-level contrast runtime');
