@@ -617,7 +617,83 @@ body.module-more .mobile-nav button.active .mi{background:#c3c9cf!important;colo
 .theme-dark .theme-switch{background:#292124;border-color:#493a40}
 .theme-dark .theme-switch button{color:#eadde0}
 .theme-dark .theme-switch button.selected{background:#874655;color:#fff}
-</style></head><body><div class="app"><aside class="side"><div class="brand">◈ SmartLedger<small>BUSINESS MANAGER</small></div><nav class="nav" id="nav"><div class="navlabel">Workspace</div><button class="active" data-page="Dashboard">▦ <span class="txt">Dashboard</span></button><button data-page="Sales">▤ <span class="txt">Sales</span></button><button data-page="Purchases">▣ <span class="txt">Purchases</span></button><button data-page="Items">▧ <span class="txt">Items & Stock</span></button><div class="navlabel">People</div><button data-page="Customers">♙ <span class="txt">Customers</span></button><button data-page="Suppliers">♧ <span class="txt">Suppliers</span></button><button data-page="Expenses">₹ <span class="txt">Expenses</span></button><div class="navlabel">Accounts</div><button data-page="Cash & Bank">▤ <span class="txt">Cash & Bank</span></button><button data-page="Ledgers">⇄ <span class="txt">Ledgers & Payments</span></button><button data-page="Stock Alerts">⚑ <span class="txt">Stock Alerts</span></button><button data-page="Tax Reports">▥ <span class="txt">GST Reports</span></button><button data-page="Reports">▥ <span class="txt">Reports</span></button><button data-page="Settings">⚙ <span class="txt">Settings</span></button></nav></aside><main class="main"><header class="top"><strong id="pagetitle">Dashboard</strong><div class="topright"><span class="pill" title="SmartLedger major release">✦ SMARTLEDGER v40.8</span><div class="theme-switch" role="group" aria-label="Display mode">
+
+/* v40.9 Ledger contrast audit: keep the warm-white / natural-oak / matte-black palette readable in both themes. */
+body.module-ledger #view{background:#f8f5ef!important;color:#4b3828!important}
+body.module-ledger #view .card,
+body.module-ledger #view .tablewrap,
+body.module-ledger #view .more-link,
+body.module-ledger #view .quick button,
+body.module-ledger #view .section-quick button{background:#c6a77b!important;color:#4b3828!important;border-color:#9e815e!important}
+body.module-ledger #view h1,
+body.module-ledger #view h2,
+body.module-ledger #view h3,
+body.module-ledger #view p,
+body.module-ledger #view label,
+body.module-ledger #view .muted,
+body.module-ledger #view .statlabel,
+body.module-ledger #view small,
+body.module-ledger #view .more-link b,
+body.module-ledger #view .more-link small,
+body.module-ledger #view .stat,
+body.module-ledger #view td{color:#4b3828!important}
+body.module-ledger #view .tablewrap th{background:#1e1e1e!important;color:#fff!important;border-color:#9e815e!important}
+body.module-ledger #view .tablewrap td{background:#fffaf2!important;color:#4b3828!important;border-color:#c5ad8d!important}
+body.module-ledger #view .tablewrap tbody tr:nth-child(even) td{background:#eee4d5!important;color:#4b3828!important}
+body.module-ledger #view .tablewrap tbody tr:hover td{background:#e4d3bb!important;color:#33251b!important}
+body.module-ledger #view .btn:not(.primary):not(.danger){background:#eee5d8!important;color:#3f3024!important;border-color:#a88b68!important}
+body.module-ledger #view .btn.primary{background:#1e1e1e!important;color:#fff!important;border-color:#1e1e1e!important}
+body.module-ledger #view .field label{color:#4b3828!important}
+body.module-ledger #view .field input,
+body.module-ledger #view .field select,
+body.module-ledger #view .field textarea,
+body.module-ledger #view .search{background:#fff!important;color:#33251b!important;border:2px solid #a88b68!important}
+body.module-ledger .dialog{background:#fffaf2!important;color:#3f3024!important}
+body.module-ledger .dialog h2,
+body.module-ledger .dialog label,
+body.module-ledger .dialog p,
+body.module-ledger .dialog small{color:#3f3024!important}
+body.module-ledger .dialog input,
+body.module-ledger .dialog select,
+body.module-ledger .dialog textarea{background:#fff!important;color:#33251b!important;border:2px solid #a88b68!important}
+body.theme-dark.module-ledger #view{background:#26211c!important;color:#f5eadb!important}
+body.theme-dark.module-ledger #view .card,
+body.theme-dark.module-ledger #view .more-link,
+body.theme-dark.module-ledger #view .quick button,
+body.theme-dark.module-ledger #view .section-quick button{background:#3a3027!important;color:#fff3e2!important;border-color:#8b7458!important}
+body.theme-dark.module-ledger #view h1,
+body.theme-dark.module-ledger #view h2,
+body.theme-dark.module-ledger #view h3,
+body.theme-dark.module-ledger #view p,
+body.theme-dark.module-ledger #view label,
+body.theme-dark.module-ledger #view .muted,
+body.theme-dark.module-ledger #view .statlabel,
+body.theme-dark.module-ledger #view small,
+body.theme-dark.module-ledger #view .more-link b,
+body.theme-dark.module-ledger #view .more-link small,
+body.theme-dark.module-ledger #view .stat{color:#fff3e2!important}
+body.theme-dark.module-ledger #view .tablewrap{background:#302820!important}
+body.theme-dark.module-ledger #view .tablewrap th{background:#171513!important;color:#fff!important;border-color:#8b7458!important}
+body.theme-dark.module-ledger #view .tablewrap td,
+body.theme-dark.module-ledger #view .tablewrap tbody tr:nth-child(even) td{background:#40352b!important;color:#fff3e2!important;border-color:#786247!important}
+body.theme-dark.module-ledger #view .tablewrap tbody tr:hover td{background:#514332!important;color:#fff!important}
+body.theme-dark.module-ledger #view .btn:not(.primary):not(.danger){background:#514332!important;color:#fff3e2!important;border-color:#8b7458!important}
+body.theme-dark.module-ledger #view .btn.primary{background:#d0b18a!important;color:#211a14!important;border-color:#d0b18a!important}
+body.theme-dark.module-ledger #view .field label{color:#fff3e2!important}
+body.theme-dark.module-ledger #view .field input,
+body.theme-dark.module-ledger #view .field select,
+body.theme-dark.module-ledger #view .field textarea,
+body.theme-dark.module-ledger #view .search{background:#211d19!important;color:#fff3e2!important;border:2px solid #8b7458!important}
+body.theme-dark.module-ledger .dialog{background:#302820!important;color:#fff3e2!important}
+body.theme-dark.module-ledger .dialog h2,
+body.theme-dark.module-ledger .dialog label,
+body.theme-dark.module-ledger .dialog p,
+body.theme-dark.module-ledger .dialog small{color:#fff3e2!important}
+body.theme-dark.module-ledger .dialog input,
+body.theme-dark.module-ledger .dialog select,
+body.theme-dark.module-ledger .dialog textarea{background:#211d19!important;color:#fff3e2!important;border:2px solid #8b7458!important}
+
+</style></head><body><div class="app"><aside class="side"><div class="brand">◈ SmartLedger<small>BUSINESS MANAGER</small></div><nav class="nav" id="nav"><div class="navlabel">Workspace</div><button class="active" data-page="Dashboard">▦ <span class="txt">Dashboard</span></button><button data-page="Sales">▤ <span class="txt">Sales</span></button><button data-page="Purchases">▣ <span class="txt">Purchases</span></button><button data-page="Items">▧ <span class="txt">Items & Stock</span></button><div class="navlabel">People</div><button data-page="Customers">♙ <span class="txt">Customers</span></button><button data-page="Suppliers">♧ <span class="txt">Suppliers</span></button><button data-page="Expenses">₹ <span class="txt">Expenses</span></button><div class="navlabel">Accounts</div><button data-page="Cash & Bank">▤ <span class="txt">Cash & Bank</span></button><button data-page="Ledgers">⇄ <span class="txt">Ledgers & Payments</span></button><button data-page="Stock Alerts">⚑ <span class="txt">Stock Alerts</span></button><button data-page="Tax Reports">▥ <span class="txt">GST Reports</span></button><button data-page="Reports">▥ <span class="txt">Reports</span></button><button data-page="Settings">⚙ <span class="txt">Settings</span></button></nav></aside><main class="main"><header class="top"><strong id="pagetitle">Dashboard</strong><div class="topright"><span class="pill" title="SmartLedger major release">✦ SMARTLEDGER v40.9</span><div class="theme-switch" role="group" aria-label="Display mode">
 <button type="button" data-theme-mode="light" aria-label="Light mode" title="Light mode" onclick="setTheme('light')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
 <button type="button" data-theme-mode="dark" aria-label="Dark mode" title="Dark mode" onclick="setTheme('dark')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.7 8.7 0 1 0 20.2 15.1Z"/><path d="M16 3v4m-2-2h4"/></svg></button>
 <button type="button" data-theme-mode="system" aria-label="System mode" title="Use device appearance" onclick="setTheme('system')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8m-4-4v4m-4-12 2 2 4-4"/></svg></button></div><span id="today" class="muted"></span></div></header><div class="content" id="view"></div></main></div><nav class="mobile-nav" id="mobileNav" aria-label="Main navigation"><button class="active" data-page="Dashboard"><span class="mi">⌂</span>Home</button><button data-page="Sales"><span class="mi">▤</span>Sales</button><button data-page="Purchases"><span class="mi">🛒</span>Purchase</button><button data-page="Items"><span class="mi">▦</span>Items</button><button data-page="More"><span class="mi">☰</span>More</button></nav><div class="modal" id="modal"><div class="dialog"><div class="dialoghead"><h2 id="modaltitle">Add</h2><button class="close" onclick="closeModal()">×</button></div><div id="modalbody"></div></div></div><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
