@@ -497,8 +497,117 @@ body.module-inventory .tablewrap th,body.module-inventory .tablewrap td,body.mod
   .dialog{max-height:calc(100dvh - 16px - env(safe-area-inset-top))!important;overflow-y:auto!important;touch-action:pan-y!important}
 }
 
-</style></head><body><div class="app"><aside class="side"><div class="brand">◈ SmartLedger<small>BUSINESS MANAGER</small></div><nav class="nav" id="nav"><div class="navlabel">Workspace</div><button class="active" data-page="Dashboard">▦ <span class="txt">Dashboard</span></button><button data-page="Sales">▤ <span class="txt">Sales</span></button><button data-page="Purchases">▣ <span class="txt">Purchases</span></button><button data-page="Items">▧ <span class="txt">Items & Stock</span></button><div class="navlabel">People</div><button data-page="Customers">♙ <span class="txt">Customers</span></button><button data-page="Suppliers">♧ <span class="txt">Suppliers</span></button><button data-page="Expenses">₹ <span class="txt">Expenses</span></button><div class="navlabel">Accounts</div><button data-page="Cash & Bank">▤ <span class="txt">Cash & Bank</span></button><button data-page="Ledgers">⇄ <span class="txt">Ledgers & Payments</span></button><button data-page="Stock Alerts">⚑ <span class="txt">Stock Alerts</span></button><button data-page="Tax Reports">▥ <span class="txt">GST Reports</span></button><button data-page="Reports">▥ <span class="txt">Reports</span></button><button data-page="Settings">⚙ <span class="txt">Settings</span></button></nav></aside><main class="main"><header class="top"><strong id="pagetitle">Dashboard</strong><div class="topright"><span class="pill" title="SmartLedger major release">✦ SMARTLEDGER v40.4</span><div class="theme-switch" aria-label="Display mode"><button title="Light mode" onclick="setTheme('light')">☼</button><button title="Dark mode" onclick="setTheme('dark')">◐</button><button title="System mode" onclick="setTheme('system')">▣</button></div><span id="today" class="muted"></span></div></header><div class="content" id="view"></div></main></div><nav class="mobile-nav" id="mobileNav" aria-label="Main navigation"><button class="active" data-page="Dashboard"><span class="mi">⌂</span>Home</button><button data-page="Sales"><span class="mi">▤</span>Sales</button><button data-page="Purchases"><span class="mi">🛒</span>Purchase</button><button data-page="Items"><span class="mi">▦</span>Items</button><button data-page="More"><span class="mi">☰</span>More</button></nav><div class="modal" id="modal"><div class="dialog"><div class="dialoghead"><h2 id="modaltitle">Add</h2><button class="close" onclick="closeModal()">×</button></div><div id="modalbody"></div></div></div><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
-const APP_VERSION='40.4.0', BACKUP_SCHEMA_VERSION=5;
+
+
+/* v40.6 — app-wide text contrast and dedicated platinum More workspace.
+   Dashboard is intentionally excluded from these module overrides. */
+body.module-inventory{--module-ink:#fff;--module-muted:#f0f5f1;--module-field-ink:#203128}
+body.module-sales{--module-ink:#fff;--module-muted:#f3e9ff;--module-field-ink:#28133d}
+body.module-purchases{--module-ink:#fff;--module-muted:#f2f5f8;--module-field-ink:#263747}
+body.module-ledger{--module-ink:#4b3828;--module-muted:#5c4938;--module-field-ink:#3d3025}
+body.module-other{--module-ink:#fff;--module-muted:#f0f4f6;--module-field-ink:#26343b}
+body[class*="module-"] #view{color:var(--module-ink,var(--module-text,#fff))}
+body[class*="module-"] #view h1,
+body[class*="module-"] #view h2,
+body[class*="module-"] #view h3,
+body[class*="module-"] #view h4,
+body[class*="module-"] #view p,
+body[class*="module-"] #view label,
+body[class*="module-"] #view small,
+body[class*="module-"] #view strong,
+body[class*="module-"] #view b,
+body[class*="module-"] #view em,
+body[class*="module-"] #view li,
+body[class*="module-"] #view dt,
+body[class*="module-"] #view dd,
+body[class*="module-"] #view a,
+body[class*="module-"] #view .muted,
+body[class*="module-"] #view .statlabel,
+body[class*="module-"] #view .empty{color:var(--module-muted,var(--module-ink))!important}
+body[class*="module-"] #view h1,
+body[class*="module-"] #view h2,
+body[class*="module-"] #view h3,
+body[class*="module-"] #view h4,
+body[class*="module-"] #view strong,
+body[class*="module-"] #view b,
+body[class*="module-"] #view th,
+body[class*="module-"] #view td{color:var(--module-ink)!important}
+body[class*="module-"] #view .card,
+body[class*="module-"] #view .more-link,
+body[class*="module-"] #view .quick button,
+body[class*="module-"] #view .section-quick button,
+body[class*="module-"] #view .section-action-grid .more-link,
+body[class*="module-"] #view .dialog,
+body[class*="module-"] #view .tablewrap{color:var(--module-ink)}
+body[class*="module-"] #view .field label{color:var(--module-muted)!important}
+body[class*="module-"] #view .field input,
+body[class*="module-"] #view .field select,
+body[class*="module-"] #view .field textarea,
+body[class*="module-"] #view .search{background:#fff!important;color:var(--module-field-ink)!important;border:1px solid var(--module-line)!important}
+body[class*="module-"] #view .field input::placeholder,
+body[class*="module-"] #view .field textarea::placeholder,
+body[class*="module-"] #view .search::placeholder{color:#58636d!important;opacity:1}
+body[class*="module-"] #view .btn:not(.primary):not(.danger):not(.soft){background:rgba(20,25,30,.18);color:var(--module-ink)!important;border-color:var(--module-line)}
+body[class*="module-"] #view .btn.primary{color:#fff!important}
+body[class*="module-"] #view .badge{color:#fff!important;background:#46545e;border:1px solid #91a0aa}
+body[class*="module-"] #view .notice{color:var(--module-ink)!important;background:var(--module-card);border-color:var(--module-line)}
+body[class*="module-"] #view .tablewrap th{color:var(--module-ink)!important}
+body[class*="module-"] #view .tablewrap td{color:var(--module-ink)!important}
+body.module-ledger #view .card,
+body.module-ledger #view .more-link,
+body.module-ledger #view .quick button,
+body.module-ledger #view .section-quick button,
+body.module-ledger #view .dialog,
+body.module-ledger #view .tablewrap{color:#4b3828!important}
+body.module-ledger #view .muted,
+body.module-ledger #view .statlabel,
+body.module-ledger #view small,
+body.module-ledger #view label{color:#5c4938!important}
+body.module-ledger #view .btn:not(.primary):not(.danger):not(.soft){background:#eee5d8;color:#4b3828!important}
+body.module-ledger #view .tablewrap th{background:#34302b;color:#fff!important}
+body.module-ledger #view .tablewrap td{background:#f5eee3;color:#4b3828!important}
+body.module-inventory #view .tablewrap th{background:#30483b;color:#fff!important}
+body.module-sales #view .tablewrap th{background:#2d0751;color:#fff!important}
+body.module-purchases #view .tablewrap th{background:#7d3829;color:#fff!important}
+body.module-other #view .tablewrap th{background:#3d5966;color:#fff!important}
+body.module-inventory #view .tablewrap td{background:#526f60;color:#fff!important}
+body.module-sales #view .tablewrap td{background:#4c187d;color:#fff!important}
+body.module-purchases #view .tablewrap td{background:#315a7b;color:#fff!important}
+body.module-other #view .tablewrap td{background:#6c8490;color:#fff!important}
+
+/* More tools: Platinum Grey surfaces with dark graphite text for contrast. */
+body.module-more{--module-bg:#d5d8dc;--module-card:#eef0f2;--module-accent:#68737e;--module-line:#aeb5bc;--module-text:#252c33;--module-ink:#252c33;--module-muted:#4b5661;--module-field-ink:#252c33}
+body.module-more #view{background:linear-gradient(140deg,#e0e2e5 0%,#c9cdd1 100%)!important;color:#252c33!important}
+body.module-more .top{background:linear-gradient(120deg,#e4e6e9,#cdd1d5)!important;color:#252c33!important;border-bottom:1px solid #aeb5bc!important}
+body.module-more .top strong{color:#252c33!important}
+body.module-more #view .welcome h1,
+body.module-more #view .welcome .muted{color:#252c33!important}
+body.module-more #view .more-link,
+body.module-more #view .card,
+body.module-more #view .quick button,
+body.module-more #view .section-quick button,
+body.module-more #view .dialog,
+body.module-more #view .tablewrap{background:linear-gradient(145deg,#f5f6f7,#e2e5e8)!important;color:#252c33!important;border:1px solid #aeb5bc!important;box-shadow:inset 1px 1px 1px #fff,0 7px 17px #343b4318!important}
+body.module-more #view .more-link b,
+body.module-more #view .more-link small,
+body.module-more #view .more-arrow{color:#252c33!important}
+body.module-more #view .more-link small{opacity:1}
+body.module-more #view .more-icon{background:linear-gradient(145deg,#d7dbe0,#bcc2c9)!important;color:#26313a!important;border:1px solid #aab2ba}
+body.module-more #view .btn:not(.primary):not(.danger):not(.soft){background:#e5e8eb!important;color:#252c33!important;border-color:#aeb5bc!important}
+body.module-more #view .btn.primary{background:linear-gradient(145deg,#68737e,#414b55)!important;color:#fff!important;border-color:#59636d!important}
+body.module-more #view .field label{color:#303943!important}
+body.module-more #view .field input,
+body.module-more #view .field select,
+body.module-more #view .field textarea,
+body.module-more #view .search{background:#fff!important;color:#252c33!important;border-color:#9da6af!important}
+body.module-more #view .badge{background:#59636d!important;color:#fff!important}
+body.module-more .mobile-nav{background:linear-gradient(120deg,#e5e7e9,#cdd1d5)!important;border-color:#aeb5bc!important}
+body.module-more .mobile-nav button{color:#3d4751!important}
+body.module-more .mobile-nav button.active{color:#202830!important}
+body.module-more .mobile-nav button.active .mi{background:#c3c9cf!important;color:#202830!important}
+
+</style></head><body><div class="app"><aside class="side"><div class="brand">◈ SmartLedger<small>BUSINESS MANAGER</small></div><nav class="nav" id="nav"><div class="navlabel">Workspace</div><button class="active" data-page="Dashboard">▦ <span class="txt">Dashboard</span></button><button data-page="Sales">▤ <span class="txt">Sales</span></button><button data-page="Purchases">▣ <span class="txt">Purchases</span></button><button data-page="Items">▧ <span class="txt">Items & Stock</span></button><div class="navlabel">People</div><button data-page="Customers">♙ <span class="txt">Customers</span></button><button data-page="Suppliers">♧ <span class="txt">Suppliers</span></button><button data-page="Expenses">₹ <span class="txt">Expenses</span></button><div class="navlabel">Accounts</div><button data-page="Cash & Bank">▤ <span class="txt">Cash & Bank</span></button><button data-page="Ledgers">⇄ <span class="txt">Ledgers & Payments</span></button><button data-page="Stock Alerts">⚑ <span class="txt">Stock Alerts</span></button><button data-page="Tax Reports">▥ <span class="txt">GST Reports</span></button><button data-page="Reports">▥ <span class="txt">Reports</span></button><button data-page="Settings">⚙ <span class="txt">Settings</span></button></nav></aside><main class="main"><header class="top"><strong id="pagetitle">Dashboard</strong><div class="topright"><span class="pill" title="SmartLedger major release">✦ SMARTLEDGER v40.6</span><div class="theme-switch" aria-label="Display mode"><button title="Light mode" onclick="setTheme('light')">☼</button><button title="Dark mode" onclick="setTheme('dark')">◐</button><button title="System mode" onclick="setTheme('system')">▣</button></div><span id="today" class="muted"></span></div></header><div class="content" id="view"></div></main></div><nav class="mobile-nav" id="mobileNav" aria-label="Main navigation"><button class="active" data-page="Dashboard"><span class="mi">⌂</span>Home</button><button data-page="Sales"><span class="mi">▤</span>Sales</button><button data-page="Purchases"><span class="mi">🛒</span>Purchase</button><button data-page="Items"><span class="mi">▦</span>Items</button><button data-page="More"><span class="mi">☰</span>More</button></nav><div class="modal" id="modal"><div class="dialog"><div class="dialoghead"><h2 id="modaltitle">Add</h2><button class="close" onclick="closeModal()">×</button></div><div id="modalbody"></div></div></div><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script>
+const APP_VERSION='40.6.0', BACKUP_SCHEMA_VERSION=5;
 const $=s=>document.querySelector(s), money=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:2}), db={items:'sl_items',customers:'sl_customers',suppliers:'sl_suppliers',sales:'sl_sales',purchases:'sl_purchases',expenses:'sl_expenses',cash:'sl_cash',payments:'sl_payments',adjustments:'sl_adjustments',batches:'sl_batches',salesReturns:'sl_sales_returns',purchaseReturns:'sl_purchase_returns'};
 const get=k=>JSON.parse(localStorage.getItem(db[k])||'[]'), put=(k,v)=>localStorage.setItem(db[k],JSON.stringify(v)), num=v=>Number(v)||0, sum=(a,f)=>a.reduce((s,x)=>s+num(f(x)),0), today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
 $('#today').textContent=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
@@ -522,7 +631,7 @@ function dashboardDetail(kind){let title='',html='';if(kind==='pay'||kind==='col
  }).join('');
  return '<svg class="sales-chart" viewBox="0 0 360 150" role="img" aria-label="Three-dimensional daily sales bar chart for the last seven days"><path d="M8 111H352" class="chart-base"/>'+bars+'</svg>';
 }
-function applyModuleTheme(){const b=document.body;b.classList.remove('module-inventory','module-sales','module-purchases','module-ledger','module-other');if(page==='Dashboard')return;const inventory=['Items','Item Insights','Batch & Expiry','Stock Summary','Stock Alerts'];const other=['Customers','Suppliers','Expenses','Cash & Bank','Tax Reports','Reports','Settings','More','Accounts'];const cls=inventory.includes(page)?'module-inventory':page==='Sales'?'module-sales':page==='Purchases'?'module-purchases':page==='Ledgers'?'module-ledger':other.includes(page)?'module-other':'module-other';b.classList.add(cls)}
+function applyModuleTheme(){const b=document.body;b.classList.remove('module-inventory','module-sales','module-purchases','module-ledger','module-other','module-more');if(page==='Dashboard')return;if(page==='More'){b.classList.add('module-more');return}const inventory=['Items','Item Insights','Batch & Expiry','Stock Summary','Stock Alerts'];const other=['Customers','Suppliers','Expenses','Cash & Bank','Tax Reports','Reports','Settings','Accounts'];const cls=inventory.includes(page)?'module-inventory':page==='Sales'?'module-sales':page==='Purchases'?'module-purchases':page==='Ledgers'?'module-ledger':other.includes(page)?'module-other':'module-other';b.classList.add(cls)}
 function render(){applyModuleTheme();let t=totals(),v=$('#view');if(page==='Item Insights')itemInsights();else if(page==='Batch & Expiry')batchExpiryPage();else if(page==='Dashboard'){v.innerHTML=`<div class="welcome"><div><h1>Business overview</h1><div class="muted">Your business at a glance</div></div></div><div class="dashboard-quick"><button onclick="saleForm()">${iconSvg("sales")}<b>New Sale</b></button><button onclick="purchaseForm()">${iconSvg("purchase")}<b>Purchase</b></button><button onclick="itemForm()">${iconSvg("items")}<b>Add Item</b></button><button onclick="openAIAssistant()"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8z"/><path d="m19 14 1 2.8 3 1.2-3 1.1-1 2.9-1.1-2.9-2.9-1.1 2.9-1.2z"/></svg><b>AI Assistant</b></button></div><div class="dashboard-overview"><button class="overview-card" onclick="dashboardDetail('pay')"><span class="statlabel">To Pay</span><strong class="stat">${money(outstandingTotal('Supplier'))}</strong><small>Supplier outstanding · Tap for details</small></button><button class="overview-card" onclick="dashboardDetail('collect')"><span class="statlabel">To Collect</span><strong class="stat">${money(outstandingTotal('Customer'))}</strong><small>Customer outstanding · Tap for details</small></button><button class="overview-card" onclick="dashboardDetail('profit')"><span class="statlabel">Profit &amp; Loss</span><strong class="stat">${money(t.profit)}</strong><small>Estimated net profit · Tap for details</small></button><button class="overview-card" onclick="dashboardDetail('daily')"><span class="statlabel">Daily Sale Details</span><strong class="stat">${money(sum(get('sales').filter(x=>x.date===today),x=>x.total))}</strong><small>${get('sales').filter(x=>x.date===today).length} invoices today · Tap for details</small></button></div><div class="sales-overview-card"><div class="sales-overview-head"><div><h2>Sales overview</h2><p>Last 7 days · Daily sales trend</p></div><strong class="sales-overview-total">${money(sum(get('sales').filter(x=>x.date>=new Date(Date.now()-6*86400000).toISOString().slice(0,10)),x=>x.total))}</strong></div>${salesOverviewGraph()}</div>` ;}else if(page==='Items')listItems();else if(page==='Customers'||page==='Suppliers')listParties(page.toLowerCase());else if(page==='Sales')listTransactions('sales');else if(page==='Purchases')listTransactions('purchases');else if(page==='Expenses')listExpenses();else if(page==='Reports')reports();else if(page==='Cash & Bank')cashPage();else if(page==='Ledgers')ledgerPage();else if(page==='Stock Alerts')stockAlerts();else if(page==='Stock Summary')stockSummary();else if(page==='Tax Reports')taxReports();else if(page==='Settings')settings();else if(page==='More')morePage(); addSectionQuickLinks(); }
 function table(rows,cols,amt=false){if(!rows.length)return '<div class="empty">No records yet</div>';return '<div class="tablewrap"><table><thead><tr>'+cols.map(c=>'<th>'+c[1]+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+cols.map(c=>'<td>'+(c[0]==='total'||c[0]==='amount'?money(r[c[0]]):String(r[c[0]]??'—').replaceAll('<','&lt;'))+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'}
 function itemEscape(value){
@@ -561,7 +670,7 @@ function settings(){
  const logo=localStorage.bizlogo||"",signature=localStorage.bizsignature||"";
  window.profileImageDraft={logo,signature};
  const preview=(src,label)=>src?'<img src="'+src+'" alt="'+label+' preview">':'<span>'+label+' preview</span>';
- $('#view').innerHTML='<div class="welcome"><div><h1>Settings</h1><div class="muted">Business profile, appearance and data controls</div></div></div><div class="card"><div class="sectionhead"><div><h2>SmartLedger v40.4</h2><div class="muted">Professional billing and customer balance visibility</div></div><span class="badge">Version 40.4</span></div><p class="muted">Version 40.4 unifies advanced business analytics, inventory intelligence, reorder planning, GST summaries, customer and supplier insights, data-health checks and automatic double-entry posting for new transactions. Historical records remain preserved and are not back-posted.</p></div><div class="section card business-profile"><h2>Business details</h2><p class="muted">These details are saved on this device and used on printed invoices where applicable.</p><div class="profile-subsection"><h3>Business identity</h3><div class="formgrid"><div class="field"><label for="bizname">Business name</label><input id="bizname" autocomplete="organization" value="'+val("bizname")+'"></div><div class="field"><label for="gstin">GSTIN</label><input id="gstin" value="'+val("gstin")+'" placeholder="Enter GSTIN"></div><div class="field full"><label for="bizaddress">Business address</label><textarea id="bizaddress" rows="3" placeholder="Shop / building, street, area, town, district, PIN code">'+val("bizaddress")+'</textarea></div></div></div><div class="profile-subsection"><h3>Contact numbers</h3><div class="formgrid"><div class="field"><label for="bizphone">Primary phone number</label><input id="bizphone" type="tel" inputmode="tel" autocomplete="tel" value="'+val("bizphone")+'" placeholder="Primary contact number"></div><div class="field"><label for="bizphone2">Secondary phone number</label><input id="bizphone2" type="tel" inputmode="tel" value="'+val("bizphone2")+'" placeholder="Optional alternate number"></div></div></div><div class="profile-subsection"><h3>Business logo</h3><div class="profile-upload-row"><div class="profile-image-preview" id="bizlogoPreview">'+preview(logo,"Logo")+'</div><div class="field profile-upload"><label for="bizlogoFile">Upload business logo</label><input id="bizlogoFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="previewBusinessImage(this,\'logo\',\'bizlogoPreview\')"><small>PNG, JPG or WebP. Maximum 450 KB.</small><button type="button" class="btn" onclick="clearBusinessImage(\'logo\',\'bizlogoPreview\')">Remove logo</button></div></div></div><div class="profile-subsection"><h3>Authorised signature</h3><div class="profile-upload-row"><div class="profile-image-preview signature-preview" id="bizsignaturePreview">'+preview(signature,"Signature")+'</div><div class="field profile-upload"><label for="bizsignatureFile">Upload signature image</label><input id="bizsignatureFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="previewBusinessImage(this,\'signature\',\'bizsignaturePreview\')"><small>Use a clear signature image. Maximum 450 KB.</small><button type="button" class="btn" onclick="clearBusinessImage(\'signature\',\'bizsignaturePreview\')">Remove signature</button></div></div></div><div class="profile-subsection"><div class="formgrid"><div class="field"><label>Currency</label><input value="INR — Indian Rupee" disabled></div></div></div><p><button class="btn primary" onclick="saveBusinessProfile()">Save business details</button></p></div><div class="section card"><h2>Data management</h2><p class="muted">Your entries and business profile are stored in this browser on this device. Export backups regularly.</p><div class="actions"><button class="btn primary" onclick="exportData()">Download full backup</button><button class="btn" onclick="document.getElementById(\'restore\').click()">Restore backup</button><input id="restore" type="file" accept="application/json" class="hidden" onchange="restoreData(this)"></div></div><div class="section notice">Online sync, multi-device login, GST e-invoicing, payment gateway and printer integrations require backend services and credentials.</div>';
+ $('#view').innerHTML='<div class="welcome"><div><h1>Settings</h1><div class="muted">Business profile, appearance and data controls</div></div></div><div class="card"><div class="sectionhead"><div><h2>SmartLedger v40.6</h2><div class="muted">Professional billing and customer balance visibility</div></div><span class="badge">Version 40.6</span></div><p class="muted">Version 40.6 unifies advanced business analytics, inventory intelligence, reorder planning, GST summaries, customer and supplier insights, data-health checks and automatic double-entry posting for new transactions. Historical records remain preserved and are not back-posted.</p></div><div class="section card business-profile"><h2>Business details</h2><p class="muted">These details are saved on this device and used on printed invoices where applicable.</p><div class="profile-subsection"><h3>Business identity</h3><div class="formgrid"><div class="field"><label for="bizname">Business name</label><input id="bizname" autocomplete="organization" value="'+val("bizname")+'"></div><div class="field"><label for="gstin">GSTIN</label><input id="gstin" value="'+val("gstin")+'" placeholder="Enter GSTIN"></div><div class="field full"><label for="bizaddress">Business address</label><textarea id="bizaddress" rows="3" placeholder="Shop / building, street, area, town, district, PIN code">'+val("bizaddress")+'</textarea></div></div></div><div class="profile-subsection"><h3>Contact numbers</h3><div class="formgrid"><div class="field"><label for="bizphone">Primary phone number</label><input id="bizphone" type="tel" inputmode="tel" autocomplete="tel" value="'+val("bizphone")+'" placeholder="Primary contact number"></div><div class="field"><label for="bizphone2">Secondary phone number</label><input id="bizphone2" type="tel" inputmode="tel" value="'+val("bizphone2")+'" placeholder="Optional alternate number"></div></div></div><div class="profile-subsection"><h3>Business logo</h3><div class="profile-upload-row"><div class="profile-image-preview" id="bizlogoPreview">'+preview(logo,"Logo")+'</div><div class="field profile-upload"><label for="bizlogoFile">Upload business logo</label><input id="bizlogoFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="previewBusinessImage(this,\'logo\',\'bizlogoPreview\')"><small>PNG, JPG or WebP. Maximum 450 KB.</small><button type="button" class="btn" onclick="clearBusinessImage(\'logo\',\'bizlogoPreview\')">Remove logo</button></div></div></div><div class="profile-subsection"><h3>Authorised signature</h3><div class="profile-upload-row"><div class="profile-image-preview signature-preview" id="bizsignaturePreview">'+preview(signature,"Signature")+'</div><div class="field profile-upload"><label for="bizsignatureFile">Upload signature image</label><input id="bizsignatureFile" type="file" accept="image/png,image/jpeg,image/webp" onchange="previewBusinessImage(this,\'signature\',\'bizsignaturePreview\')"><small>Use a clear signature image. Maximum 450 KB.</small><button type="button" class="btn" onclick="clearBusinessImage(\'signature\',\'bizsignaturePreview\')">Remove signature</button></div></div></div><div class="profile-subsection"><div class="formgrid"><div class="field"><label>Currency</label><input value="INR — Indian Rupee" disabled></div></div></div><p><button class="btn primary" onclick="saveBusinessProfile()">Save business details</button></p></div><div class="section card"><h2>Data management</h2><p class="muted">Your entries and business profile are stored in this browser on this device. Export backups regularly.</p><div class="actions"><button class="btn primary" onclick="exportData()">Download full backup</button><button class="btn" onclick="document.getElementById(\'restore\').click()">Restore backup</button><input id="restore" type="file" accept="application/json" class="hidden" onchange="restoreData(this)"></div></div><div class="section notice">Online sync, multi-device login, GST e-invoicing, payment gateway and printer integrations require backend services and credentials.</div>';
 }
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
 function previewBusinessImage(input,key,previewId){
