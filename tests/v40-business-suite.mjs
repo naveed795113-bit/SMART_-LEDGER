@@ -20,6 +20,8 @@ w.eval(suite);
 assert.ok(html.includes("APP_VERSION='40.6.0'"),"App version is v40.6");
 assert.equal(JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]").length,0,"Historical transactions must not be back-posted");
 w.go("Business Suite");
+assert.ok(w.document.body.classList.contains("v40-open"),"Business Suite activates its dedicated contrast theme");
+assert.ok(w.document.getElementById("v40-contrast-fix"),"Business Suite injects high-contrast text rules");
 assert.match(w.document.querySelector("#view").textContent,/Business Suite/);
 for(const tab of ["overview","finance","inventory","gst","customers","suppliers","planning","health"]){
  w.smartSuiteTab(tab);
