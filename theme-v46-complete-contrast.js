@@ -14,7 +14,7 @@
  body.theme-light option{background:#fff;color:#17212b}
  body.theme-dark option{background:#171d24;color:#f5f7fa}
  body.theme-light :is(.dialog,.modal) :is(input,select,textarea){background:#fff!important;color:#17212b!important;-webkit-text-fill-color:#17212b!important}
- body.theme-dark :is(.dialog,.modal) :is(input,select,textarea){background:#171d24!important;color:#f5f7fa!important;-webkit-text-fill-color:#f5f7fa!important}
+ body.theme-dark :is(.dialog,.modal) :is(input,select,textarea){background:#171d24!important;color:#f5f7fa!important;-webkit-text-fill-color:#f5f7fa!important}\n [style*="--sl-pseudo-contrast"]::before,[style*="--sl-pseudo-contrast"]::after{color:var(--sl-pseudo-contrast)!important}
  `;
  let style=document.getElementById(ID);
  if(!style){style=document.createElement("style");style.id=ID;document.head.appendChild(style)}
@@ -37,7 +37,7 @@
   let chain=[],n=el;
   while(n&&n.nodeType===1){chain.push(n);if(n===document.documentElement)break;n=n.parentElement}
   chain.reverse();
-  let bases=[document.body&&getComputedStyle(document.body).classList?.contains("theme-dark")?{r:24,g:27,b:32,a:1}:{r:255,g:255,b:255,a:1}];
+  let bases=[document.body&&document.body.classList.contains("theme-dark")?{r:24,g:27,b:32,a:1}:{r:255,g:255,b:255,a:1}];
   for(const node of chain){
    const cs=getComputedStyle(node),bg=parse(cs.backgroundColor),gs=stops(cs.backgroundImage);
    if(gs.length){let next=[];for(const under of bases)for(const g of gs)next.push(mix(g,under));bases=next}
@@ -51,7 +51,7 @@
   if(el.closest("[data-no-auto-contrast],.invoice-paper,.pdf-report"))return true;
   return /^(script|style|noscript|input|select|textarea|option|canvas|img|video|audio|iframe)$/.test(el.tagName.toLowerCase());
  }
- function dashboardOnly(el){return !!el.closest("#dashboard,[data-page-view='Dashboard'],.dashboard-overview")||document.body.classList.contains("module-dashboard")}
+ function dashboardOnly(el){return ![...document.body.classList].some(c=>c.startsWith("module-"))||!!el.closest("#dashboard,[data-page-view='Dashboard'],.dashboard-overview")||document.body.classList.contains("module-dashboard")}
  function hasOwnText(el){return [...el.childNodes].some(n=>n.nodeType===3&&n.nodeValue.trim())}
  function visible(el){const s=getComputedStyle(el);return s.display!=="none"&&s.visibility!=="hidden"&&s.opacity!=="0"}
  function correct(el){
