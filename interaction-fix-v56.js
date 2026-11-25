@@ -14,12 +14,27 @@
     else document.dispatchEvent(new CustomEvent("smartledger:navigate", { detail: { page } }));
   }
   function logout() {
+    const button = document.getElementById("slMobileLogout");
     if (typeof window.smartLedgerLogout === "function") {
-      window.smartLedgerLogout();
+      Promise.resolve(window.smartLedgerLogout()).catch(error => {
+        console.error("SmartLedger logout failed:", error);
+        if (button) button.textContent = "↪";
+        alert("Logout failed. Check your connection and try again.");
+      });
       return;
     }
-    const status = document.getElementById("slLoginStatus");
-    if (status) status.textContent = "Authentication is still loading. Please tap Log out again in a moment.";
+    if (button) button.textContent = "…";
+    window.setTimeout(function () {
+      if (typeof window.smartLedgerLogout === "function") {
+        Promise.resolve(window.smartLedgerLogout()).catch(error => {
+          console.error("SmartLedger logout failed:", error);
+          alert("Logout failed. Check your connection and try again.");
+        });
+      } else {
+        if (button) button.textContent = "↪";
+        alert("Login service did not load. Close SmartLedger and reopen it.");
+      }
+    }, 800);
   }
 
   document.addEventListener("click", function (event) {
