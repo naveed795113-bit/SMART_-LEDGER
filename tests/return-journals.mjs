@@ -21,6 +21,7 @@ const dom=new JSDOM(readFileSync("index.html","utf8"),{
 });
 const w=dom.window;
 await new Promise(resolve=>setTimeout(resolve,40));
+w.eval(readFileSync("business-suite-v40.js","utf8"));
 w.go("Accounts");
 w.localStorage.setItem("sl_items",JSON.stringify([{name:"Rice",qty:2,purchase:6,price:15,unit:"kg"}]));
 w.localStorage.setItem("sl_sales",JSON.stringify([{id:810,date:"2026-11-25",invoice:"S-810",party:"Customer",item:"Rice",qty:10,rate:10,total:100,taxable:95,tax:5,cost:60,paid:100}]));
