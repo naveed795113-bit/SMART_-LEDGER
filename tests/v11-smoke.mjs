@@ -9,6 +9,12 @@ assert.ok(inlineScripts.length, 'Inline application script exists');
 for (const [i, source] of inlineScripts.entries()) new Script(source, { filename: 'index-inline-' + i + '.js' });
 
 const checks = [
+  ['phone password authentication imports Firebase email/password methods', /createUserWithEmailAndPassword/.test(readFileSync('login-gate-v50.js','utf8')) && /signInWithEmailAndPassword/.test(readFileSync('login-gate-v50.js','utf8'))],
+  ['free phone password account creation and sign-in controls', /slCreatePhoneAccount/.test(readFileSync('login-gate-v50.js','utf8')) && /slPhonePasswordSignIn/.test(readFileSync('login-gate-v50.js','utf8')) && /function phonePasswordAuth\(createAccount\)/.test(readFileSync('login-gate-v50.js','utf8'))],
+  ['phone number normalized into private Firebase account identifier', /function phoneAccountEmail\(rawPhone\)/.test(readFileSync('login-gate-v50.js','utf8')) && /accounts\\.smartledger\\.invalid/.test(readFileSync('login-gate-v50.js','utf8'))],
+  ['phone password login warns number is not SMS-verified and recovery is not yet available', /not verified by SMS/.test(readFileSync('login-gate-v50.js','utf8')) && /password recovery is not available/.test(readFileSync('login-gate-v50.js','utf8'))],
+  ['authentication v64 loader and service worker cache', /login-gate-v50\\.js\\?v=64/.test(readFileSync('login-gate-loader-v60.js','utf8')) && /smartledger-v63\\.0/.test(readFileSync('sw.js','utf8'))],
+
   ['release badge', html.includes('SMARTLEDGER v44.0')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
