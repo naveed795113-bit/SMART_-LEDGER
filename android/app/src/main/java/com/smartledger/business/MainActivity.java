@@ -243,8 +243,6 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public void recognizeBill
-        @JavascriptInterface
         public void recognizeBill(String base64, String language, String callbackId) {
             final String requested = language == null ? "eng" : language;
             if (!requested.matches("eng|hin|urd|eng\\+hin|eng\\+urd|hin\\+urd|eng\\+hin\\+urd")
