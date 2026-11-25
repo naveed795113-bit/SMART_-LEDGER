@@ -1,4 +1,4 @@
-const CACHE = "smartledger-v56.0";
+const CACHE = "smartledger-v57.0";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./accounting.js", "./business-suite-v40.js", "./theme-v42.js", "./theme-v43-contrast.js", "./theme-v44-global-contrast.js", "./theme-v45-contrast.js", "./theme-v46-complete-contrast.js", "./theme-v47-theme-aware-text.js", "./theme-v48-more-theme.js", "./google-drive-v49.js", "./login-gate-v50.js", "./ai-assistant-v52.js", "./interaction-fix-v56.js"];
 
 self.addEventListener("install", event => {
