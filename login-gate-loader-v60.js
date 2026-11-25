@@ -1,4 +1,4 @@
-/* SmartLedger Firebase module bootstrap — v62.
+/* SmartLedger Firebase module bootstrap — v63.
  * Reports the complete runtime stack so login initialization failures can be traced.
  */
 (function () {
@@ -9,7 +9,7 @@
   box.textContent = "Connecting securely to SmartLedger…";
   document.body.appendChild(box);
   window.smartLedgerModuleState = "loading";
-  const load = import("./login-gate-v50.js?v=62");
+  const load = import("./login-gate-v50.js?v=63");
   const timeout = new Promise((_, reject) => window.setTimeout(() => reject(new Error("Firebase login module took longer than 45 seconds to load. Check your internet connection and reload.")), 45000));
   Promise.race([load, timeout]).then(() => {
     window.smartLedgerModuleState = "ready";
