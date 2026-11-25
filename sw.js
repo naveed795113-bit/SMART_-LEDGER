@@ -1,5 +1,5 @@
-const CACHE = "smartledger-v43.0";
-const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./accounting.js", "./business-suite-v40.js", "./theme-v42.js", "./theme-v43-contrast.js"];
+const CACHE = "smartledger-v44.0";
+const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./accounting.js", "./business-suite-v40.js", "./theme-v42.js", "./theme-v43-contrast.js", "./theme-v44-global-contrast.js"];
 
 self.addEventListener("install", event => {
   event.waitUntil(

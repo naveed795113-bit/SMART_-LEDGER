@@ -9,11 +9,11 @@ assert.ok(inlineScripts.length, 'Inline application script exists');
 for (const [i, source] of inlineScripts.entries()) new Script(source, { filename: 'index-inline-' + i + '.js' });
 
 const checks = [
-  ['release badge', html.includes('SMARTLEDGER v43.0')],
+  ['release badge', html.includes('SMARTLEDGER v44.0')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['Business Suite theme uses readable light/dark palette tokens', /--v40-accent:#e2c98e/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8'))],
-  ['version constants', html.includes("APP_VERSION='43.0.0'")],
+  ['version constants', html.includes("APP_VERSION='44.0.0'")],
   ['searchable 3D sales product picker', /txn-product-search/.test(html) && /txn-product-option/.test(html) && /function filterTxnProducts\(/.test(html)],
   ['inventory unit conversion catalogue', /UNIT_CATALOG/.test(html) && /function unitFactorForItem\(/.test(html) && /baseUnit/.test(html)],
   ['premium invoice with logo and signature', /invoice-logo/.test(html) && /invoice-signature-image/.test(html) && /amountInWordsINR/.test(html)],
@@ -37,6 +37,9 @@ const checks = [
   ['Business Suite inherits light and dark palettes', /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8')) && /background:var\(--v40-card\)!important/.test(readFileSync('business-suite-v40.js','utf8')) && /color:var\(--v40-text\)!important/.test(readFileSync('business-suite-v40.js','utf8')) && /#view \.v40-table td/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['Business Suite no longer forces global dark mode', !/:root\{--blue:#171b1f/.test(readFileSync('business-suite-v40.js','utf8')) && !/body\{background:var\(--bg\);color:var\(--text\)\}/.test(readFileSync('business-suite-v40.js','utf8'))],
 
+  ['v44 app-wide adaptive contrast runtime JavaScript syntax', new Script(readFileSync('theme-v44-global-contrast.js','utf8'), { filename: 'theme-v44-global-contrast.js' })],
+  ['v44 app-wide adaptive contrast runtime loaded and precached', /theme-v44-global-contrast\.js/.test(html) && /theme-v44-global-contrast\.js/.test(readFileSync('sw.js','utf8'))],
+  ['v44 contrast checks rendered text against its actual background', /function backgroundFor\(el\)/.test(readFileSync('theme-v44-global-contrast.js','utf8')) && /ratio\(current,bg\)>=4\.5/.test(readFileSync('theme-v44-global-contrast.js','utf8')) && /new MutationObserver/.test(readFileSync('theme-v44-global-contrast.js','utf8'))],
   ['v43 contrast runtime JavaScript syntax', new Script(readFileSync('theme-v43-contrast.js','utf8'), { filename: 'theme-v43-contrast.js' })],
   ['v43 separate light and dark text contrast runtime', /theme-v43-contrast\.js/.test(html) && /html\[data-sl-theme="light"\]/.test(readFileSync('theme-v43-contrast.js','utf8')) && /html\[data-sl-theme="dark"\]/.test(readFileSync('theme-v43-contrast.js','utf8'))],
   ['v43 Business Suite text contrast in both modes', /body\.theme-light #view .*v40-stat/.test(readFileSync('theme-v43-contrast.js','utf8')) && /body\.theme-dark #view .*v40-stat/.test(readFileSync('theme-v43-contrast.js','utf8'))],
@@ -87,7 +90,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v43.0') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js'), 'Service worker cache version');
+assert.ok(sw.includes('smartledger-v44.0') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js'), 'Service worker cache version');
 console.log('PASS service worker cache version');
 console.log('PASS inline JavaScript syntax (' + inlineScripts.length + ' scripts)');
 console.log('TOTAL ' + (checks.length + 2) + ' checks passed');
