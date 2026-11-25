@@ -23,7 +23,7 @@ const window = {
   location: { reload(){ reloads++; } }
 };
 const source = readFileSync('account-storage-v1.js','utf8');
-vm.runInNewContext(source,{window,console,encodeURIComponent,Set,Proxy,Object,Array,String});
+vm.runInNewContext(source,{window,location:window.location,console,encodeURIComponent,Set,Proxy,Object,Array,String});
 const storage = window.localStorage;
 
 // Firebase persistence must be readable/writable before and after login.
