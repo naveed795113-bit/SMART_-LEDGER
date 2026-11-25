@@ -205,7 +205,8 @@ window.smartLedgerLogout = async function () {
 showGate();
 try {
   await setPersistence(auth, browserLocalPersistence);
-  await getRedirectResult(auth);
+  try { await getRedirectResult(auth); }
+  catch (redirectError) { status(errorText(redirectError)); }
   onAuthStateChanged(auth, user => {
     authReady = true;
     if (user) unlock(user);
