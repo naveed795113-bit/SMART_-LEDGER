@@ -54,6 +54,7 @@ jobs:
           node tests/returns-accounting.mjs
           node tests/return-journals.mjs
           node tests/offline-ocr.mjs
+          node tests/whatsapp-share.mjs
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
