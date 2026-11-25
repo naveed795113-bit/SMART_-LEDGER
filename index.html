@@ -1045,7 +1045,7 @@ function saveReturn(e,kind){
  }
  put("items",items);
  put("batches",batches);
- let record={id:Date.now(),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cgst,sgst,igst,cost,kind:sales?"Sales return":"Purchase return"};
+ let record={id:Date.now()*1000+Math.floor(Math.random()*1000),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cgst,sgst,igst,cost,kind:sales?"Sales return":"Purchase return"};
  returns.push(record);
  put(sales?"salesReturns":"purchaseReturns",returns);
  let cash=get("cash");
