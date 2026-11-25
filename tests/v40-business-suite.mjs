@@ -17,9 +17,21 @@ const w=dom.window;
 w.localStorage.setItem("sl_sales",JSON.stringify([{id:11,date:"2026-11-20",invoice:"OLD-1",party:"Old customer",total:100,paid:100,taxable:100,tax:0,cost:70}]));
 w.eval(accounting);
 w.eval(suite);
-assert.ok(html.includes("APP_VERSION='40.6.0'"),"App version is v40.6");
+assert.ok(html.includes("APP_VERSION='40.7.0'"),"App version is v40.7");
 assert.equal(JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]").length,0,"Historical transactions must not be back-posted");
+w.setTheme("light");
+assert.ok(w.document.body.classList.contains("theme-light"),"Light mode is applied before opening Business Suite");
+w.setTheme("dark");
+assert.ok(w.document.body.classList.contains("theme-dark"),"Dark mode is applied before opening Business Suite");
 w.go("Business Suite");
+const suiteCss=w.document.getElementById("v40styles").textContent;
+assert.match(suiteCss,/body\.theme-dark #view/,"Business Suite includes dark-mode palette");
+assert.match(suiteCss,/#view \.v40-stat strong/,"Business Suite metric text contrast is styled");
+w.setTheme("light");
+assert.ok(w.document.body.classList.contains("theme-light"),"Business Suite responds to light mode");
+w.setTheme("dark");
+assert.ok(w.document.body.classList.contains("theme-dark"),"Business Suite responds to dark mode");
+
 assert.match(w.document.querySelector("#view").textContent,/Business Suite/);
 for(const tab of ["overview","finance","inventory","gst","customers","suppliers","planning","health"]){
  w.smartSuiteTab(tab);
