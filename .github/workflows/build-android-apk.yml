@@ -72,6 +72,13 @@ jobs:
           curl -fL 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js' -o android/app/src/main/assets/www/vendor/xlsx.full.min.js
           curl -fL 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js' -o android/app/src/main/assets/www/vendor/html2canvas.min.js
           curl -fL 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js' -o android/app/src/main/assets/www/vendor/jspdf.umd.min.js
+          mkdir -p android/app/src/main/assets/tessdata android/app/src/main/assets/ocr_licenses
+          OCR_DATA_COMMIT=e12c65a915945e4c28e237a9b52bc4a8f39a0cec
+          for lang in eng hin urd; do
+            curl -fL "https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/$OCR_DATA_COMMIT/$lang.traineddata" -o "android/app/src/main/assets/tessdata/$lang.traineddata"
+          done
+          curl -fL "https://raw.githubusercontent.com/tesseract-ocr/tessdata_best/$OCR_DATA_COMMIT/LICENSE" -o android/app/src/main/assets/ocr_licenses/tessdata_best-LICENSE.txt
+          curl -fL "https://raw.githubusercontent.com/adaptech-cz/Tesseract4Android/4.9.0/LICENSE" -o android/app/src/main/assets/ocr_licenses/Tesseract4Android-LICENSE.txt
           sed -i 's#https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js#./vendor/xlsx.full.min.js#g' android/app/src/main/assets/www/index.html
           sed -i 's#https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js#./vendor/html2canvas.min.js#g' android/app/src/main/assets/www/index.html
           sed -i 's#https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js#./vendor/jspdf.umd.min.js#g' android/app/src/main/assets/www/index.html
@@ -86,6 +93,15 @@ jobs:
           test -s android/app/src/main/assets/www/vendor/xlsx.full.min.js
           test -s android/app/src/main/assets/www/vendor/html2canvas.min.js
           test -s android/app/src/main/assets/www/vendor/jspdf.umd.min.js
+          test -s android/app/src/main/assets/tessdata/eng.traineddata
+          test -s android/app/src/main/assets/tessdata/hin.traineddata
+          test -s android/app/src/main/assets/tessdata/urd.traineddata
+          test -s android/app/src/main/assets/ocr_licenses/tessdata_best-LICENSE.txt
+          test -s android/app/src/main/assets/ocr_licenses/Tesseract4Android-LICENSE.txt
+          test "$(stat -c%s android/app/src/main/assets/tessdata/eng.traineddata)" -gt 10000000
+          test "$(stat -c%s android/app/src/main/assets/tessdata/hin.traineddata)" -gt 8000000
+          test "$(stat -c%s android/app/src/main/assets/tessdata/urd.traineddata)" -gt 6000000
+          du -h android/app/src/main/assets/tessdata/*
           if grep -E 'https://cdn.jsdelivr.net/npm/(xlsx|html2canvas|jspdf)' android/app/src/main/assets/www/index.html; then
             echo 'External CDN dependency remains in native app bundle' >&2
             exit 1
