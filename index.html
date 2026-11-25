@@ -989,8 +989,8 @@ function batchExpiryPage(){let rows=get('batches'),now=today,limit=new Date(Date
 function returnEsc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function returnLinesFor(tx){
  if(Array.isArray(tx.lines)&&tx.lines.length)return tx.lines;
- let qty=num(tx.qty),taxable=num(tx.taxable??tx.total)-num(tx.tax),gstRate=taxable>0?num(tx.tax)/taxable*100:0;
- return [{item:tx.item,qty,unit:tx.unit||"pcs",unitFactor:1,stockQty:qty,rate:num(tx.rate)||(qty>0?taxable/qty:0),discount:0,gstRate,tax:num(tx.tax),taxable,total:num(tx.total),cost:num(tx.cost)}];
+ let qty=num(tx.qty),taxable=tx.taxable!==undefined?num(tx.taxable):num(tx.total)-num(tx.tax),rate=num(tx.rate)||(qty>0?taxable/qty:0),discount=Math.max(0,qty*rate-taxable),gstRate=taxable>0?num(tx.tax)/taxable*100:0;
+ return [{item:tx.item,qty,unit:tx.unit||"pcs",unitFactor:1,stockQty:qty,rate,discount,gstRate,tax:num(tx.tax),taxable,total:num(tx.total),cost:num(tx.cost)}];
 }
 function returnForm(kind){
  let sales=kind==="sales",tx=get(sales?"sales":"purchases");
