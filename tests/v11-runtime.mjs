@@ -55,6 +55,7 @@ assert.match(window.document.querySelector('#view').textContent, /Items & invent
 assert.ok(window.document.querySelectorAll('#itemrows .product-card').length === 1, 'Product detail cards render');
 assert.match(window.document.querySelector('#itemrows').textContent, /Purchase price/, 'Product cards show purchase price');
 assert.match(window.document.querySelector('#itemrows').textContent, /Reorder level/, 'Product cards show reorder level');
+window.localStorage.setItem('sl_batches', JSON.stringify([{id:'RENAME-BATCH',item:'Original test item',batchNo:'OLD-NAME-BATCH',remaining:5,qtyReceived:5}]));
 window.editItem(0);
 assert.ok(window.document.querySelector('#editItemForm button[type=submit]'), 'Edit item form has a visible submit button');
 assert.ok(window.document.querySelector('#eimin'), 'Edit item form includes a valid reorder level field');
@@ -69,6 +70,8 @@ window.document.querySelector('#eimin').value = '4';
 window.document.querySelector('#eigST').value = '5';
 window.document.querySelector('#editItemForm').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
 assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].name, 'Edited test item', 'Edit saves item name');
+assert.ok(JSON.parse(window.localStorage.getItem('sl_items'))[0].aliases.includes('Original test item'), 'Renamed item retains its previous name for historical returns');
+assert.equal(JSON.parse(window.localStorage.getItem('sl_batches'))[0].item, 'Edited test item', 'Renaming an item updates its batch records');
 assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].qty, 17, 'Edit saves stock quantity');
 window.go('Items');
 assert.match(window.document.querySelector('#itemrows').textContent, /Edited test item/, 'Updated product renders after save');
