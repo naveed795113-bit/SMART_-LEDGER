@@ -321,6 +321,56 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void shareSingleInvoiceFile(String encoded, String mimeType, String fileName,
+                                            String phone, String message, String callbackId) {
+            try {
+                String digits = phone == null ? "" : phone.replaceAll("\\D", "");
+                if (digits.length() < 10 || digits.length() > 15) {
+                    throw new Exception("Enter the customer's full phone number with country code.");
+                }
+                String type = mimeType == null ? "application/pdf" : mimeType;
+                if (!type.equals("application/pdf") && !type.equals("image/png")) {
+                    throw new Exception("Unsupported invoice attachment type.");
+                }
+                if (encoded == null || encoded.length() > 36000000) {
+                    throw new Exception("Invoice attachment is too large to share.");
+                }
+                String whatsapp = getPackageManager().getLaunchIntentForPackage("com.whatsapp") != null
+                        ? "com.whatsapp"
+                        : (getPackageManager().getLaunchIntentForPackage("com.whatsapp.w4b") != null
+                            ? "com.whatsapp.w4b" : null);
+                if (whatsapp == null) throw new Exception("WhatsApp is not installed on this device.");
+                File directory = new File(getCacheDir(), "shared-invoices");
+                if (!directory.exists() && !directory.mkdirs()) throw new Exception("Cannot prepare invoice attachment.");
+                String safeName = (fileName == null ? "SmartLedger-Invoice" : fileName)
+                        .replaceAll("[^A-Za-z0-9._-]", "-");
+                if (safeName.length() > 100) safeName = safeName.substring(0, 100);
+                File file = writeShareFile(directory, safeName, encoded);
+                Uri uri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", file);
+                Intent share = new Intent(Intent.ACTION_SEND);
+                share.setPackage(whatsapp);
+                share.setType(type);
+                share.putExtra(Intent.EXTRA_STREAM, uri);
+                share.putExtra(Intent.EXTRA_TEXT, message == null ? "" : message);
+                share.putExtra("jid", digits + "@s.whatsapp.net");
+                share.setClipData(ClipData.newUri(getContentResolver(), "SmartLedger invoice", uri));
+                share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                runOnUiThread(() -> {
+                    try {
+                        startActivity(share);
+                        deliverShareResult(callbackId, "");
+                    } catch (Exception error) {
+                        deliverShareResult(callbackId, error.getMessage() == null
+                                ? "WhatsApp could not open the invoice attachment." : error.getMessage());
+                    }
+                });
+            } catch (Throwable error) {
+                deliverShareResult(callbackId, error.getMessage() == null
+                        ? "Invoice attachment sharing failed." : error.getMessage());
+            }
+        }
+
+        @JavascriptInterface
         public void recognizeBill(String base64, String language, String callbackId) {
             final String requested = language == null ? "eng" : language;
             if (!requested.matches("eng|hin|urd|eng\\+hin|eng\\+urd|hin\\+urd|eng\\+hin\\+urd")
