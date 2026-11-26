@@ -29,7 +29,13 @@ exports.smartLedgerAI = onRequest({ region: REGION, secrets: [OPENAI_API_KEY], t
     const decoded = await admin.auth().verifyIdToken(token);
     if (!decoded.uid) return res.status(401).json({ error: "Invalid sign-in session." });
 
-    const now = Date.now();\n    const recent = (requestWindows.get(decoded.uid) || []).filter(ts => now - ts < 60000);\n    if (recent.length >= 20) return res.status(429).json({ error: "AI request limit reached. Wait a minute and try again." });\n    recent.push(now); requestWindows.set(decoded.uid, recent);\n\n    const body = req.body || {};
+    const now = Date.now();
+    const recent = (requestWindows.get(decoded.uid) || []).filter(ts => now - ts < 60000);
+    if (recent.length >= 20) return res.status(429).json({ error: "AI request limit reached. Wait a minute and try again." });
+    recent.push(now);
+    requestWindows.set(decoded.uid, recent);
+
+    const body = req.body || {};
     const question = String(body.question || "").trim().slice(0, 1200);
     const snapshot = body.businessSnapshot;
     if (!question || !snapshot || typeof snapshot !== "object") return res.status(400).json({ error: "A question and business summary are required." });
