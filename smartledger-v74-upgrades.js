@@ -14,9 +14,9 @@ function addPhone(){
 }
 window.transactionForm=function(k){oldForm(k);addPhone()};
 window.saveTransaction=function(e,k){
- const phone=$("#tpartyphone")?.value.trim()||"",name=$("#tparty")?.value.trim()||"";
+ const phone=$("#tpartyphone")?.value.trim()||"",name=$("#tparty")?.value.trim()||"",before=(get(k)||[]).length;
  oldSave(e,k);
- if(!phone||!name)return;
+ if(!phone||!name||(get(k)||[]).length<=before)return;
  const kind=k==="sales"?"customers":"suppliers",a=get(kind),p=party(kind,name);
  if(p){p.phone=phone;put(kind,a)}else{a.push({name,phone,address:"",opening:0});put(kind,a)}
  const rows=get(k),x=rows[rows.length-1];if(x&&String(x.party||"").toLowerCase()===name.toLowerCase()){x.partyPhone=phone;put(k,rows)}
