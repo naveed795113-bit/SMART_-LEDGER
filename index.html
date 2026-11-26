@@ -1118,11 +1118,12 @@ function saveTransaction(e,k){
   if(lines.some(x=>x.itemIndex===Number(key)&&(!Number.isFinite(x.stockQty)||x.stockQty<=0)))return alert("Quantity and unit conversion must be valid");
   if(sales&&quantities[key]>num(p.qty)+1e-9)return alert("Insufficient stock for "+p.name+". Available: "+p.qty+" "+(p.unit||""));
  }
- let total=lines.reduce((s,x)=>s+x.total,0),taxable=lines.reduce((s,x)=>s+x.taxable,0),tax=lines.reduce((s,x)=>s+x.tax,0),cost=lines.reduce((s,x)=>s+x.cost,0),paid=num($("#tpaid").value),invoice=$("#tinvoice").value.trim(),party=$("#tparty").value,date=$("#tdate").value;
+ let total=lines.reduce((s,x)=>s+x.total,0),taxable=lines.reduce((s,x)=>s+x.taxable,0),tax=lines.reduce((s,x)=>s+x.tax,0),cost=lines.reduce((s,x)=>s+x.cost,0),paid=num($("#tpaid").value),invoice=$("#tinvoice").value.trim(),partyName=$("#tparty").value.trim(),party=partyName,date=$("#tdate").value;
  if(!invoice)return alert("Enter an invoice / bill number");
  if(!date)return alert("Enter the transaction date");
  if(!sales&&lines.some(x=>x.expiryDate&&x.expiryDate<date))return alert("Expiry date cannot be earlier than the purchase date");
  if(!sales&&!party)return alert("Select a supplier");
+ if(sales&&partyName.toLowerCase()!=="walk-in"&&!get("customers").some(p=>p.name.toLowerCase()===partyName.toLowerCase())){let customers=get("customers");customers.push({name:partyName,phone:"",address:"",opening:0});put("customers",customers)}
  if(get(k).some(x=>String(x.invoice).toLowerCase()===invoice.toLowerCase()))return alert("This invoice / bill number already exists");
  if(paid<0)return alert("Paid amount cannot be negative");
  if(paid>total)return alert("Paid amount cannot exceed invoice total");
