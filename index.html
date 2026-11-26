@@ -259,7 +259,7 @@ tbody tr:hover td{background:#2b3033!important}
 .invoice-footer{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;margin-top:28px;padding-top:12px;border-top:1px dashed #c9c5bc;color:#666;font-size:11px}
 @media(max-width:850px){.sales-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.sales-panels{grid-template-columns:1fr}.sales-filters{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.sales-kpi{padding:12px}.sales-kpi strong{font-size:17px}.sales-kpi small{font-size:9px}.sales-filters{grid-template-columns:1fr 1fr}.invoice-paper{padding:14px}.invoice-meta{gap:8px}.invoice-meta h3{font-size:16px}.invoice-table th,.invoice-table td{padding:7px 4px!important;font-size:10px!important}.invoice-balance{grid-template-columns:repeat(2,1fr)}.invoice-balance b{font-size:12px}}
-@media print{body{background:#fff!important;color:#222!important}.invoice-paper{box-shadow:none!important;border:0!important;margin:0!important;max-width:none!important;padding:0!important}.invoice-paper .invoice-table th{background:#292d30!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.invoice-paper .invoice-topline{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+@media print{body.printing-invoice *{visibility:hidden!important}body.printing-invoice #modal,body.printing-invoice #modal .dialog,body.printing-invoice #modalbody,body.printing-invoice #invoicepaper,body.printing-invoice #invoicepaper *{visibility:visible!important}body.printing-invoice #modal{display:block!important;position:absolute!important;inset:0!important;background:#fff!important;padding:0!important}body.printing-invoice #modal .dialog{width:100%!important;max-width:none!important;max-height:none!important;overflow:visible!important;box-shadow:none!important;border:0!important;border-radius:0!important;margin:0!important;padding:0!important}body.printing-invoice .dialoghead,body.printing-invoice .invoice-actions{display:none!important}body.printing-invoice #modalbody>div:first-child{margin:0!important;padding:0!important}body.printing-invoice .invoice-paper{break-inside:avoid;page-break-inside:avoid}}\n@media print{body{background:#fff!important;color:#222!important}.invoice-paper{box-shadow:none!important;border:0!important;margin:0!important;max-width:none!important;padding:0!important}.invoice-paper .invoice-table th{background:#292d30!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.invoice-paper .invoice-topline{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
 
 
 /* v40.1 module palettes — dashboard intentionally excluded */
@@ -1218,6 +1218,13 @@ function amountInWordsINR(value){
  const one=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"],ten=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
  const under1000=v=>{let out="";if(v>=100){out+=one[Math.floor(v/100)]+" Hundred ";v%=100}if(v>=20)out+=ten[Math.floor(v/10)]+" "+one[v%10];else if(v>0)out+=one[v];return out.trim()};
  const groups=[[10000000,"Crore"],[100000,"Lakh"],[1000,"Thousand"],[1,""]];let rem=rupees,parts=[];groups.forEach(([size,label])=>{let q=Math.floor(rem/size);if(q){parts.push(under1000(q)+(label?" "+label:""));rem%=size}});return "Rupees "+(parts.join(" ")||"Zero")+(paise?" and "+under1000(paise)+" Paise":"")+" Only";
+}
+function printInvoice(){
+ const paper=$("#invoicepaper");
+ if(!paper)return alert("Open an invoice preview before printing.");
+ document.body.classList.add("printing-invoice");
+ try{window.print()}catch(error){document.body.classList.remove("printing-invoice");alert("Printing is unavailable on this device.")}
+ setTimeout(()=>document.body.classList.remove("printing-invoice"),1200);
 }
 function showInvoice(x){
  const lines=x.lines&&x.lines.length?x.lines:[{item:x.item||"Item",qty:x.qty,unit:"pcs",rate:x.rate,taxable:x.taxable??x.total,tax:x.tax,total:x.total}],customer=get("customers").find(p=>p.name===x.party)||{},discount=lines.reduce((s,l)=>s+num(l.discount),0),taxable= num(x.taxable??lines.reduce((s,l)=>s+num(l.taxable),0)),tax=num(x.tax??lines.reduce((s,l)=>s+num(l.tax),0)),invoiceTotal=num(x.total),last=num(x.lastBalance),totalBalance=x.totalBalance===undefined?last+invoiceTotal:num(x.totalBalance),paid=num(x.paid),due=x.balanceDue===undefined?Math.max(0,totalBalance-paid):num(x.balanceDue),status=due<=.004?"PAID":paid>0?"PARTIALLY PAID":"PAYMENT DUE";
