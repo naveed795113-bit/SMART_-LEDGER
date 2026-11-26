@@ -137,7 +137,21 @@ jobs:
             exit 1
           fi
 
+      - name: Prepare release signing key (when configured)
+        if: ${{ secrets.SMARTLEDGER_KEYSTORE_BASE64 != '' }}
+        env:
+          SMARTLEDGER_KEYSTORE_BASE64: ${{ secrets.SMARTLEDGER_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p android/keystore
+          echo "$SMARTLEDGER_KEYSTORE_BASE64" | base64 --decode > android/keystore/smartledger-release.jks
+          test -s android/keystore/smartledger-release.jks
+
       - name: Build debug and release APKs
+        env:
+          SMARTLEDGER_KEYSTORE_PATH: ${{ secrets.SMARTLEDGER_KEYSTORE_BASE64 != '' && 'keystore/smartledger-release.jks' || '' }}
+          SMARTLEDGER_STORE_PASSWORD: ${{ secrets.SMARTLEDGER_STORE_PASSWORD }}
+          SMARTLEDGER_KEY_ALIAS: ${{ secrets.SMARTLEDGER_KEY_ALIAS }}
+          SMARTLEDGER_KEY_PASSWORD: ${{ secrets.SMARTLEDGER_KEY_PASSWORD }}
         run: |
           gradle --no-daemon -p android assembleDebug assembleRelease
 
@@ -145,14 +159,20 @@ jobs:
         shell: bash
         run: |
           test -s android/app/build/outputs/apk/debug/app-debug.apk
-          test -s android/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s android/app/build/outputs/apk/release/app-release.apk || test -s android/app/build/outputs/apk/release/app-release-unsigned.apk
           unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/eng.traineddata'
           unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/hin.traineddata'
           unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/urd.traineddata'
           unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'lib/arm64-v8a/libtesseract.so'
           mkdir -p apk-output
           cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v69.apk
-          cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v69-release-unsigned.apk
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk apk-output/SmartLedger-v69-release-signed.apk
+            apksigner verify --verbose apk-output/SmartLedger-v69-release-signed.apk
+          else
+            cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v69-release-unsigned.apk
+            echo "Release keystore secrets are not configured; unsigned release retained."
+          fi
           ls -lh apk-output/
 
       - name: Upload installable APKs
