@@ -1161,7 +1161,7 @@ function transactionForm(k){
 }
 function setRate(){let i=get('items')[$('#titem').value];$('#trate').value=i?(window.currentTxn==='sales'?i.price:i.purchase):0;if($('#tgst'))$('#tgst').value=i?(i.gst||0):0;calcTotal()}
 function calcTotal(){let taxable=Math.max(0,num($('#tqty').value)*num($('#trate').value)-num($('#tdiscount').value)),tax=taxable*num($('#tgst')?.value)/100;$('#ttaxable').value=taxable.toFixed(2);$('#ttax').value=tax.toFixed(2);$('#ttotal').value=(taxable+tax).toFixed(2)}
-function consumeBatchStock(itemName,qty){let batches=get('batches'),sorted=batches.filter(b=>b.item===itemName&&num(b.remaining)>0).sort((a,b)=>(a.expiryDate||'9999-12-31').localeCompare(b.expiryDate||'9999-12-31')),left=qty,alloc=[];for(const b of sorted){if(left<=0)break;let take=Math.min(left,num(b.remaining));b.remaining=num(b.remaining)-take;left-=take;alloc.push({batchId:b.id,qty:take})}put('batches',batches);return alloc}
+function consumeBatchStock(itemName,qty,batches=get('batches')){let sorted=batches.filter(b=>b.item===itemName&&num(b.remaining)>0).sort((a,b)=>(a.expiryDate||'9999-12-31').localeCompare(b.expiryDate||'9999-12-31')),left=qty,alloc=[];for(const b of sorted){if(left<=0)break;let take=Math.min(left,num(b.remaining));b.remaining=num(b.remaining)-take;left-=take;alloc.push({batchId:b.id,qty:take})}return alloc}
 function saveTransaction(e,k){
  e.preventDefault();
  let sales=k==="sales",items=get("items"),lines=readTxnLines();
@@ -1180,15 +1180,16 @@ function saveTransaction(e,k){
  if(sales&&!partyName)return alert("Enter or select a customer name");
  if(!sales&&lines.some(x=>x.expiryDate&&x.expiryDate<date))return alert("Expiry date cannot be earlier than the purchase date");
  if(!sales&&!party)return alert("Select a supplier");
- if(sales&&partyName.toLowerCase()!=="walk-in"&&!get("customers").some(p=>p.name.toLowerCase()===partyName.toLowerCase())){let customers=get("customers");customers.push({name:partyName,phone:"",address:"",opening:0});put("customers",customers)}
  if(get(k).some(x=>String(x.invoice).toLowerCase()===invoice.toLowerCase()))return alert("This invoice / bill number already exists");
  if(paid<0)return alert("Paid amount cannot be negative");
  if(paid>total)return alert("Paid amount cannot exceed invoice total");
+ let customers=sales?get("customers"):null;
+ if(sales&&partyName.toLowerCase()!=="walk-in"&&!customers.some(p=>String(p.name||"").toLowerCase()===partyName.toLowerCase()))customers.push({name:partyName,phone:"",address:"",opening:0});
  let lastBalance=party?partyOutstanding(sales?"Customer":"Supplier",party):0,totalBalance=lastBalance+total,balanceDue=totalBalance-paid,id=Date.now(),batches=get("batches"),allAllocations=[];
  lines.forEach((x,index)=>{
   let p=items[x.itemIndex],stockQty=x.stockQty;
   if(sales){
-   let allocations=consumeBatchStock(p.name,stockQty);
+   let allocations=consumeBatchStock(p.name,stockQty,batches);
    x.batchAllocations=allocations;
    allAllocations.push(...allocations);
    p.qty=num(p.qty)-stockQty;
@@ -1199,13 +1200,19 @@ function saveTransaction(e,k){
    batches.push({id:"B"+id+"-"+(index+1),item:p.name,batchNo:x.batchNo||invoice+"-"+(index+1),expiryDate:x.expiryDate||"",receivedDate:date,qtyReceived:stockQty,remaining:stockQty,purchaseRate:unitCost,purchaseId:id});
   }
  });
- put("items",items);
- if(!sales)put("batches",batches);
  let record={id,date,invoice,party,item:lines.map(x=>x.item).join(", "),lines:lines.map(({itemIndex,...x})=>x),qty:lines.reduce((s,x)=>s+x.stockQty,0),taxable,tax,supplyType:$("#txnsupply").value,cgst:$("#txnsupply").value==="intra"?tax/2:0,sgst:$("#txnsupply").value==="intra"?tax/2:0,igst:$("#txnsupply").value==="inter"?tax:0,total,paid,method:$("#tmethod").value,cost,lastBalance,totalBalance,balanceDue,batchAllocations:allAllocations};
- let a=get(k);a.push(record);put(k,a);
+ let a=get(k);a.push(record);
  let cash=get("cash");
  if(paid>0)cash.push({date,type:sales?"Money In":"Money Out",method:record.method,note:(sales?"Sale ":"Purchase ")+record.invoice,amount:paid});
- put("cash",cash);
+ const updates=new Map([[db.items,JSON.stringify(items)],[db.batches,JSON.stringify(batches)],[db[k],JSON.stringify(a)],[db.cash,JSON.stringify(cash)]]);
+ if(sales&&customers.length!==get("customers").length)updates.set(db.customers,JSON.stringify(customers));
+ const previous=new Map([...updates.keys()].map(key=>[key,localStorage.getItem(key)]));
+ try{updates.forEach((value,key)=>localStorage.setItem(key,value))}
+ catch(error){
+  try{updates.forEach((value,key)=>localStorage.removeItem(key));previous.forEach((value,key)=>{if(value!==null)localStorage.setItem(key,value)})}
+  catch(rollbackError){alert("Transaction save failed and stock rollback was incomplete. Export your data before making further changes.")}
+  return alert("Transaction could not be saved. No stock, batch, customer or cash changes were kept: "+(error.message||"storage error"));
+ }
  closeModal();render();if(sales)showInvoice(record);
 }
 function stockAlerts(){
