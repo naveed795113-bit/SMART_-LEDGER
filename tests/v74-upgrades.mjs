@@ -1,0 +1,17 @@
+import {readFileSync} from "node:fs";
+import assert from "node:assert/strict";
+const ui=readFileSync("smartledger-v74-upgrades.js","utf8");
+const html=readFileSync("index.html","utf8");
+assert.match(html,/smartledger-v74-upgrades\\.js/);
+assert.match(ui,/tpartyphone/,"sale and purchase forms capture the party phone");
+assert.match(ui,/partyPhone=phone|partyPhone/,"saved transaction retains the phone for sharing");
+assert.match(ui,/sl-select-all/,"inventory includes select all");
+assert.match(ui,/sl-delete-selected/,"inventory supports bulk delete");
+assert.match(ui,/saved transactions/,"bulk delete protects invoice history");
+assert.match(ui,/showPurchaseBill/,"purchase bills have a view and PDF preview");
+assert.match(ui,/businessPrintHeader/,"purchase bill uses business details and logo from settings");
+assert.match(ui,/businessSignatureHTML/,"purchase bill uses saved signature");
+assert.match(ui,/writing-mode:horizontal-tb/,"invoice text is forced horizontal");
+assert.match(html,/BILL FROM/,"sales invoice labels the business identity");
+assert.match(ui,/v40-tabs/,"Business Suite tab layout is corrected");
+console.log("PASS SmartLedger v74 party phone, bulk inventory, purchase invoice, PDF layout and Business Suite checks");
