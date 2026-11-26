@@ -24,6 +24,7 @@ permissions:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout SmartLedger source
         uses: actions/checkout@v4
@@ -83,6 +84,7 @@ jobs:
           "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platforms;android-35" "ndk;27.2.12479018" "cmake;3.22.1"
 
       - name: Build Tesseract4Android native OCR library
+        timeout-minutes: 15
         shell: bash
         run: |
           git clone --depth 1 --recurse-submodules --branch 4.9.0 https://github.com/adaptech-cz/Tesseract4Android.git /tmp/Tesseract4Android
