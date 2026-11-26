@@ -10,7 +10,7 @@ assert.match(ui,/shareInvoiceImage/,"HD image share action is independent");
 assert.match(ui,/window\.printInvoice=function\(\)/,"Print action does not call the WhatsApp share function");
 assert.match(native,/public void shareSingleInvoiceFile/,"Native Android single-file sharing bridge exists");
 assert.match(ui,/secondaryQty/,"Primary-to-secondary unit quantity is editable");
-assert.match(ui,/unitFactor=n\*factor/,"Primary stock factor is calculated from secondary-unit conversion");
+assert.match(ui,/f\\.value=n\\*factor/,"Primary stock factor is calculated from secondary-unit conversion");
 assert.match(ui,/sl_reminders/,"Reminder records persist locally");
 assert.match(ui,/sendReminderMessage/,"Reminder messages can be opened in WhatsApp");
 assert.match(ui,/data-sl-reminder/,"Reminders are available from Show More");
