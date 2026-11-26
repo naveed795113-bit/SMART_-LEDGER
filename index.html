@@ -1281,10 +1281,17 @@ function saveReturn(e,kind){
   if(originalBatches.length&&left>1e-9)return alert("Not enough stock from this original purchase batch remains to return that quantity");
   item.qty=num(item.qty)-stockQty;
  }
- put("items",items);put("batches",batches);
  let record={id:Date.now()*1000+Math.floor(Math.random()*1000),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cgst,sgst,igst,cost,kind:sales?"Sales return":"Purchase return"};
- returns.push(record);put(sales?"salesReturns":"purchaseReturns",returns);
- let cash=get("cash");cash.push({date,type:sales?"Money Out":"Money In",method:"Cash",note:(sales?"Sales return ":"Purchase return ")+tx.invoice+" — "+line.item,amount:amount+tax});put("cash",cash);
+ returns.push(record);
+ let cash=get("cash");cash.push({date,type:sales?"Money Out":"Money In",method:"Cash",note:(sales?"Sales return ":"Purchase return ")+tx.invoice+" — "+line.item,amount:amount+tax});
+ const updates=new Map([[db.items,JSON.stringify(items)],[db.batches,JSON.stringify(batches)],[db[sales?"salesReturns":"purchaseReturns"],JSON.stringify(returns)],[db.cash,JSON.stringify(cash)]]);
+ const previous=new Map([...updates.keys()].map(key=>[key,localStorage.getItem(key)]));
+ try{updates.forEach((value,key)=>localStorage.setItem(key,value))}
+ catch(error){
+  try{updates.forEach((value,key)=>localStorage.removeItem(key));previous.forEach((value,key)=>{if(value!==null)localStorage.setItem(key,value)})}
+  catch(rollbackError){alert("Return save failed and automatic stock rollback was incomplete. Export your data before making further changes.")}
+  return alert("Return could not be saved. Existing stock, batches and cash records were restored: "+(error.message||"storage error"));
+ }
  closeModal();render();alert((sales?"Sales":"Purchase")+" return saved. Stock and tax updated.");
 }
 function salesReturnForm(){returnForm("sales")}
