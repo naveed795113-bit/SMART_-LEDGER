@@ -112,6 +112,7 @@ assert.match(window.document.querySelector('#txnTotalBalance').textContent, /196
 assert.match(window.document.querySelector('#txnRemainingBalance').textContent, /191/, 'Remaining balance subtracts amount paid');
 window.document.querySelector('#modalbody form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
 const savedBilling = JSON.parse(window.localStorage.getItem('sl_sales')).at(-1);
+console.log('DEBUG_BILLING', JSON.stringify(savedBilling), 'salesCount', JSON.parse(window.localStorage.getItem('sl_sales')).length, 'lines', JSON.stringify(window.readTxnLines?.()), 'saveFn', String(window.saveTransaction).slice(0,180));
 assert.equal(savedBilling.lastBalance, 160, 'Saved invoice records the previous balance');
 assert.equal(savedBilling.totalBalance, 196, 'Saved invoice records total balance');
 assert.equal(savedBilling.balanceDue, 191, 'Saved invoice records remaining balance');
