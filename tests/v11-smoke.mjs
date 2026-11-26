@@ -13,7 +13,7 @@ const checks = [
   ['free phone password account creation and sign-in controls', /slCreatePhoneAccount/.test(readFileSync('login-gate-v50.js','utf8')) && /slPhonePasswordSignIn/.test(readFileSync('login-gate-v50.js','utf8')) && /function phonePasswordAuth\(createAccount\)/.test(readFileSync('login-gate-v50.js','utf8'))],
   ['phone number normalized into private Firebase account identifier', readFileSync('login-gate-v50.js','utf8').includes('function phoneAccountEmail(rawPhone)') && readFileSync('login-gate-v50.js','utf8').includes('@accounts.smartledger.invalid')],
   ['phone password login warns number is not SMS-verified and recovery is not yet available', /not verified by SMS/.test(readFileSync('login-gate-v50.js','utf8')) && /password recovery is not available/.test(readFileSync('login-gate-v50.js','utf8'))],
-  ['authentication v64 loader and service worker cache', readFileSync('login-gate-loader-v60.js','utf8').includes('login-gate-v50.js?v=64') && readFileSync('sw.js','utf8').includes('smartledger-v69.0')],
+  ['authentication v64 loader and service worker cache', readFileSync('login-gate-loader-v60.js','utf8').includes('login-gate-v50.js?v=65') && readFileSync('sw.js','utf8').includes('smartledger-v69.0')],
 
   ['release badge', html.includes('SMARTLEDGER v44.0')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
