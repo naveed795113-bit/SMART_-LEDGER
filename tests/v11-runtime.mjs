@@ -301,6 +301,7 @@ assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_cash')), [], 'Failed
 window.closeModal();
 window.localStorage.setItem('sl_items', JSON.stringify([{name:'Adjustment Item',qty:10,unit:'pcs',purchase:1,price:2}]));
 window.localStorage.setItem('sl_adjustments', JSON.stringify([]));
+window.localStorage.setItem('sl_batches', JSON.stringify([{id:'ADJ-BATCH',item:'Adjustment Item',remaining:10,qtyReceived:10}]));
 window.adjustForm(0);
 window.document.querySelector('#adjqty').value = '2';
 const adjustmentSetItem = window.Storage.prototype.setItem;
@@ -313,6 +314,7 @@ window.document.querySelector('#modalbody form').dispatchEvent(new window.Event(
 window.Storage.prototype.setItem = adjustmentSetItem;
 assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].qty, 10, 'Failed stock adjustment restores item quantity');
 assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_adjustments')), [], 'Failed stock adjustment does not create an unlogged stock change');
+assert.equal(JSON.parse(window.localStorage.getItem('sl_batches'))[0].remaining, 10, 'Failed stock adjustment restores the expiry batch quantity');
 window.closeModal();
 
 console.log('PASS app boot');
