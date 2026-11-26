@@ -197,6 +197,31 @@ await wait(30);
 assert.equal(window.localStorage.getItem('sl_items'), preserved, 'Invalid backup must not change existing records');
 assert.ok(alerts.some(x => x.includes('This backup belongs to a different application')), 'Invalid backup reports a clear error');
 
+window.localStorage.setItem('sl_items', JSON.stringify([{ name: 'pre-failure-item' }]));
+window.localStorage.setItem('sl_customers', JSON.stringify([{ name: 'pre-failure-customer' }]));
+window.localStorage.setItem('bizname', 'Original Shop');
+const quotaBackup = new window.File([JSON.stringify({
+  app: 'SmartLedger', schemaVersion: 5,
+  items: [{ name: 'partial-write-item' }],
+  customers: [{ name: 'partial-write-customer' }]
+})], 'quota-test.json', { type: 'application/json' });
+const originalSetItem = window.Storage.prototype.setItem;
+let failCustomerWrite = true;
+window.Storage.prototype.setItem = function(key, value) {
+  if (key === 'sl_customers' && failCustomerWrite) {
+    failCustomerWrite = false;
+    throw new Error('simulated storage quota');
+  }
+  return originalSetItem.call(this, key, value);
+};
+window.restoreData({ files: [quotaBackup], value: 'quota-test.json' });
+await wait(50);
+window.Storage.prototype.setItem = originalSetItem;
+assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_items')), [{ name: 'pre-failure-item' }], 'Failed restore rolls back item records already written');
+assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_customers')), [{ name: 'pre-failure-customer' }], 'Failed restore preserves customer records');
+assert.equal(window.localStorage.getItem('bizname'), 'Original Shop', 'Failed restore preserves business profile');
+assert.ok(alerts.some(x => x.includes('Existing data was rolled back')), 'Failed restore reports successful rollback');
+
 console.log('PASS app boot');
 console.log('PASS dashboard and sales overview graph');
 console.log('PASS v16 live billing balances, saved invoice values and printed invoice breakdown');
@@ -205,5 +230,6 @@ console.log('PASS v11.0 settings and backup controls');
 console.log('PASS responsive layout breakpoints and isolated content scrolling');
 console.log('PASS valid backup restore and business profile');
 console.log('PASS invalid backup rejection without data loss');
+console.log('PASS atomic backup restore rollback on storage failure');
 console.log('TOTAL 8 runtime groups passed');
 dom.window.close();
