@@ -279,3 +279,53 @@ styles();initAccounts();hooks();window.__SMARTLEDGER_V40__={version:"40.0.0",cal
   }
   window.__SMARTLEDGER_V41_1_SCROLL__={version:"41.1.0",reset:()=>window.scrollTo(0,0)};
 })();
+
+
+/* v70 — compact, readable mobile data tables without horizontal page scrolling. */
+(function(){
+ "use strict";
+ const style=document.createElement("style");
+ style.id="smartledger-v70-mobile-tables";
+ style.textContent=`
+ @media(max-width:650px){
+  #view .tablewrap,#view .v40-table,#modalbody .tablewrap{
+   width:100%!important;max-width:100%!important;overflow:visible!important
+  }
+  #view .tablewrap table,#view .v40-table table,#modalbody .tablewrap table{
+   width:100%!important;min-width:0!important;table-layout:fixed!important;
+   border-collapse:separate!important;border-spacing:0 8px!important
+  }
+  #view .tablewrap table thead,#view .v40-table table thead,#modalbody .tablewrap table thead{
+   position:absolute!important;width:1px!important;height:1px!important;padding:0!important;
+   margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important
+  }
+  #view .tablewrap table tbody,#view .v40-table table tbody,#modalbody .tablewrap table tbody{
+   display:block!important;width:100%!important
+  }
+  #view .tablewrap table tbody tr,#view .v40-table table tbody tr,#modalbody .tablewrap table tbody tr{
+   display:block!important;width:100%!important;min-width:0!important;margin:0 0 10px!important;
+   border:1px solid var(--line,#ddd)!important;border-radius:10px!important;overflow:hidden!important;
+   background:var(--card,#fff)!important
+  }
+  #view .tablewrap table tbody td,#view .v40-table table tbody td,#modalbody .tablewrap table tbody td{
+   display:flex!important;align-items:flex-start!important;justify-content:space-between!important;
+   gap:10px!important;width:100%!important;min-width:0!important;padding:9px 10px!important;
+   border:0!important;border-bottom:1px solid var(--line,#ddd)!important;
+   white-space:normal!important;overflow-wrap:anywhere!important;word-break:break-word!important;
+   text-align:right!important;background:transparent!important
+  }
+  #view .tablewrap table tbody td:last-child,#view .v40-table table tbody td:last-child,#modalbody .tablewrap table tbody td:last-child{border-bottom:0!important}
+  #view .tablewrap table tbody td[data-label]::before,#view .v40-table table tbody td[data-label]::before,#modalbody .tablewrap table tbody td[data-label]::before{
+   content:attr(data-label);display:block;flex:0 0 38%;max-width:38%;
+   font-size:11px;font-weight:750;text-align:left;opacity:.78;overflow-wrap:anywhere
+  }
+  #view .tablewrap table tbody td:not([data-label]),#view .v40-table table tbody td:not([data-label]),#modalbody .tablewrap table tbody td:not([data-label]){
+   display:block!important;text-align:left!important
+  }
+  #view .tablewrap table tbody td[colspan],#view .v40-table table tbody td[colspan],#modalbody .tablewrap table tbody td[colspan]{
+   display:block!important;text-align:center!important
+  }
+ }
+ `;
+ document.head.appendChild(style);
+})();
