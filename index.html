@@ -1073,6 +1073,7 @@ function saveTransaction(e,k){
  let total=lines.reduce((s,x)=>s+x.total,0),taxable=lines.reduce((s,x)=>s+x.taxable,0),tax=lines.reduce((s,x)=>s+x.tax,0),cost=lines.reduce((s,x)=>s+x.cost,0),paid=num($("#tpaid").value),invoice=$("#tinvoice").value.trim(),party=$("#tparty").value,date=$("#tdate").value;
  if(!invoice)return alert("Enter an invoice / bill number");
  if(!date)return alert("Enter the transaction date");
+ if(!sales&&lines.some(x=>x.expiryDate&&x.expiryDate<date))return alert("Expiry date cannot be earlier than the purchase date");
  if(!sales&&!party)return alert("Select a supplier");
  if(get(k).some(x=>String(x.invoice).toLowerCase()===invoice.toLowerCase()))return alert("This invoice / bill number already exists");
  if(paid<0)return alert("Paid amount cannot be negative");
@@ -1089,7 +1090,7 @@ function saveTransaction(e,k){
    let factor=stockQty/Math.max(x.qty,1e-9),unitCost=x.rate/Math.max(factor,1e-9);
    p.purchase=(num(p.qty)*num(p.purchase)+stockQty*unitCost)/(num(p.qty)+stockQty||1);
    p.qty=num(p.qty)+stockQty;
-   batches.push({id:"B"+id+"-"+(index+1),item:p.name,batchNo:invoice+"-"+(index+1),expiryDate:"",receivedDate:date,qtyReceived:stockQty,remaining:stockQty,purchaseRate:unitCost,purchaseId:id});
+   batches.push({id:"B"+id+"-"+(index+1),item:p.name,batchNo:x.batchNo||invoice+"-"+(index+1),expiryDate:x.expiryDate||"",receivedDate:date,qtyReceived:stockQty,remaining:stockQty,purchaseRate:unitCost,purchaseId:id});
   }
  });
  put("items",items);
