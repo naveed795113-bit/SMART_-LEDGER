@@ -39,12 +39,10 @@ assert.equal(savedSalesReturns.length,1,"Sales return transaction was saved; pos
 let journals=JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]");
 assert.equal(journals.length,1,"Sales return creates one automatic journal");
 assert.equal(journals[0].sourceType,"return");
-console.log("DEBUG_RETURN_RECORD",JSON.stringify(savedSalesReturns[0]));
-console.log("DEBUG_RETURN_JOURNAL",JSON.stringify(journals[0].lines));
 assert.equal(journals[0].lines.reduce((s,x)=>s+Number(x.debit),0),32,"Sales return debits sales returns, output GST and returned stock cost");
 assert.equal(journals[0].lines.reduce((s,x)=>s+Number(x.credit),0),32,"Sales return credits customer receivables and reverses COGS");
 assert.ok(journals[0].lines.some(x=>x.account==="2100"&&x.debit===1),"Sales return reverses output GST");
-assert.ok(journals[0].lines.some(x=>x.account==="1100"&&x.credit===20),"Default sales return reduces customer receivables instead of inventing a cash refund");
+assert.ok(journals[0].lines.some(x=>x.account==="1100"&&x.credit===20),"Default sales return credits customer receivables by the discounted return total instead of inventing a cash refund");
 w.returnForm("purchases");
 w.document.querySelector("#returnqty").value="1";
 w.document.querySelector("#returnrate").value="10";
