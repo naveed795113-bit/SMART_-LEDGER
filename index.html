@@ -1161,7 +1161,7 @@ function batchExpiryPage(){
 function returnEsc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function returnLinesFor(tx){
  if(Array.isArray(tx.lines)&&tx.lines.length)return tx.lines;
- let qty=num(tx.qty),taxable=tx.taxable!==undefined?num(tx.taxable):num(tx.total)-num(tx.tax),rate=num(tx.rate)||(qty>0?taxable/qty:0),discount=Math.max(0,qty*rate-taxable),gstRate=taxable>0?num(tx.tax)/taxable*100:0;
+ let qty=num(tx.qty),taxable=tx.taxable!==undefined?num(tx.taxable):num(tx.total)-num(tx.tax),rate=num(tx.rate)||(qty>0?taxable/qty:0),discount=Math.max(0,qty*rate-taxable),gstRate:num(tx.gstRate)||0;
  return [{item:tx.item,qty,unit:tx.unit||"pcs",unitFactor:1,stockQty:qty,rate,discount,gstRate,tax:num(tx.tax),taxable,total:num(tx.total),cost:num(tx.cost),batchAllocations:tx.batchAllocations||[]}];
 }
 function returnForm(kind){
