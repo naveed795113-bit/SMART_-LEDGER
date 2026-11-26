@@ -1,6 +1,8 @@
 package com.smartledger.business;
 
 import android.content.Context;
+import android.content.Intent;
+import android.webkit.WebView;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,6 +11,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.core.app.ActivityScenario;
 import androidx.core.content.FileProvider;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -21,12 +24,52 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Locale;
+import java.lang.reflect.Field;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
 public class OfflineOcrSmokeTest {
+
+    @Test
+    public void nativeGoogleSignInBridgeIsExposedToTheAppWebView() throws Exception {
+        CountDownLatch completed = new CountDownLatch(1);
+        AtomicReference<String> result = new AtomicReference<>();
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+
+        try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class)) {
+            scenario.onActivity(activity -> {
+                try {
+                    Field webViewField = MainActivity.class.getDeclaredField("webView");
+                    webViewField.setAccessible(true);
+                    WebView webView = (WebView) webViewField.get(activity);
+                    assertNotNull("MainActivity did not create its WebView", webView);
+                    webView.evaluateJavascript(
+                            "(function(){return !!(window.SmartLedgerNative && " +
+                            "typeof window.SmartLedgerNative.signInWithGoogle === 'function')})()",
+                            value -> {
+                                result.set(value);
+                                completed.countDown();
+                            });
+                } catch (Throwable error) {
+                    failure.set(error);
+                    completed.countDown();
+                }
+            });
+
+            assertTrue("Native Google bridge check timed out",
+                    completed.await(20, TimeUnit.SECONDS));
+            assertNull("Could not inspect the native Google bridge", failure.get());
+            assertEquals("true", result.get());
+        }
+    }
+
     @Test
     public void invoiceAttachmentsCanBeSharedThroughPrivateFileProvider() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
