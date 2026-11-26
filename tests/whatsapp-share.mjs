@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 
 const ui=readFileSync("smartledger-enhancements-v67.js","utf8");
+const v73=readFileSync("smartledger-v73-fixes.js","utf8");
 const native=readFileSync("android/app/src/main/java/com/smartledger/business/MainActivity.java","utf8");
 const manifest=readFileSync("android/app/src/main/AndroidManifest.xml","utf8");
 const paths=readFileSync("android/app/src/main/res/xml/file_paths.xml","utf8");
@@ -10,8 +11,8 @@ assert.match(ui,/shareFilesToWhatsApp/,"Invoice UI uses the native WhatsApp file
 assert.match(ui,/window\.SmartLedgerShare\.pending/,"Invoice UI waits for the native share result");
 assert.match(ui,/d\.length===10\)d="91"\+d/,"Ten-digit Indian customer numbers receive the +91 country code");
 assert.match(native,/Intent\.ACTION_SEND_MULTIPLE/,"Android shares PDF and HD image together");
-assert.match(ui,/Share PDF on WhatsApp/,"Invoice preview exposes a dedicated PDF share action");
-assert.match(ui,/Share HD\+ Image/,"Invoice preview exposes a dedicated HD image share action");
+assert.match(v73,/Share PDF on WhatsApp/,"Invoice preview exposes a dedicated PDF share action");
+assert.match(v73,/Share HD\+ Image/,"Invoice preview exposes a dedicated HD image share action");
 assert.match(native,/public void shareSingleInvoiceFile/,"Android exposes a dedicated single-file share bridge");
 assert.match(native,/Intent\.ACTION_SEND\)/,"Single-file sharing uses ACTION_SEND, not a mixed multi-file intent");
 assert.match(native,/share\.putExtra\(Intent\.EXTRA_STREAM, uri\)/,"Single-file share attaches the generated PDF or PNG URI");
