@@ -793,8 +793,11 @@ function saveAdjustment(e){
  if(!date)return alert('Select an adjustment date');if(!a[i]||q<=0)return alert('Enter a valid item and quantity');
  if(type==='remove'&&q>num(a[i].qty))return alert('Cannot reduce stock below zero');
  let before=num(a[i].qty);a[i].qty=type==='add'?before+q:type==='remove'?before-q:q;
+ let delta=a[i].qty-before,batches=get('batches');
+ if(delta>0){let stamp=Date.now();batches.push({id:"ADJ"+stamp,item:a[i].name,batchNo:"ADJUSTMENT-"+stamp,expiryDate:"",receivedDate:date,qtyReceived:delta,remaining:delta,purchaseRate:num(a[i].purchase),purchaseId:null})}
+ else if(delta<0)consumeBatchStock(a[i].name,-delta,batches);
  let logs=get('adjustments');logs.push({id:Date.now(),date,item:a[i].name,type:type==='set'?'Set stock':type==='add'?'Stock added':'Stock removed',qty:q,note:$('#adjnote').value.trim(),before,after:a[i].qty});
- if(!commitLocalUpdates(new Map([[db.items,JSON.stringify(a)],[db.adjustments,JSON.stringify(logs)]]),"Stock adjustment"))return;
+ if(!commitLocalUpdates(new Map([[db.items,JSON.stringify(a)],[db.batches,JSON.stringify(batches)],[db.adjustments,JSON.stringify(logs)]]),"Stock adjustment"))return;
  closeModal();render();
 }
 function printTaxReport(){printHTML('GST Summary','<h2>GST Summary — '+itemEscape(localStorage.bizname||'SmartLedger')+'</h2><p>Generated '+today+'</p>'+$('#view').innerHTML)}
