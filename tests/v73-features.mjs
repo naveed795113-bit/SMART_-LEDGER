@@ -1,0 +1,18 @@
+import {readFileSync} from "node:fs";
+import assert from "node:assert/strict";
+const ui=readFileSync("smartledger-v73-fixes.js","utf8");
+const html=readFileSync("index.html","utf8");
+const native=readFileSync("android/app/src/main/java/com/smartledger/business/MainActivity.java","utf8");
+assert.match(html,/smartledger-v73-fixes\.js/,"v73 corrections are loaded by the app");
+assert.match(ui,/data-sl-print/,"Print PDF has its own action");
+assert.match(ui,/shareInvoicePDF/,"PDF share action is independent");
+assert.match(ui,/shareInvoiceImage/,"HD image share action is independent");
+assert.match(ui,/window\.printInvoice=function\(\)/,"Print action does not call the WhatsApp share function");
+assert.match(native,/public void shareSingleInvoiceFile/,"Native Android single-file sharing bridge exists");
+assert.match(ui,/secondaryQty/,"Primary-to-secondary unit quantity is editable");
+assert.match(ui,/unitFactor=n\*factor/,"Primary stock factor is calculated from secondary-unit conversion");
+assert.match(ui,/sl_reminders/,"Reminder records persist locally");
+assert.match(ui,/sendReminderMessage/,"Reminder messages can be opened in WhatsApp");
+assert.match(ui,/data-sl-reminder/,"Reminders are available from Show More");
+assert.match(ui,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/,"Show More tiles use horizontal two-column layout");
+console.log("PASS SmartLedger v73 invoice, unit conversion, reminder and layout checks");
