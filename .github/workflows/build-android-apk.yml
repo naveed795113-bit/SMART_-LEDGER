@@ -72,7 +72,7 @@ jobs:
         with:
           gradle-version: '8.13'
 
-      - name: Install Android SDK platform
+      - name: Install Android NDK and CMake
         shell: bash
         run: |
           echo "Android SDK: $ANDROID_HOME"
@@ -81,13 +81,29 @@ jobs:
           set +o pipefail
           yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
           set -o pipefail
-          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platforms;android-35"
+          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "platforms;android-35" "ndk;27.2.12479018" "cmake;3.22.1"
 
-      - name: Verify published offline OCR dependency
+      - name: Cache Tesseract4Android OpenMP AAR
+        uses: actions/cache@v4
+        with:
+          path: android/app/libs/tesseract4android-openmp-release.aar
+          key: tesseract4android-4.9.0-openmp-ndk27.2.12479018
+
+      - name: Build Tesseract4Android native OCR library
+        timeout-minutes: 15
         shell: bash
         run: |
-          gradle --no-daemon -p android :app:dependencyInsight --dependency tesseract4android-openmp --configuration debugRuntimeClasspath | tee /tmp/smartledger-ocr-dependency.txt
-          grep -q 'tesseract4android-openmp:4.9.0' /tmp/smartledger-ocr-dependency.txt
+          mkdir -p android/app/libs
+          if [ ! -s android/app/libs/tesseract4android-openmp-release.aar ]; then
+            git clone --depth 1 --recurse-submodules --branch 4.9.0 https://github.com/adaptech-cz/Tesseract4Android.git /tmp/Tesseract4Android
+            JITPACK=true gradle --no-daemon --no-configuration-cache -p /tmp/Tesseract4Android :tesseract4android:assembleOpenmpRelease
+            OCR_AAR="$(find /tmp/Tesseract4Android/tesseract4android/build/outputs/aar -maxdepth 1 -type f -name '*openmp*release*.aar' -print -quit)"
+            test -n "$OCR_AAR"
+            cp "$OCR_AAR" android/app/libs/tesseract4android-openmp-release.aar
+          else
+            echo "Using cached Tesseract4Android OpenMP AAR."
+          fi
+          test -s android/app/libs/tesseract4android-openmp-release.aar
 
       - name: Bundle the complete offline web app
         shell: bash
@@ -118,6 +134,7 @@ jobs:
           test -s android/app/src/main/assets/www/vendor/xlsx.full.min.js
           test -s android/app/src/main/assets/www/vendor/html2canvas.min.js
           test -s android/app/src/main/assets/www/vendor/jspdf.umd.min.js
+          test -s android/app/libs/tesseract4android-openmp-release.aar
           test -s android/app/src/main/assets/tessdata/eng.traineddata
           test -s android/app/src/main/assets/tessdata/hin.traineddata
           test -s android/app/src/main/assets/tessdata/urd.traineddata
