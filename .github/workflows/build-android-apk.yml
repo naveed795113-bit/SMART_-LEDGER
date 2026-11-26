@@ -170,15 +170,44 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Run offline OCR and invoice sharing tests on Android emulator
-        timeout-minutes: 20
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
-          disable-linux-hw-accel: false
-          emulator-boot-timeout: 600
-          disable-animations: true
-          script: gradle --no-daemon -p android connectedDebugAndroidTest
-
+        timeout-minutes: 15
+        shell: bash
+        run: |
+          set -euo pipefail
+          adb start-server
+          emulator -list-avds
+          emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
+          EMULATOR_PID=$!
+          cleanup() {
+            adb -s emulator-5554 emu kill >/dev/null 2>&1 || true
+            kill "$EMULATOR_PID" >/dev/null 2>&1 || true
+            wait "$EMULATOR_PID" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+          adb -s emulator-5554 wait-for-device
+          for attempt in $(seq 1 300); do
+            BOOTED="$(adb -s emulator-5554 shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
+            if [ "$BOOTED" = "1" ]; then
+              break
+            fi
+            if [ "$attempt" -eq 300 ]; then
+              echo "Android emulator failed to boot within 10 minutes" >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          adb -s emulator-5554 shell input keyevent 82
+          adb -s emulator-5554 shell settings put global window_animation_scale 0
+          adb -s emulator-5554 shell settings put global transition_animation_scale 0
+          adb -s emulator-5554 shell settings put global animator_duration_scale 0
+          timeout --signal=TERM --kill-after=30s 8m gradle --no-daemon -p android connectedDebugAndroidTest --stacktrace
+          RESULT_DIR="android/app/build/outputs/androidTest-results/connected"
+          if [ ! -d "$RESULT_DIR" ] || ! find "$RESULT_DIR" -name '*.xml' -type f -print -quit | grep -q .; then
+            echo "Android instrumentation test result XML files were not generated" >&2
+            exit 1
+          fi
+          if grep -R -E '<failure|<error' "$RESULT_DIR" --include='*.xml'; then
+            echo "Android instrumentation tests reported failures" >&2
+            exit 1
+          fi
+          echo "Android emulator instrumentation tests passed; XML results verified."
