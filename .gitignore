@@ -1,0 +1,27 @@
+# Local dependencies and build output
+node_modules/
+dist/
+build/
+.gradle/
+android/.gradle/
+android/build/
+android/app/build/
+
+# Release signing material — never commit private keys or passwords
+android/keystore/
+**/*.jks
+**/*.keystore
+**/*.p12
+**/*.pfx
+.env
+.env.*
+!.env.example
+
+# Generated offline OCR model files
+android/app/src/main/assets/tessdata/*.traineddata
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
