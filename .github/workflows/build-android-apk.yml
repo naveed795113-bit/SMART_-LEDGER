@@ -171,7 +171,9 @@ jobs:
           cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v69.apk
           if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
             cp android/app/build/outputs/apk/release/app-release.apk apk-output/SmartLedger-v69-release-signed.apk
-            apksigner verify --verbose apk-output/SmartLedger-v69-release-signed.apk
+            APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner -print | sort -V | tail -n 1)"
+            test -n "$APKSIGNER" && test -x "$APKSIGNER"
+            "$APKSIGNER" verify --verbose apk-output/SmartLedger-v69-release-signed.apk
           else
             cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v69-release-unsigned.apk
             echo "Release keystore secrets are not configured; unsigned release retained."
