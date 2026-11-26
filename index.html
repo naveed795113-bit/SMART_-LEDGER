@@ -757,7 +757,7 @@ function exportData(){
  const keys=Object.values(db),profileKeys=["bizname","bizaddress","bizphone","bizphone2","gstin","bizlogo","bizsignature"];
  const data={};
  keys.forEach(key=>{try{const value=JSON.parse(localStorage.getItem(key)||"[]");data[key]=value}catch(_){data[key]=[]}});
- const profile={};profileKeys.forEach(key=>{if(localStorage.getItem(key)!==null)profile[key]=localStorage.getItem(key)});
+ const profile={address:localStorage.bizaddress||"",signature:localStorage.bizsignature||"",logo:localStorage.bizlogo||"",name:localStorage.bizname||"",phone:localStorage.bizphone||"",phone2:localStorage.bizphone2||"",gstin:localStorage.gstin||""};profileKeys.forEach(key=>{if(localStorage.getItem(key)!==null)profile[key]=localStorage.getItem(key)});
  const backup={app:"SmartLedger",schemaVersion:BACKUP_SCHEMA_VERSION,exportedAt:new Date().toISOString(),data,chartOfAccounts:JSON.parse(localStorage.getItem("sl_chart_accounts")||"[]"),accountJournals:JSON.parse(localStorage.getItem("sl_account_journals")||"[]"),profile};
  data["sl_chart_accounts"]=backup.chartOfAccounts;
  data["sl_account_journals"]=backup.accountJournals;
