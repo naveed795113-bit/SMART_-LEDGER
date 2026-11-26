@@ -756,6 +756,45 @@ function expenseForm(){modal('Add expense','<form onsubmit="saveExpense(event)">
 function saveExpense(e){e.preventDefault();let amount=num($('#eamount').value),date=$('#edate').value;if(!date)return alert('Select an expense date');if(amount<=0)return alert('Enter an expense amount greater than zero');let category=$('#ecat').value,note=$('#enote').value.trim(),a=get('expenses');a.push({id:Date.now(),date,category,note,amount});put('expenses',a);let cash=get('cash');cash.push({date,type:'Money Out',method:'Cash',note:'Expense: '+category+(note?' — '+note:''),amount});put('cash',cash);closeModal();render()}
 function cashForm(){modal('Cash / bank entry','<form onsubmit="saveCash(event)"><div class="formgrid">'+field('Date','cdate','date','value="'+today+'"')+'<div class="field"><label>Type</label><select id="ctype"><option>Money In</option><option>Money Out</option></select></div><div class="field"><label>Account</label><select id="cmethod"><option>Cash</option><option>Bank</option><option>UPI</option></select></div>'+field('Description','cnote')+field('Amount (₹)','camount','number','min="0.01" step="any"')+'</div><p><button class="btn primary">Save entry</button></p></form>')}
 function saveCash(e){e.preventDefault();let amount=num($('#camount').value),date=$('#cdate').value;if(!date)return alert('Select an entry date');if(amount<=0)return alert('Enter an amount greater than zero');let a=get('cash');a.push({id:Date.now(),date,type:$('#ctype').value,method:$('#cmethod').value,note:$('#cnote').value.trim(),amount});put('cash',a);closeModal();render()}
+function saleForm(){transactionForm('sales')}
+function purchaseForm(){transactionForm('purchases')}
+function ledgerFilter(type){document.querySelectorAll('#ledgerrows tr').forEach(r=>r.style.display=type==='All'||r.dataset.type===type?'':'none')}
+function paymentForm(){
+ let all=[...get('customers').map(x=>({...x,type:'Customer'})),...get('suppliers').map(x=>({...x,type:'Supplier'}))];
+ modal('Record receipt / payment','<form onsubmit="savePayment(event)"><div class="formgrid">'+field('Date','paydate','date','value="'+today+'"')+'<div class="field"><label>Entry type</label><select id="paytype" onchange="refreshPayParties()"><option>Customer</option><option>Supplier</option></select></div><div class="field full"><label>Party</label><select id="payparty">'+all.map(x=>'<option value="'+String(x.name).replaceAll('"','&quot;')+'">'+itemEscape(x.name)+'</option>').join('')+'</select></div>'+field('Amount (₹)','payamount','number','step="any" min="0.01"')+'<div class="field"><label>Payment mode</label><select id="paymode"><option>Cash</option><option>UPI</option><option>Bank</option><option>Cheque</option></select></div>'+field('Receipt / reference number','payref')+'</div><p><button class="btn primary">Save payment</button></p></form>');
+}
+function refreshPayParties(){let type=$('#paytype')?.value,k=type==='Customer'?'customers':'suppliers',party=$('#payparty');if(party)party.innerHTML=get(k).map(x=>'<option value="'+String(x.name).replaceAll('"','&quot;')+'">'+itemEscape(x.name)+'</option>').join('')}
+function savePayment(e){
+ e.preventDefault();let amount=num($('#payamount').value),party=$('#payparty').value,date=$('#paydate').value,type=$('#paytype').value;
+ if(!date)return alert('Select a payment date');if(amount<=0)return alert('Enter a valid amount');if(!party)return alert('Select a customer or supplier');
+ let record={id:Date.now(),date,type,party,amount,mode:$('#paymode').value,reference:$('#payref').value.trim()};
+ let a=get('payments');a.push(record);put('payments',a);
+ let cash=get('cash');cash.push({date,type:type==='Customer'?'Money In':'Money Out',method:record.mode,note:type+' payment '+record.reference,amount});put('cash',cash);
+ closeModal();render();
+}
+function printStockSummary(){let a=get('items'),rows=a.map(x=>'<tr><td>'+itemEscape(x.name)+'</td><td>'+itemEscape(x.qty)+' '+itemEscape(x.unit||'')+'</td><td>'+money(x.purchase)+'</td><td>'+money(x.price)+'</td><td>'+money(x.wholesale)+'</td><td>'+money(num(x.qty)*num(x.purchase))+'</td></tr>').join('');printHTML('Stock summary','<h2>Stock summary</h2><table border="1" cellspacing="0" cellpadding="7" width="100%"><tr><th>Item</th><th>Qty</th><th>Cost</th><th>Retail</th><th>Wholesale</th><th>Value</th></tr>'+rows+'</table>')}
+function adjustForm(selected=0){
+ let a=get('items');if(!a.length)return alert('Add an item before adjusting stock');
+ modal('Stock adjustment','<form onsubmit="saveAdjustment(event)"><div class="formgrid">'+field('Date','adjdate','date','value="'+today+'"')+'<div class="field"><label>Item</label><select id="adjitem">'+a.map((x,i)=>'<option value="'+i+'" '+(i===selected?'selected':'')+'>'+itemEscape(x.name)+'</option>').join('')+'</select></div><div class="field"><label>Adjustment</label><select id="adjtype"><option value="add">Add stock</option><option value="remove">Remove stock</option><option value="set">Set exact stock</option></select></div>'+field('Quantity','adjqty','number','step="any" min="0.001"')+field('Reason','adjnote')+'</div><p><button class="btn primary">Save adjustment</button></p></form>');
+}
+function saveAdjustment(e){
+ e.preventDefault();let a=get('items'),i=Number($('#adjitem').value),q=num($('#adjqty').value),type=$('#adjtype').value,date=$('#adjdate').value;
+ if(!date)return alert('Select an adjustment date');if(!a[i]||q<=0)return alert('Enter a valid item and quantity');
+ if(type==='remove'&&q>num(a[i].qty))return alert('Cannot reduce stock below zero');
+ let before=num(a[i].qty);a[i].qty=type==='add'?before+q:type==='remove'?before-q:q;put('items',a);
+ let logs=get('adjustments');logs.push({id:Date.now(),date,item:a[i].name,type:type==='set'?'Set stock':type==='add'?'Stock added':'Stock removed',qty:q,note:$('#adjnote').value.trim(),before,after:a[i].qty});put('adjustments',logs);
+ closeModal();render();
+}
+function printTaxReport(){printHTML('GST Summary','<h2>GST Summary — '+itemEscape(localStorage.bizname||'SmartLedger')+'</h2><p>Generated '+today+'</p>'+$('#view').innerHTML)}
+function invoiceMessage(x){let last=num(x.lastBalance),total=x.totalBalance===undefined?last+num(x.total):num(x.totalBalance),due=x.balanceDue===undefined?total-num(x.paid):num(x.balanceDue);return 'Invoice '+x.invoice+' from '+(localStorage.bizname||'SmartLedger')+'\nDate: '+x.date+'\nInvoice total: '+money(x.total)+'\nLast balance: '+money(last)+'\nTotal balance: '+money(total)+'\nAmount paid: '+money(x.paid)+'\nRemaining balance: '+money(due)}
+function shareInvoice(id){let x=get('sales').find(y=>String(y.id)===String(id))||window.lastInvoice;if(!x)return;window.open('https://wa.me/?text='+encodeURIComponent(invoiceMessage(x)),'_blank')}
+function smsInvoice(id){let x=get('sales').find(y=>String(y.id)===String(id))||window.lastInvoice;if(!x)return;let p=get('customers').find(y=>y.name===x.party),phone=String(p&&p.phone||'').replace(/[^0-9+]/g,'');location.href='sms:'+phone+'?body='+encodeURIComponent(invoiceMessage(x))}
+function filterRows(q,id){
+ let el=document.getElementById(id);if(!el)return;let query=String(q||'').trim().toLowerCase();
+ el.querySelectorAll('[data-item-card]').forEach(card=>{card.style.display=String(card.dataset.search||card.innerText).toLowerCase().includes(query)?'':'none'});
+ el.querySelectorAll('tbody tr').forEach(row=>{row.style.display=row.innerText.toLowerCase().includes(query)?'':'none'});
+}
+function stopItemScanner(){window.itemScanActive=false;if(window.itemScanStream)window.itemScanStream.getTracks().forEach(t=>t.stop());window.itemScanStream=null}
 function listExpenses(){let a=get('expenses');$('#view').innerHTML='<div class="sectionhead"><div><h2>Expenses</h2><div class="muted">Track operating costs</div></div><button class="btn primary" onclick="expenseForm()">＋ Add expense</button></div><div class="tablewrap"><table><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th></tr>'+a.map((x,i)=>'<tr><td>'+x.date+'</td><td>'+x.category+'</td><td>'+x.note+'</td><td>'+money(x.amount)+'</td><td><button class="btn" onclick="editExpense('+i+')">Edit</button> <button class="btn" onclick="deleteExpense('+i+')">Delete</button></td></tr>').join('')+'</table></div>'}
 function exportData(){
  const keys=Object.values(db),profileKeys=["bizname","bizaddress","bizphone","bizphone2","gstin","bizlogo","bizsignature"];
