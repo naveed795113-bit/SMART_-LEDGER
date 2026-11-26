@@ -1123,6 +1123,7 @@ function saveTransaction(e,k){
  let total=lines.reduce((s,x)=>s+x.total,0),taxable=lines.reduce((s,x)=>s+x.taxable,0),tax=lines.reduce((s,x)=>s+x.tax,0),cost=lines.reduce((s,x)=>s+x.cost,0),paid=num($("#tpaid").value),invoice=$("#tinvoice").value.trim(),partyName=$("#tparty").value.trim(),party=partyName,date=$("#tdate").value;
  if(!invoice)return alert("Enter an invoice / bill number");
  if(!date)return alert("Enter the transaction date");
+ if(sales&&!partyName)return alert("Enter or select a customer name");
  if(!sales&&lines.some(x=>x.expiryDate&&x.expiryDate<date))return alert("Expiry date cannot be earlier than the purchase date");
  if(!sales&&!party)return alert("Select a supplier");
  if(sales&&partyName.toLowerCase()!=="walk-in"&&!get("customers").some(p=>p.name.toLowerCase()===partyName.toLowerCase())){let customers=get("customers");customers.push({name:partyName,phone:"",address:"",opening:0});put("customers",customers)}
