@@ -985,210 +985,46 @@ function transactionForm(k){let sales=k==='sales',items=get('items'),parties=get
 function setRate(){let i=get('items')[$('#titem').value];$('#trate').value=i?(window.currentTxn==='sales'?i.price:i.purchase):0;if($('#tgst'))$('#tgst').value=i?(i.gst||0):0;calcTotal()}
 function calcTotal(){let taxable=Math.max(0,num($('#tqty').value)*num($('#trate').value)-num($('#tdiscount').value)),tax=taxable*num($('#tgst')?.value)/100;$('#ttaxable').value=taxable.toFixed(2);$('#ttax').value=tax.toFixed(2);$('#ttotal').value=(taxable+tax).toFixed(2)}
 function consumeBatchStock(itemName,qty){let batches=get('batches'),sorted=batches.filter(b=>b.item===itemName&&num(b.remaining)>0).sort((a,b)=>(a.expiryDate||'9999-12-31').localeCompare(b.expiryDate||'9999-12-31')),left=qty,alloc=[];for(const b of sorted){if(left<=0)break;let take=Math.min(left,num(b.remaining));b.remaining=num(b.remaining)-take;left-=take;alloc.push({batchId:b.id,qty:take})}put('batches',batches);return alloc}
-function saveTransaction(e,k){e.preventDefault();let sales=k==='sales',items=get('items'),idx=$('#titem').value,item=items[idx];if(!item)return alert('Select an item');let qty=num($('#tqty').value),total=num($('#ttotal').value),paid=num($('#tpaid').value);if(qty<=0||paid<0||paid>total)return alert('Check quantity and paid amount');if(sales&&qty>item.qty)return alert('Insufficient stock. Available: '+item.qty);if(!sales&&$('#texpiry').value&&$('#texpiry').value<$('#tdate').value)return alert('Expiry date cannot be earlier than the purchase date');let partyName=$('#tparty').value.trim();if(sales&&!partyName)return alert('Enter or select a customer name');if(!sales&&!partyName)return alert('Select a supplier');if(sales&&partyName.toLowerCase()!=='walk-in'&&!get('customers').some(p=>p.name.toLowerCase()===partyName.toLowerCase())){let customers=get('customers');customers.push({name:partyName,phone:'',address:'',opening:0});put('customers',customers)}let id=Date.now(),taxable=num($('#ttaxable').value),tax=num($('#ttax').value),batchAllocations=[];if(sales){item.qty-=qty;batchAllocations=consumeBatchStock(item.name,qty)}else{item.qty+=qty;let batches=get('batches');batches.push({id:'B'+id,item:item.name,batchNo:$('#tbatch').value.trim()||('AUTO-'+id),expiryDate:$('#texpiry').value||'',receivedDate:$('#tdate').value,qtyReceived:qty,remaining:qty,purchaseRate:num($('#trate').value),purchaseId:id});put('batches',batches)}put('items',items);let a=get(k);a.push({id,date:$('#tdate').value,invoice:$('#tinvoice').value,party:partyName,item:item.name,qty,rate:num($('#trate').value),discount:num($('#tdiscount').value),gstRate:num($('#tgst').value),taxable,tax,total,paid,method:$('#tmethod').value,cost:qty*item.purchase,batchNo:sales?'':($('#tbatch').value.trim()||('AUTO-'+id)),expiryDate:sales?'':($('#texpiry').value||''),batchAllocations});put(k,a);let cash=get('cash');if(paid>0)cash.push({date:$('#tdate').value,type:'Money '+(sales?'In':'Out'),method:$('#tmethod').value,note:(sales?'Sale ':'Purchase ')+$('#tinvoice').value,amount:paid});put('cash',cash);closeModal();render();if(sales)showInvoice(a[a.length-1])}
-function batchExpiryPage(){let rows=get('batches'),now=today,limit=new Date(Date.now()+30*86400000).toISOString().slice(0,10),active=rows.filter(x=>num(x.remaining)>0),expired=active.filter(x=>x.expiryDate&&x.expiryDate<now),soon=active.filter(x=>x.expiryDate&&x.expiryDate>=now&&x.expiryDate<=limit);$('#view').innerHTML='<div class="welcome"><div><h1>Batch & expiry</h1><div class="muted">Batch balances and expiry monitoring</div></div></div><div class="grid"><div class="card"><div class="statlabel">Active batches</div><div class="stat">'+active.length+'</div></div><div class="card"><div class="statlabel">Expired batches</div><div class="stat">'+expired.length+'</div></div><div class="card"><div class="statlabel">Expiring in 30 days</div><div class="stat">'+soon.length+'</div></div></div><div class="section card"><h2>Batch register</h2>'+table(active.sort((a,b)=>(a.expiryDate||'9999').localeCompare(b.expiryDate||'9999')), [['item','Item'],['batchNo','Batch / lot'],['expiryDate','Expiry'],['receivedDate','Received'],['remaining','Remaining qty'],['purchaseRate','Purchase rate']])+'</div><div class="notice">Batch balances begin tracking from purchases recorded in v13. Existing opening stock remains unbatched until you record a purchase or use stock adjustment.</div>'}
-function returnEsc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function returnLinesFor(tx){
- if(Array.isArray(tx.lines)&&tx.lines.length)return tx.lines;
- let qty=num(tx.qty),taxable=tx.taxable!==undefined?num(tx.taxable):num(tx.total)-num(tx.tax),rate=num(tx.rate)||(qty>0?taxable/qty:0),discount=Math.max(0,qty*rate-taxable),gstRate=taxable>0?num(tx.tax)/taxable*100:0;
- return [{item:tx.item,qty,unit:tx.unit||"pcs",unitFactor:1,stockQty:qty,rate,discount,gstRate,tax:num(tx.tax),taxable,total:num(tx.total),cost:num(tx.cost)}];
-}
-function returnForm(kind){
- let sales=kind==="sales",tx=get(sales?"sales":"purchases");
- if(!tx.length)return alert("No "+(sales?"sales invoices":"purchase bills")+" found to return");
- modal(sales?"Sales return":"Purchase return",'<form onsubmit="saveReturn(event,'+JSON.stringify(kind)+')"><div class="formgrid"><div class="field"><label>Original '+(sales?"invoice":"purchase bill")+'</label><select id="returntx" onchange="setReturnMax()">'+tx.slice().reverse().map(x=>'<option value="'+x.id+'">'+returnEsc(x.invoice)+' · '+returnEsc(x.item)+' · '+x.qty+' qty · '+returnEsc(x.party)+'</option>').join("")+'</select></div><div class="field"><label>Item to return</label><select id="returnline" onchange="setReturnMax()"></select></div>'+field("Return quantity","returnqty","number",'step="any" min="0.001"')+field("Return rate (₹)","returnrate","number",'step="any" min="0"')+field("Date","returndate","date",'value="'+today+'"')+'</div><p class="muted" id="returnhint">Select the item and quantity to return.</p><p><button class="btn primary">Save return</button></p></form>');
- window.returnKind=kind;
- setReturnMax();
-}
-function setReturnMax(){
- let kind=window.returnKind||"sales",sales=kind==="sales",id=Number($("#returntx")?.value),tx=get(sales?"sales":"purchases").find(x=>x.id===id),select=$("#returnline");
- if(!tx||!select)return;
- let lines=returnLinesFor(tx);
- if(select.dataset.txid!==String(id)){
-  select.innerHTML=lines.map((line,index)=>'<option value="'+index+'">'+returnEsc(line.item||"Item "+(index+1))+' · '+num(line.qty)+' '+returnEsc(line.unit||"pcs")+'</option>').join("");
-  select.dataset.txid=String(id);
- }
- let index=Math.max(0,Math.min(lines.length-1,Number(select.value)||0)),line=lines[index],returns=get(sales?"salesReturns":"purchaseReturns");
- let already=sum(returns.filter(x=>String(x.originalId)===String(id)&&Number(x.lineIndex??0)===index),x=>x.qty);
- let max=Math.max(0,num(line.qty)-already);
- $("#returnqty").max=max;
- $("#returnqty").value=max;
- $("#returnrate").value=num(line.rate);
- $("#returnhint").textContent="Item: "+line.item+" · Maximum returnable: "+max+" "+(line.unit||"pcs")+" · Original "+tx.invoice;
-}
-function saveReturn(e,kind){
- e.preventDefault();
- let sales=kind==="sales",id=Number($("#returntx").value),tx=get(sales?"sales":"purchases").find(x=>x.id===id),lineIndex=Number($("#returnline").value||0),qty=num($("#returnqty").value),rate=num($("#returnrate").value),date=$("#returndate").value,returns=get(sales?"salesReturns":"purchaseReturns");
- if(!tx||!date||qty<=0||rate<0)return alert("Enter valid return details");
- let lines=returnLinesFor(tx),line=lines[lineIndex];
- if(!line)return alert("Select a valid original invoice item");
- let already=sum(returns.filter(x=>String(x.originalId)===String(id)&&Number(x.lineIndex??0)===lineIndex),x=>x.qty);
- if(qty>num(line.qty)-already+1e-9)return alert("Return quantity exceeds the unreturned quantity for this item");
- let ratio=qty/Math.max(1e-9,num(line.qty)),stockQty=num(line.stockQty)>0?num(line.stockQty)*ratio:qty*(num(line.unitFactor)||1);
- let discount=num(line.discount)*ratio,amount=Math.max(0,qty*rate-discount),gstRate=num(line.gstRate),tax=gstRate>0?amount*gstRate/100:num(line.tax)*ratio,cost=num(line.cost)*ratio,cgst=tx.supplyType==="intra"?tax/2:(num(tx.cgst)&&num(tx.qty)>0?num(tx.cgst)*stockQty/num(tx.qty):0),sgst=tx.supplyType==="intra"?tax/2:(num(tx.sgst)&&num(tx.qty)>0?num(tx.sgst)*stockQty/num(tx.qty):0),igst=tx.supplyType==="inter"?tax:(num(tx.igst)&&num(tx.qty)>0?num(tx.igst)*stockQty/num(tx.qty):0);
- let items=get("items"),item=items.find(x=>x.name===line.item);
- if(!item)return alert("Original item no longer exists");
- let batches=get("batches");
- if(sales){
-  item.qty=num(item.qty)+stockQty;
-  let alloc=!Array.isArray(tx.lines)||!tx.lines.length?(tx.batchAllocations||[]):[];
-  if(alloc.length){
-   let left=stockQty;
-   for(const part of alloc){if(left<=0)break;let b=batches.find(x=>x.id===part.batchId);if(b){let putBack=Math.min(left,num(part.qty));b.remaining=num(b.remaining)+putBack;left-=putBack}}
-   if(left>0)batches.push({id:"BR"+Date.now(),item:item.name,batchNo:"SALES-RETURN",expiryDate:"",receivedDate:date,qtyReceived:left,remaining:left,purchaseRate:cost/Math.max(stockQty,1e-9),purchaseId:null});
-  }else batches.push({id:"BR"+Date.now(),item:item.name,batchNo:"SALES-RETURN-"+(lineIndex+1),expiryDate:"",receivedDate:date,qtyReceived:stockQty,remaining:stockQty,purchaseRate:cost/Math.max(stockQty,1e-9),purchaseId:null});
- }else{
-  if(stockQty>num(item.qty)+1e-9)return alert("Cannot return more stock than currently available");
-  let originalBatches=batches.filter(x=>x.item===item.name&&x.purchaseId===tx.id),left=stockQty;
-  for(const b of originalBatches.slice().sort((a,b)=>(a.expiryDate||"9999").localeCompare(b.expiryDate||"9999"))){let take=Math.min(left,num(b.remaining));b.remaining-=take;left-=take;if(left<=1e-9)break}
-  if(originalBatches.length&&left>1e-9)return alert("Not enough stock from this original purchase batch remains to return that quantity");
-  item.qty=num(item.qty)-stockQty;
- }
- put("items",items);
- put("batches",batches);
- let record={id:Date.now()*1000+Math.floor(Math.random()*1000),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cgst,sgst,igst,cost,kind:sales?"Sales return":"Purchase return"};
- returns.push(record);
- put(sales?"salesReturns":"purchaseReturns",returns);
- let cash=get("cash");
- cash.push({date,type:sales?"Money Out":"Money In",method:"Cash",note:(sales?"Sales return ":"Purchase return ")+tx.invoice+" — "+line.item,amount:amount+tax});
- put("cash",cash);
- closeModal();render();
- alert((sales?"Sales":"Purchase")+" return saved. Stock and tax updated.");
-}
-function salesReturnForm(){returnForm('sales')}function purchaseReturnForm(){returnForm('purchases')}
-function saleForm(){transactionForm('sales')}function purchaseForm(){transactionForm('purchases')}
-function expenseForm(){modal('Add expense','<form onsubmit="saveExpense(event)"><div class="formgrid">'+field('Date','edate','date','value="'+today+'"')+'<div class="field"><label>Category</label><select id="ecat"><option>Rent</option><option>Salary</option><option>Transport / Fuel</option><option>Electricity</option><option>Telephone / Internet</option><option>Other</option></select></div>'+field('Description','enote')+field('Amount (₹)','eamount','number','step="any"')+'</div><p><button class="btn primary">Save expense</button></p></form>')}
-function saveExpense(e){e.preventDefault();let amount=num($('#eamount').value),date=$('#edate').value;if(!date)return alert('Select an expense date');if(amount<=0)return alert('Enter an expense amount greater than zero');let category=$('#ecat').value,note=$('#enote').value.trim(),a=get('expenses');a.push({date,category,note,amount});put('expenses',a);let cash=get('cash');cash.push({date,type:'Money Out',method:'Cash',note:'Expense: '+category+(note?' — '+note:''),amount});put('cash',cash);closeModal();render()}
-function cashForm(){modal('Cash / bank entry','<form onsubmit="saveCash(event)"><div class="formgrid">'+field('Date','cdate','date','value="'+today+'"')+'<div class="field"><label>Type</label><select id="ctype"><option>Money In</option><option>Money Out</option></select></div><div class="field"><label>Account</label><select id="cmethod"><option>Cash</option><option>Bank</option><option>UPI</option></select></div>'+field('Description','cnote')+field('Amount (₹)','camount','number','step="any"')+'</div><p><button class="btn primary">Save entry</button></p></form>')}
-function saveCash(e){e.preventDefault();let amount=num($('#camount').value);if(amount<=0)return alert('Enter an amount greater than zero');let a=get('cash');a.push({date:$('#cdate').value,type:$('#ctype').value,method:$('#cmethod').value,note:$('#cnote').value,amount});put('cash',a);closeModal();render()}
-
-let scanStream=null,scanActive=false;
-async function scanBarcode(){if(!('BarcodeDetector'in window))return alert('Barcode scanning is not supported by this browser. Use current Chrome or enter the barcode manually.');try{let detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code']});scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});let video=document.createElement('video');video.setAttribute('playsinline','');video.style.cssText='width:100%;max-height:220px;background:#111;border-radius:10px';video.srcObject=scanStream;await video.play();modal('Scan product barcode','<div id="scanbox"></div><p class="muted">Point the rear camera at the barcode.</p><button type="button" class="btn" onclick="stopScanner()">Cancel</button>');$('#scanbox').appendChild(video);scanActive=true;let loop=async()=>{if(!scanActive)return;try{let codes=await detector.detect(video);if(codes.length){let code=codes[0].rawValue,idx=get('items').findIndex(x=>x.code===code);stopScanner();closeModal();if(idx<0)alert('No item found for barcode '+code);else{$('#titem').value=String(idx);setRate()}return}}catch(e){}requestAnimationFrame(loop)};requestAnimationFrame(loop)}catch(e){alert('Camera access failed. Allow camera permission and use HTTPS.')}}
-function stopScanner(){scanActive=false;if(scanStream)scanStream.getTracks().forEach(t=>t.stop());scanStream=null}
-async function scanBarcodeFor(target){if(!('BarcodeDetector'in window))return alert('Barcode scanning is not supported by this browser. Enter the barcode manually.');let stream=null;try{let detector=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code']});stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});let video=document.createElement('video');video.setAttribute('playsinline','');video.style.cssText='width:100%;max-height:220px;background:#111;border-radius:10px';video.srcObject=stream;await video.play();modal('Scan item barcode','<div id="itemscanbox"></div><p class="muted">Point the rear camera at the item barcode.</p><button type="button" class="btn" onclick="stopItemScanner()">Cancel</button>');$('#itemscanbox').appendChild(video);window.itemScanStream=stream;window.itemScanActive=true;let loop=async()=>{if(!window.itemScanActive)return;try{let codes=await detector.detect(video);if(codes.length){let code=codes[0].rawValue;stopItemScanner();closeModal();$('#'+target).value=code;return}}catch(e){}requestAnimationFrame(loop)};requestAnimationFrame(loop)}catch(e){if(stream)stream.getTracks().forEach(t=>t.stop());alert('Camera access failed. Allow camera permission and use HTTPS.')}}
-function stopItemScanner(){window.itemScanActive=false;if(window.itemScanStream)window.itemScanStream.getTracks().forEach(t=>t.stop());window.itemScanStream=null}
-
-function ledgerPage(){let customers=get('customers'),suppliers=get('suppliers'),sales=get('sales'),purchases=get('purchases'),payments=get('payments');let parties=[...customers.map(x=>({...x,type:'Customer'})),...suppliers.map(x=>({...x,type:'Supplier'}))];$('#view').innerHTML='<div class="sectionhead"><div><h2>Ledgers & payments</h2><div class="muted">Party-wise balances and payment entries</div></div><button class="btn primary" onclick="paymentForm()">＋ Record payment</button></div><div class="field" style="max-width:260px;margin:14px 0"><label for="ledgerfilter">Show party type</label><select id="ledgerfilter" onchange="ledgerFilter(this.value)"><option value="All">All parties</option><option value="Customer">Customers</option><option value="Supplier">Suppliers</option></select></div><div class="tablewrap"><table><thead><tr><th>Party</th><th>Type</th><th>Sales / Purchases</th><th>Payments</th><th>Balance</th><th>Gross profit</th></tr></thead><tbody id="ledgerrows">'+parties.map(p=>{let tx=p.type==='Customer'?sales.filter(x=>x.party===p.name):purchases.filter(x=>x.party===p.name),paid=payments.filter(x=>x.party===p.name&&x.type===p.type).reduce((s,x)=>s+x.amount,0),gross=tx.reduce((s,x)=>s+x.total,0),old=Number(p.opening)||0,balance=p.type==='Customer'?old+gross-tx.reduce((s,x)=>s+x.paid,0)-paid:old+gross-tx.reduce((s,x)=>s+x.paid,0)-paid;return '<tr data-type="'+p.type+'"><td>'+p.name+'</td><td>'+p.type+'</td><td>'+money(gross)+'</td><td>'+money(tx.reduce((s,x)=>s+x.paid,0)+paid)+'</td><td>'+money(balance)+'</td></tr>'}).join('')+'</tbody></table></div><div class="section"><h2>Recent payment entries</h2>'+table(payments.slice().reverse(),[['date','Date'],['type','Party type'],['party','Party'],['mode','Mode'],['amount','Amount'],['reference','Reference']])+'</div>'}
-function ledgerFilter(type){document.querySelectorAll('#ledgerrows tr').forEach(r=>r.style.display=type==='All'||r.dataset.type===type?'':'none')}
-function paymentForm(){let all=[...get('customers').map(x=>({...x,type:'Customer'})),...get('suppliers').map(x=>({...x,type:'Supplier'}))];modal('Record receipt / payment','<form onsubmit="savePayment(event)"><div class="formgrid">'+field('Date','paydate','date','value="'+today+'"')+'<div class="field"><label>Entry type</label><select id="paytype" onchange="refreshPayParties()"><option>Customer</option><option>Supplier</option></select></div><div class="field full"><label>Party</label><select id="payparty">'+all.map(x=>'<option>'+x.name+'</option>').join('')+'</select></div>'+field('Amount (₹)','payamount','number','step="any" min="0.01"')+'<div class="field"><label>Payment mode</label><select id="paymode"><option>Cash</option><option>UPI</option><option>Bank</option><option>Cheque</option></select></div>'+field('Receipt / reference number','payref')+'</div><p><button class="btn primary">Save payment</button></p></form>')}
-function refreshPayParties(){let k=$('#paytype').value==='Customer'?'customers':'suppliers';$('#payparty').innerHTML=get(k).map(x=>'<option>'+x.name+'</option>').join('')}
-function savePayment(e){e.preventDefault();let amount=num($('#payamount').value),party=$('#payparty').value;if(amount<=0)return alert('Enter a valid amount');if(!party)return alert('Select a customer or supplier');let a=get('payments');a.push({date:$('#paydate').value,type:$('#paytype').value,party,amount,mode:$('#paymode').value,reference:$('#payref').value.trim()});put('payments',a);let cash=get('cash');cash.push({date:$('#paydate').value,type:$('#paytype').value==='Customer'?'Money In':'Money Out',method:$('#paymode').value,note:$('#paytype').value+' payment '+$('#payref').value,amount});put('cash',cash);closeModal();render()}
-function stockSummary(){let a=get('items'),qty=sum(a,x=>x.qty),value=sum(a,x=>num(x.qty)*num(x.purchase)),retail=sum(a,x=>num(x.qty)*num(x.price)),low=a.filter(x=>num(x.qty)<=num(x.minStock??5));$('#view').innerHTML='<div class="sectionhead"><div><h2>Stock summary</h2><div class="muted">Current inventory and valuation</div></div><div class="actions"><button class="btn" onclick="printStockSummary()">Print / PDF</button><button class="btn primary" onclick="bulkItemsForm()">＋ Bulk items</button></div></div><div class="grid"><div class="card"><div class="statlabel">Item types</div><div class="stat">'+a.length+'</div></div><div class="card"><div class="statlabel">Total quantity</div><div class="stat">'+qty.toLocaleString('en-IN')+'</div></div><div class="card"><div class="statlabel">Purchase valuation</div><div class="stat">'+money(value)+'</div></div><div class="card"><div class="statlabel">Retail value</div><div class="stat">'+money(retail)+'</div></div><div class="card"><div class="statlabel">Low / out of stock</div><div class="stat">'+low.length+'</div></div></div><div class="section"><h2>Item-wise stock</h2><input class="search" placeholder="Search inventory" oninput="filterRows(this.value,\'stocksummaryrows\')"><div id="stocksummaryrows">'+table(a,[['name','Item'],['code','SKU'],['qty','Qty'],['unit','Unit'],['purchase','Cost / unit'],['price','Retail'],['wholesale','Wholesale'],['minStock','Reorder at']])+'</div></div>'}
-function printStockSummary(){let a=get('items'),rows=a.map(x=>'<tr><td>'+x.name+'</td><td>'+x.qty+' '+(x.unit||'')+'</td><td>'+money(x.purchase)+'</td><td>'+money(x.price)+'</td><td>'+money(x.wholesale)+'</td><td>'+money(num(x.qty)*num(x.purchase))+'</td></tr>').join('');printHTML('Stock summary','<h2>Stock summary</h2><table border="1" cellspacing="0" cellpadding="7" width="100%"><tr><th>Item</th><th>Qty</th><th>Cost</th><th>Retail</th><th>Wholesale</th><th>Value</th></tr>'+rows+'</table>')}
-function stockAlerts(){let a=get('items'),low=a.filter(x=>num(x.qty)<=num(x.minStock??5));$('#view').innerHTML='<div class="sectionhead"><div><h2>Stock alerts</h2><div class="muted">Items at or below reorder level (default 5)</div></div><button class="btn primary" onclick="adjustForm()">＋ Stock adjustment</button></div>'+table(low,[['name','Item'],['code','SKU / Barcode'],['qty','Available stock'],['minStock','Reorder level'],['unit','Unit']])+'<div class="section"><h2>Stock adjustments</h2>'+table(get('adjustments').slice().reverse(),[['date','Date'],['item','Item'],['type','Adjustment'],['qty','Quantity'],['note','Reason']])+'</div>'}
-function adjustForm(selected=0){let a=get('items');modal('Stock adjustment','<form onsubmit="saveAdjustment(event)"><div class="formgrid">'+field('Date','adjdate','date','value="'+today+'"')+'<div class="field"><label>Item</label><select id="adjitem">'+a.map((x,i)=>'<option value="'+i+'" '+(i===selected?'selected':'')+'>'+x.name+'</option>').join('')+'</select></div><div class="field"><label>Adjustment</label><select id="adjtype"><option value="add">Add stock</option><option value="remove">Remove stock</option><option value="set">Set exact stock</option></select></div>'+field('Quantity','adjqty','number','step="any" min="0.001"')+field('Reason','adjnote')+'</div><p><button class="btn primary">Save adjustment</button></p></form>')}
-function saveAdjustment(e){e.preventDefault();let a=get('items'),i=Number($('#adjitem').value),q=num($('#adjqty').value),type=$('#adjtype').value;if(!a[i]||q<=0)return alert('Enter a valid item and quantity');if(type==='remove'&&q>a[i].qty)return alert('Cannot reduce stock below zero');let before=num(a[i].qty);a[i].qty=type==='add'?before+q:type==='remove'?before-q:q;put('items',a);let logs=get('adjustments');logs.push({date:$('#adjdate').value,item:a[i].name,type:type==='set'?'Set stock':type==='add'?'Stock added':'Stock removed',qty:q,note:$('#adjnote').value,before,after:a[i].qty});put('adjustments',logs);closeModal();render()}
-function taxReports(){let sales=get('sales'),purchases=get('purchases'),r=returnSummary(),tax=sales.reduce((s,x)=>s+num(x.tax),0)-r.tax,input=purchases.reduce((s,x)=>s+num(x.tax),0);$('#view').innerHTML='<div class="welcome"><div><h1>GST reports</h1><div class="muted">Tax totals from saved invoices and bills</div></div><button class="btn" onclick="printTaxReport()">Print report</button></div><div class="grid"><div class="card"><div class="statlabel">Taxable sales</div><div class="stat">'+money(sales.reduce((s,x)=>s+num(x.taxable??x.total),0)-r.amount)+'</div></div><div class="card"><div class="statlabel">Output GST</div><div class="stat">'+money(tax)+'</div></div><div class="card"><div class="statlabel">Input GST recorded</div><div class="stat">'+money(input)+'</div></div><div class="card"><div class="statlabel">Net GST estimate</div><div class="stat">'+money(tax-input)+'</div></div></div><div class="section"><h2>Sales tax details</h2>'+table(sales.filter(x=>num(x.tax)>0),[['date','Date'],['invoice','Invoice'],['party','Customer'],['taxable','Taxable value'],['gstRate','GST %'],['tax','GST amount'],['total','Total']])+'</div><div class="notice">This is a management summary, not a GST return. Verify place of supply, HSN/SAC, CGST/SGST/IGST classification, exemptions, credit eligibility and statutory reporting with your accountant before filing.</div>'}
-function printTaxReport(){printHTML('GST Summary','<h2>GST Summary — '+(localStorage.bizname||'SmartLedger')+'</h2><p>Generated '+today+'</p>'+$('#view').innerHTML)}
-function showInvoice(x){let last=num(x.lastBalance),invoiceTotal=num(x.total),totalBalance=x.totalBalance===undefined?last+invoiceTotal:num(x.totalBalance),paid=num(x.paid),remaining=x.balanceDue===undefined?Math.max(0,totalBalance-paid):num(x.balanceDue),lines=Array.isArray(x.lines)&&x.lines.length?x.lines:[{item:x.item||'Item',qty:x.qty,rate:x.rate,taxable:x.taxable===undefined?x.total:x.taxable,tax:x.tax,total:x.total}],rows=lines.map((l,i)=>'<tr><td>'+(i+1)+'</td><td><b>'+itemEscape(l.item||l.name||'Item')+'</b></td><td style="text-align:right">'+num(l.qty)+'</td><td style="text-align:right">'+money(l.rate)+'</td><td style="text-align:right">'+money(l.taxable??(num(l.qty)*num(l.rate)))+'</td><td style="text-align:right">'+money(l.tax)+'</td><td style="text-align:right"><b>'+money(l.total??(num(l.taxable)+num(l.tax)))+'</b></td></tr>').join('');let html='<div id="invoicepaper" class="invoice-paper"><div class="invoice-topline"></div><div class="invoice-brand">'+businessPrintHeader()+'</div><div class="invoice-meta"><div><h3>TAX INVOICE</h3><p><b>Invoice No:</b> '+itemEscape(x.invoice)+'</p><p><b>Date:</b> '+itemEscape(x.date)+'</p></div><div style="text-align:right"><span style="display:inline-block;padding:7px 11px;border:1px solid #d8c18a;border-radius:20px;color:#8a7143;font-size:10px;font-weight:800;letter-spacing:1px">SALES INVOICE</span><p style="margin-top:10px;color:#777;font-size:11px">Original for recipient</p></div></div><div class="invoice-customer"><b>Bill to / Customer</b><strong style="font-size:15px;color:#25292c">'+itemEscape(x.party||'Walk-in')+'</strong></div><table class="invoice-table"><thead><tr><th>#</th><th>Item description</th><th style="text-align:right">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Taxable</th><th style="text-align:right">GST</th><th style="text-align:right">Amount</th></tr></thead><tbody>'+rows+'</tbody></table><div class="invoice-totals"><div class="invoice-total-row"><span>Taxable amount</span><b>'+money(x.taxable??(invoiceTotal-num(x.tax)))+'</b></div><div class="invoice-total-row"><span>GST</span><b>'+money(x.tax)+'</b></div><div class="invoice-total-row"><span>Discount</span><b>'+money(x.discount)+'</b></div><div class="invoice-total-row grand"><span>Invoice total</span><b>'+money(invoiceTotal)+'</b></div></div><div class="invoice-balance"><div><small>Previous balance</small><b>'+money(last)+'</b></div><div><small>Total balance</small><b>'+money(totalBalance)+'</b></div><div><small>Amount received</small><b>'+money(paid)+'</b></div><div><small>Balance due</small><b>'+money(remaining)+'</b></div></div><div class="invoice-footer"><div><b style="color:#8a7143">Thank you for your business.</b><p>Goods once sold are subject to shop return policy.</p></div><div style="text-align:right">'+businessSignatureHTML()+'</div></div></div>';modal('Sales invoice · '+itemEscape(x.invoice),'<div>'+html+'</div><div class="actions" style="margin-top:14px"><button class="btn primary" onclick="printInvoice()">Print / Save PDF</button><button class="btn" onclick="shareInvoice('+x.id+')">WhatsApp</button><button class="btn" onclick="smsInvoice('+x.id+')">SMS</button></div>');window.lastInvoice=x}
-function printInvoice(){let paper=$('#invoicepaper');if(!paper)return;printHTML('SmartLedger Sales Invoice',paper.outerHTML)}
-function invoiceMessage(x){let last=num(x.lastBalance),total=x.totalBalance===undefined?last+num(x.total):num(x.totalBalance),due=x.balanceDue===undefined?total-num(x.paid):num(x.balanceDue);return 'Invoice '+x.invoice+' from '+(localStorage.bizname||'SmartLedger')+'\nDate: '+x.date+'\nInvoice total: '+money(x.total)+'\nLast balance: '+money(last)+'\nTotal balance: '+money(total)+'\nAmount paid: '+money(x.paid)+'\nRemaining balance: '+money(due)}
-function shareInvoice(id){let x=get('sales').find(y=>y.id===id)||window.lastInvoice;if(!x)return;window.open('https://wa.me/?text='+encodeURIComponent(invoiceMessage(x)),'_blank')}
-function smsInvoice(id){let x=get('sales').find(y=>y.id===id)||window.lastInvoice;if(!x)return;let p=get('customers').find(y=>y.name===x.party),phone=String(p&&p.phone||'').replace(/[^0-9+]/g,'');location.href='sms:'+phone+'?body='+encodeURIComponent(invoiceMessage(x))}
-
-function filterRows(q,id){
- let el=document.getElementById(id);if(!el)return;let query=String(q||'').trim().toLowerCase();
- el.querySelectorAll('[data-item-card]').forEach(card=>{card.style.display=String(card.dataset.search||card.innerText).toLowerCase().includes(query)?'':'none'});
- el.querySelectorAll('tbody tr').forEach(row=>{row.style.display=row.innerText.toLowerCase().includes(query)?'':'none'});
-}
-function exportData(){let data={app:'SmartLedger',appVersion:APP_VERSION,schemaVersion:BACKUP_SCHEMA_VERSION,exportedAt:new Date().toISOString(),chartOfAccounts:JSON.parse(localStorage.getItem('sl_chart_accounts')||'[]'),accountJournals:JSON.parse(localStorage.getItem('sl_account_journals')||'[]'),v40PostingErrors:JSON.parse(localStorage.getItem('sl_v40_posting_errors')||'[]'),profile:{name:localStorage.bizname||'',address:localStorage.bizaddress||'',phone:localStorage.bizphone||'',phone2:localStorage.bizphone2||'',gstin:localStorage.gstin||'',logo:localStorage.bizlogo||'',signature:localStorage.bizsignature||''}};Object.keys(db).forEach(k=>data[k]=get(k));let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='smartledger-backup-'+today+'.json';a.click();URL.revokeObjectURL(a.href)}
-function restoreData(input){
- let f=input.files&&input.files[0];if(!f)return;
- const reset=()=>{input.value=""};
- if(f.size>10*1024*1024){alert("Backup file is larger than 10 MB.");reset();return}
- let reader=new FileReader();
- reader.onerror=()=>{alert("Could not read this backup file.");reset()};
- reader.onload=()=>{
-  try{
-   let data=JSON.parse(reader.result);
-   if(!data||typeof data!=="object"||Array.isArray(data))throw new Error("Invalid backup structure");
-   if(data.app&&data.app!=="SmartLedger")throw new Error("This backup belongs to a different application");
-   if(data.schemaVersion!==undefined&&(!Number.isInteger(data.schemaVersion)||data.schemaVersion<1||data.schemaVersion>BACKUP_SCHEMA_VERSION))throw new Error("Unsupported backup version");
-   let keys=Object.keys(db),optional=['batches','salesReturns','purchaseReturns','chartOfAccounts','accountJournals'];
-   if(data.v40PostingErrors!==undefined&&!Array.isArray(data.v40PostingErrors))throw new Error('Invalid v40 posting log');
-   if(data.chartOfAccounts!==undefined&&(!Array.isArray(data.chartOfAccounts)||data.chartOfAccounts.some(a=>!a||!a.code||!a.name||!['Asset','Liability','Equity','Income','Expense'].includes(a.type))))throw new Error('Invalid accounting backup');
-   if(data.accountJournals!==undefined&&(!Array.isArray(data.accountJournals)||data.accountJournals.some(j=>!j||!Array.isArray(j.lines)||j.lines.length<2||Math.abs(j.lines.reduce((v,l)=>v+Number(l.debit||0),0)-j.lines.reduce((v,l)=>v+Number(l.credit||0),0))>0.004||j.lines.some(l=>!l||!l.account||!data.chartOfAccounts?.some(a=>a.code===l.account)))))throw new Error('Invalid accounting backup');
-   if(!keys.filter(k=>!optional.includes(k)).every(k=>Array.isArray(data[k])))throw new Error("This is not a complete SmartLedger backup");
-   optional.forEach(k=>{if(!Array.isArray(data[k]))data[k]=[]});
-   if(data.profile!==undefined&&(!data.profile||typeof data.profile!=="object"||Array.isArray(data.profile)))throw new Error("Invalid business profile");
-   if(!confirm("Restore this backup? This will replace all SmartLedger records currently stored in this browser. A copy of your current records will be downloaded first.")){reset();return}
-   exportData();
-   keys.forEach(k=>put(k,data[k]));localStorage.setItem('sl_chart_accounts',JSON.stringify(data.chartOfAccounts));localStorage.setItem('sl_account_journals',JSON.stringify(data.accountJournals));localStorage.setItem('sl_v40_posting_errors',JSON.stringify(data.v40PostingErrors||[]));
-   if(data.profile){
-    localStorage.bizname=String(data.profile.name||"");
-    localStorage.bizphone=String(data.profile.phone||"");
-    localStorage.gstin=String(data.profile.gstin||"");
-    localStorage.bizaddress=String(data.profile.address||"");
-    localStorage.bizphone2=String(data.profile.phone2||"");
-    localStorage.bizlogo=String(data.profile.logo||"");
-    localStorage.bizsignature=String(data.profile.signature||"");
-   }
-   alert("Backup restored successfully.");
-   render();
-  }catch(error){const known=["Invalid backup structure","This backup belongs to a different application","Unsupported backup version","This is not a complete SmartLedger backup","Invalid business profile","Invalid accounting backup"];alert(known.includes(error.message)?error.message+". No data was changed.":"Invalid or unreadable backup. No data was changed.")}
-  reset();
- };
- reader.readAsText(f);
-}
-applyNavIcons();applyTheme();render();
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
-
-function transactionForm(k){
- let sales=k==="sales",items=get("items"),parties=get(sales?"customers":"suppliers");window.currentTxn=k;
- let partyOptions=(sales?"<option>Walk-in</option>":"<option value=\"\">Select supplier</option>")+parties.map(p=>"<option>"+escapeHTML(p.name)+"</option>").join("");
- let partyField=sales?"<div class=\"field full\"><label for=\"tparty\">Customer name</label><input id=\"tparty\" name=\"customerName\" list=\"customerSuggestions\" value=\"Walk-in\" placeholder=\"Select existing customer or type a new name\" autocomplete=\"off\" onchange=\"updateTxnTotals()\" oninput=\"updateTxnTotals()\"><datalist id=\"customerSuggestions\">"+parties.map(p=>"<option value=\""+escapeHTML(p.name)+"\"></option>").join("")+"<option value=\"Walk-in\"></datalist><small class=\"muted\">Choose a saved customer or enter a new customer name.</small></div>":"<div class=\"field full\"><label>Supplier</label><select id=\"tparty\" onchange=\"updateTxnTotals()\">"+partyOptions+"</select></div>";
- let html="<form onsubmit=\"saveTransaction(event,'"+k+"')\"><div class=\"formgrid\">"+field("Date","tdate","date","value=\""+today+"\"")+field("Invoice / bill number","tinvoice","text","value=\""+(sales?"SL-":"PB-")+Date.now().toString().slice(-6)+"\"")+partyField+"<div class=\"field\"><label>GST supply type</label><select id=\"txnsupply\"><option value=\"intra\">Within state (CGST + SGST)</option><option value=\"inter\">Other state (IGST)</option></select></div></div><div class=\"sectionhead\" style=\"margin-top:16px\"><h2>Items</h2><button type=\"button\" class=\"btn soft\" onclick=\"addTxnLine()\">＋ Add item</button></div><div id=\"txnLines\"></div><div class=\"formgrid\" style=\"margin-top:14px\">"+field("Amount paid (₹)","tpaid","number","step=\"any\" min=\"0\" value=\"0\" oninput=\"updateTxnTotals()\"")+"<div class=\"field\"><label>Payment mode</label><select id=\"tmethod\"><option>Cash</option><option>UPI</option><option>Bank</option><option>Credit</option><option>Cheque</option></select></div></div><div class=\"card txn-balance-summary\" id=\"txnBalanceSummary\"><p>Taxable: <b id=\"txnTaxable\">₹0.00</b></p><p>GST: <b id=\"txnTax\">₹0.00</b></p><p>Invoice Total: <b id=\"txnTotal\">₹0.00</b></p><p>Last Balance: <b id=\"txnLastBalance\">₹0.00</b></p><h3>Total Balance: <span id=\"txnTotalBalance\">₹0.00</span></h3><p>Amount Paid: <b id=\"txnPaid\">₹0.00</b></p><h3 class=\"txn-remaining\">Remaining Balance: <span id=\"txnRemainingBalance\">₹0.00</span></h3></div><p><button class=\"btn primary\">Save "+(sales?"sale":"purchase")+"</button></p></form>";
- modal(sales?"Professional sale invoice":"Professional purchase bill",html);addTxnLine();updateTxnTotals();
-}
-function currentTxnLastBalance(){
- let party=$("#tparty")?.value||"",type=window.currentTxn==="sales"?"Customer":"Supplier";
- if(!party||party==="Walk-in")return 0;
- return partyOutstanding(type,party);
-}
-function addTxnLine(){
- let items=get("items"),box=$("#txnLines");if(!box)return;
- let cards=items.map((p,i)=>'<button type="button" class="txn-product-option" data-txn-product data-index="'+i+'" data-search="'+escapeHTML([p.name,p.code,p.unit,p.baseUnit,p.qty].join(" ").toLowerCase())+'" onclick="chooseTxnProduct(this,'+i+')"><span class="txn-product-option-top"><b>'+escapeHTML(p.name)+'</b><em>'+escapeHTML(p.qty)+' '+escapeHTML(p.unit||"pcs")+'</em></span><span class="txn-product-option-bottom"><small>SKU '+escapeHTML(p.code||"—")+'</small><strong>'+money(window.currentTxn==="sales"?p.price:p.purchase)+'</strong></span></button>').join("");
- let html='<div class="card txnline"><div class="field full"><label>Choose product from inventory</label><input class="search txn-product-search" type="search" placeholder="Search product name, SKU, barcode or unit…" oninput="filterTxnProducts(this)" autocomplete="off"><div class="txn-product-grid">'+(cards||'<div class="txn-product-empty">No inventory products found. Add a product in Inventory first.</div>')+'</div><select class="txitem hidden" onchange="txnRate(this)"><option value="">Select product</option>'+items.map((p,i)=>'<option value="'+i+'">'+escapeHTML(p.name)+'</option>').join("")+'</select><button type="button" class="btn soft" style="margin-top:8px" onclick="scanTxnLine(this)">▣ Scan barcode</button></div><div class="txn-selected-product muted">Select a product to view its details and available stock.</div><div class="formgrid"><div class="field full"><label>Invoice item name / description (editable)</label><input class="txdescription" type="text" placeholder="Uses inventory name unless changed"></div><div class="field"><label>Quantity</label><input class="txqty" type="number" min="0.001" step="any" value="1" oninput="updateTxnTotals()"></div><div class="field"><label>Unit for this transaction</label><select class="txunit" onchange="updateTxnTotals()"><option value="">Select product first</option></select></div><div class="field"><label>Rate (₹ per selected unit)</label><input class="txrate" type="number" min="0" step="any" value="0" oninput="updateTxnTotals()"></div><div class="field"><label>Discount (₹)</label><input class="txdiscount" type="number" min="0" step="any" value="0" oninput="updateTxnTotals()"></div><div class="field"><label>GST rate</label><select class="txgst" onchange="updateTxnTotals()"><option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option></select></div></div><button type="button" class="btn" style="margin-top:10px" onclick="this.closest(\'.txnline\').remove();updateTxnTotals()">Remove product</button></div>';
- box.insertAdjacentHTML("beforeend",html);updateTxnTotals();
-}
-function filterTxnProducts(input){
- let grid=input.closest(".txnline").querySelector(".txn-product-grid"),q=input.value.trim().toLowerCase(),shown=0;
- grid.querySelectorAll("[data-txn-product]").forEach(card=>{let match=(card.dataset.search||"").includes(q);card.style.display=match?"":"none";if(match)shown++});
- let empty=grid.querySelector(".txn-product-empty");if(!shown&&!empty){empty=document.createElement("div");empty.className="txn-product-empty";empty.textContent="No matching products. Try another name or SKU.";grid.appendChild(empty)}else if(empty)empty.style.display=shown?"none":"";
-}
-function chooseTxnProduct(button,index){
- let row=button.closest(".txnline"),select=row.querySelector(".txitem");if(!select)return;select.value=String(index);txnRate(select);row.querySelectorAll("[data-txn-product]").forEach(card=>card.classList.toggle("selected",card===button));
-}
-function txnRate(sel){
- let p=get("items")[Number(sel.value)],row=sel.closest(".txnline");if(!row)return;
- if(p){
-  row.querySelector(".txrate").value=window.currentTxn==="sales"?p.price:p.purchase;row.querySelector(".txgst").value=String(p.gst||0);row.querySelector(".txdescription").value=p.name;
-  row.querySelector(".txunit").innerHTML=transactionUnitOptions(p);row.querySelector(".txunit").value=p.unit||p.baseUnit||"pcs";
-  row.querySelector(".txn-selected-product").innerHTML='<b>'+escapeHTML(p.name)+'</b> · Available stock: <strong>'+escapeHTML(p.qty)+' '+escapeHTML(p.unit||"pcs")+'</strong> · HSN: '+escapeHTML(p.hsn||"—");
-  row.querySelectorAll("[data-txn-product]").forEach(card=>card.classList.toggle("selected",Number(card.dataset.index)===Number(sel.value)));
- }else{row.querySelector(".txunit").innerHTML='<option value="">Select product first</option>';row.querySelector(".txn-selected-product").textContent="Select a product to view its details and available stock."}
- updateTxnTotals();
-}
-function readTxnLines(){
- return Array.from(document.querySelectorAll(".txnline")).map(row=>{
-  let rawIndex=row.querySelector(".txitem").value,i=rawIndex===""?-1:Number(rawIndex),p=i>=0?get("items")[i]:null,qty=num(row.querySelector(".txqty").value),rate=num(row.querySelector(".txrate").value),discount=num(row.querySelector(".txdiscount").value),gstRate=num(row.querySelector(".txgst").value),unit=row.querySelector(".txunit")?.value||(p&&p.unit)||"pcs",unitFactor=p?unitFactorForItem(p,unit):1,stockQty=p&&unitFactor!==null?qty*unitFactor/itemUnitFactor(p):NaN,taxable=Math.max(0,qty*rate-discount),tax=taxable*gstRate/100;
-  return {itemIndex:i,item:p?p.name:"",description:row.querySelector(".txdescription")?.value.trim()||"",qty,unit,unitFactor,stockQty,rate,discount,gstRate,taxable,tax,total:taxable+tax,cost:stockQty*num(p&&p.purchase)};
- }).filter(x=>x.item);
-}
-function updateTxnTotals(){
- let lines=readTxnLines(),taxable=lines.reduce((s,x)=>s+x.taxable,0),tax=lines.reduce((s,x)=>s+x.tax,0),total=taxable+tax,last=currentTxnLastBalance(),paid=num($("#tpaid")?.value),totalBalance=last+total;
- if($("#txnTaxable"))$("#txnTaxable").textContent=money(taxable);if($("#txnTax"))$("#txnTax").textContent=money(tax);if($("#txnTotal"))$("#txnTotal").textContent=money(total);if($("#txnLastBalance"))$("#txnLastBalance").textContent=money(last);if($("#txnTotalBalance"))$("#txnTotalBalance").textContent=money(totalBalance);if($("#txnPaid"))$("#txnPaid").textContent=money(paid);if($("#txnRemainingBalance"))$("#txnRemainingBalance").textContent=money(totalBalance-paid);
-}
 function saveTransaction(e,k){
- e.preventDefault();let sales=k==="sales",items=get("items"),lines=readTxnLines();if(!lines.length)return alert("Add at least one product");
- let quantities={};lines.forEach(x=>quantities[x.itemIndex]=(quantities[x.itemIndex]||0)+x.stockQty);
- for(let key in quantities){let p=items[Number(key)];if(lines.some(x=>x.itemIndex===Number(key)&&(!Number.isFinite(x.stockQty)||x.stockQty<=0)))return alert("Quantity and unit conversion must be valid");if(sales&&quantities[key]>num(p.qty)+1e-9)return alert("Insufficient stock for "+p.name+". Available: "+p.qty+" "+(p.unit||""))}
- let total=lines.reduce((s,x)=>s+x.total,0),taxable=lines.reduce((s,x)=>s+x.taxable,0),tax=lines.reduce((s,x)=>s+x.tax,0),cost=lines.reduce((s,x)=>s+x.cost,0),paid=num($("#tpaid").value),invoice=$("#tinvoice").value.trim(),party=$("#tparty").value;
- if(!invoice)return alert("Enter an invoice / bill number");if(!sales&&!party)return alert("Select a supplier");if(get(k).some(x=>String(x.invoice).toLowerCase()===invoice.toLowerCase()))return alert("This invoice / bill number already exists");if(paid<0)return alert("Paid amount cannot be negative");if(paid>total)return alert("Paid amount cannot exceed invoice total");
- let lastBalance=party?partyOutstanding(sales?"Customer":"Supplier",party):0,totalBalance=lastBalance+total,balanceDue=totalBalance-paid;
- lines.forEach(x=>{let p=items[x.itemIndex],oldQty=num(p.qty),stockQty=x.stockQty;if(sales)p.qty=oldQty-stockQty;else{let effectiveRate=x.rate/(stockQty/x.qty||1);p.purchase=(oldQty*num(p.purchase)+stockQty*effectiveRate)/(oldQty+stockQty||1);p.qty=oldQty+stockQty}});
- put("items",items);let record={id:Date.now(),date:$("#tdate").value,invoice:$("#tinvoice").value,party,item:lines.map(x=>x.item).join(", "),lines:lines.map(({itemIndex,...x})=>x),qty:lines.reduce((s,x)=>s+x.stockQty,0),taxable,tax,supplyType:$("#txnsupply").value,cgst:$("#txnsupply").value==="intra"?tax/2:0,sgst:$("#txnsupply").value==="intra"?tax/2:0,igst:$("#txnsupply").value==="inter"?tax:0,total,paid,method:$("#tmethod").value,cost,lastBalance,totalBalance,balanceDue};let a=get(k);a.push(record);put(k,a);
- let cash=get("cash");if(paid>0)cash.push({date:record.date,type:sales?"Money In":"Money Out",method:record.method,note:(sales?"Sale ":"Purchase ")+record.invoice,amount:paid});put("cash",cash);
+ e.preventDefault();
+ let sales=k==="sales",items=get("items"),lines=readTxnLines();
+ if(!lines.length)return alert("Add at least one product");
+ let quantities={};
+ lines.forEach(x=>quantities[x.itemIndex]=(quantities[x.itemIndex]||0)+x.stockQty);
+ for(let key in quantities){
+  let p=items[Number(key)];
+  if(lines.some(x=>x.itemIndex===Number(key)&&(!Number.isFinite(x.stockQty)||x.stockQty<=0)))return alert("Quantity and unit conversion must be valid");
+  if(sales&&quantities[key]>num(p.qty)+1e-9)return alert("Insufficient stock for "+p.name+". Available: "+p.qty+" "+(p.unit||""));
+ }
+ let total=lines.reduce((s,x)=>s+x.total,0),taxable=lines.reduce((s,x)=>s+x.taxable,0),tax=lines.reduce((s,x)=>s+x.tax,0),cost=lines.reduce((s,x)=>s+x.cost,0),paid=num($("#tpaid").value),invoice=$("#tinvoice").value.trim(),party=$("#tparty").value,date=$("#tdate").value;
+ if(!invoice)return alert("Enter an invoice / bill number");
+ if(!date)return alert("Enter the transaction date");
+ if(!sales&&!party)return alert("Select a supplier");
+ if(get(k).some(x=>String(x.invoice).toLowerCase()===invoice.toLowerCase()))return alert("This invoice / bill number already exists");
+ if(paid<0)return alert("Paid amount cannot be negative");
+ if(paid>total)return alert("Paid amount cannot exceed invoice total");
+ let lastBalance=party?partyOutstanding(sales?"Customer":"Supplier",party):0,totalBalance=lastBalance+total,balanceDue=totalBalance-paid,id=Date.now(),batches=get("batches"),allAllocations=[];
+ lines.forEach((x,index)=>{
+  let p=items[x.itemIndex],stockQty=x.stockQty;
+  if(sales){
+   let allocations=consumeBatchStock(p.name,stockQty);
+   x.batchAllocations=allocations;
+   allAllocations.push(...allocations);
+   p.qty=num(p.qty)-stockQty;
+  }else{
+   let factor=stockQty/Math.max(x.qty,1e-9),unitCost=x.rate/Math.max(factor,1e-9);
+   p.purchase=(num(p.qty)*num(p.purchase)+stockQty*unitCost)/(num(p.qty)+stockQty||1);
+   p.qty=num(p.qty)+stockQty;
+   batches.push({id:"B"+id+"-"+(index+1),item:p.name,batchNo:invoice+"-"+(index+1),expiryDate:"",receivedDate:date,qtyReceived:stockQty,remaining:stockQty,purchaseRate:unitCost,purchaseId:id});
+  }
+ });
+ put("items",items);
+ if(!sales)put("batches",batches);
+ let record={id,date,invoice,party,item:lines.map(x=>x.item).join(", "),lines:lines.map(({itemIndex,...x})=>x),qty:lines.reduce((s,x)=>s+x.stockQty,0),taxable,tax,supplyType:$("#txnsupply").value,cgst:$("#txnsupply").value==="intra"?tax/2:0,sgst:$("#txnsupply").value==="intra"?tax/2:0,igst:$("#txnsupply").value==="inter"?tax:0,total,paid,method:$("#tmethod").value,cost,lastBalance,totalBalance,balanceDue,batchAllocations:allAllocations};
+ let a=get(k);a.push(record);put(k,a);
+ let cash=get("cash");
+ if(paid>0)cash.push({date,type:sales?"Money In":"Money Out",method:record.method,note:(sales?"Sale ":"Purchase ")+record.invoice,amount:paid});
+ put("cash",cash);
  closeModal();render();if(sales)showInvoice(record);
 }
 function amountInWordsINR(value){
