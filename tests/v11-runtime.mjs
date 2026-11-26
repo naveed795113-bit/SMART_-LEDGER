@@ -266,6 +266,40 @@ assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_customers')), [{ nam
 assert.equal(window.localStorage.getItem('bizname'), 'Original Shop', 'Failed restore preserves business profile');
 assert.ok(alerts.some(x => x.includes('Existing data was rolled back')), 'Failed restore reports successful rollback');
 
+window.localStorage.setItem('sl_payments', JSON.stringify([]));
+window.localStorage.setItem('sl_cash', JSON.stringify([]));
+window.paymentForm();
+window.document.querySelector('#paydate').value = '2026-11-26';
+window.document.querySelector('#payparty').value = 'Billing Test Customer';
+window.document.querySelector('#payamount').value = '10';
+const paymentSetItem = window.Storage.prototype.setItem;
+let failPaymentCash = true;
+window.Storage.prototype.setItem = function(key, value) {
+  if (key === 'sl_cash' && failPaymentCash) { failPaymentCash = false; throw new Error('simulated storage quota'); }
+  return paymentSetItem.call(this, key, value);
+};
+window.document.querySelector('#modalbody form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+window.Storage.prototype.setItem = paymentSetItem;
+assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_payments')), [], 'Failed payment save does not leave a payment without its cash entry');
+assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_cash')), [], 'Failed payment save restores the cash book');
+window.closeModal();
+
+window.localStorage.setItem('sl_expenses', JSON.stringify([]));
+window.expenseForm();
+window.document.querySelector('#edate').value = '2026-11-26';
+window.document.querySelector('#eamount').value = '25';
+const expenseSetItem = window.Storage.prototype.setItem;
+let failExpenseCash = true;
+window.Storage.prototype.setItem = function(key, value) {
+  if (key === 'sl_cash' && failExpenseCash) { failExpenseCash = false; throw new Error('simulated storage quota'); }
+  return expenseSetItem.call(this, key, value);
+};
+window.document.querySelector('#modalbody form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+window.Storage.prototype.setItem = expenseSetItem;
+assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_expenses')), [], 'Failed expense save does not leave an expense without its cash entry');
+assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_cash')), [], 'Failed expense save restores the cash book');
+window.closeModal();
+
 console.log('PASS app boot');
 console.log('PASS dashboard and sales overview graph');
 console.log('PASS v16 live billing balances, saved invoice values and printed invoice breakdown');
@@ -276,5 +310,6 @@ console.log('PASS duplicate invoice and atomic transaction rollback');
 console.log('PASS valid backup restore and business profile');
 console.log('PASS invalid backup rejection without data loss');
 console.log('PASS atomic backup restore rollback on storage failure');
+console.log('PASS payment and expense ledger rollback on storage failure');
 console.log('TOTAL 8 runtime groups passed');
 dom.window.close();
