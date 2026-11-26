@@ -30,7 +30,7 @@ async function loadFirebaseSdk() {
 const firebaseSdk = await loadFirebaseSdk();
 const {
   initializeApp, getAuth, setPersistence, browserLocalPersistence,
-  GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithCredential, getRedirectResult,
   onAuthStateChanged, signInWithPhoneNumber, RecaptchaVerifier, signOut,
   createUserWithEmailAndPassword, signInWithEmailAndPassword
 } = firebaseSdk;
@@ -141,6 +141,32 @@ gate.innerHTML = `
   <div class="sl-auth-footer"><strong>SmartLedger</strong> · Your business. Your numbers. Your growth.<br>Your app data remains stored in this browser; Firebase authentication does not sync shop records between devices.</div>
  </div></section>
 </div>`;
+
+// The Android APK uses the native Google account chooser, then exchanges its
+// short-lived ID token with Firebase so existing account/session handling stays intact.
+const nativeGooglePending = new Map();
+window.SmartLedgerGoogleAuth = {
+  resolve(callbackId, idToken, error) {
+    const pending = nativeGooglePending.get(callbackId);
+    if (!pending) return;
+    nativeGooglePending.delete(callbackId);
+    if (error) pending.reject(new Error(error));
+    else if (idToken) pending.resolve(idToken);
+    else pending.reject(new Error("Google did not return an ID token."));
+  }
+};
+function nativeGoogleIdToken() {
+  return new Promise((resolve, reject) => {
+    const callbackId = "google-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+    nativeGooglePending.set(callbackId, { resolve, reject });
+    try {
+      window.SmartLedgerNative.signInWithGoogle(callbackId);
+    } catch (error) {
+      nativeGooglePending.delete(callbackId);
+      reject(error);
+    }
+  });
+}
 
 function status(message) {
   const el = document.getElementById("slLoginStatus");
@@ -283,13 +309,19 @@ if (googleSignInButton) {
     googleSignInButton.disabled = true;
     status("Opening secure Google sign-in…");
     try {
-      // Popup avoids the cross-site storage restrictions that can break
-      // Firebase redirect sign-in when the app is hosted on GitHub Pages.
-      const credential = await signInWithPopup(auth, googleProvider);
-      if (credential && credential.user) unlock(credential.user);
+      if (window.SmartLedgerNative && typeof window.SmartLedgerNative.signInWithGoogle === "function") {
+        status("Choose your Google account…");
+        const idToken = await nativeGoogleIdToken();
+        status("Verifying your Google account securely…");
+        const credential = await signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
+        if (credential && credential.user) unlock(credential.user);
+      } else {
+        // Browser version keeps the existing Google popup/redirect experience.
+        const credential = await signInWithPopup(auth, googleProvider);
+        if (credential && credential.user) unlock(credential.user);
+      }
     } catch (error) {
-      // Keep redirect as a fallback only when the browser blocks popups.
-      if (error && error.code === "auth/popup-blocked") {
+      if (!window.SmartLedgerNative && error && error.code === "auth/popup-blocked") {
         status("Popup blocked. Switching to secure redirect sign-in…");
         try {
           await signInWithRedirect(auth, googleProvider);
@@ -297,8 +329,10 @@ if (googleSignInButton) {
         } catch (redirectError) {
           status(errorText(redirectError));
         }
-      } else {
+      } else if (window.SmartLedgerNative && error && error.code) {
         status(errorText(error));
+      } else {
+        status(error && error.message ? error.message : errorText(error));
       }
       googleSignInButton.disabled = false;
     }
