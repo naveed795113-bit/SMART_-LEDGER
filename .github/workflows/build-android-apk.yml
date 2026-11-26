@@ -21,7 +21,7 @@ jobs:
   build-apk:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout SmartLedger v68 source
+      - name: Checkout SmartLedger source
         uses: actions/checkout@v4
 
       - name: Set up Node.js 22
@@ -157,14 +157,14 @@ jobs:
           unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/urd.traineddata'
           unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'lib/arm64-v8a/libtesseract.so'
           mkdir -p apk-output
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v68.apk
-          cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v68-release-unsigned.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v69.apk
+          cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v69-release-unsigned.apk
           ls -lh apk-output/
 
       - name: Upload installable APKs
         uses: actions/upload-artifact@v4
         with:
-          name: SmartLedger-Android-APK-v68
+          name: SmartLedger-Android-APK-v69
           path: |
             apk-output/*.apk
           if-no-files-found: error
