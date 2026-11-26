@@ -28,6 +28,7 @@ w.localStorage.setItem("sl_sales",JSON.stringify([{id:810,date:"2026-11-25",invo
 w.localStorage.setItem("sl_purchases",JSON.stringify([{id:811,date:"2026-11-25",invoice:"P-811",party:"Supplier",item:"Rice",qty:10,rate:10,total:105,taxable:100,tax:5,paid:105}]));
 w.localStorage.setItem("sl_batches",JSON.stringify([]));
 assert.equal(w.saveReturn.__v40,true,"Automatic return-journal hook is installed");
+const balanceBeforeCashRefund=w.partyOutstanding("Customer","Customer"),allReceivablesBeforeCashRefund=w.outstandingTotal("Customer");
 w.returnForm("sales");
 w.document.querySelector("#returntx").value="810";
 w.setReturnMax();
@@ -114,6 +115,8 @@ assert.equal(refundCash[0].type,"Money Out","Sales return cash settlement is rec
 journals=JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]");
 assert.equal(journals.length,4,"Explicitly settled return creates its accounting journal");
 assert.ok(journals[3].lines.some(x=>x.account==="1000"&&x.credit>0),"Cash refund credits cash in the return journal");
+assert.equal(w.partyOutstanding("Customer","Customer"),balanceBeforeCashRefund,"Cash-refunded sales returns do not create a duplicate customer credit balance");
+assert.equal(w.outstandingTotal("Customer"),allReceivablesBeforeCashRefund,"Cash-refunded returns do not reduce total receivables twice");
 assert.equal(errors.length,0,"No runtime errors: "+errors.join("; "));
 console.log("PASS sales and purchase return double-entry journals and proportional GST reversals");
 console.log("PASS atomic return rollback on storage failure");
