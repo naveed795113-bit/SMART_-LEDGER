@@ -82,7 +82,7 @@ const checks = [
   ['heading-mapped bulk import and HSN field', /const aliases=\{name:/.test(html) && /hsn sac code/.test(html) && /eihsn/.test(html)],
   ['versioned backup export', /schemaVersion:BACKUP_SCHEMA_VERSION/.test(html)],
   ['restore schema validation', /Unsupported backup version/.test(html)],
-  ['pre-restore safety backup', /exportData\(\);\s*keys\.forEach/.test(html)],
+  ['pre-restore safety backup and atomic restore staging', /exportData\(\);\s*updates\.forEach/.test(html) && /automatic rollback|rolled back/.test(html)],
   ['legacy backup compatibility', /data\.schemaVersion!==undefined/.test(html)],
   ['theme controls', /function setTheme\(mode\)/.test(html)],
   ['service worker registration', /serviceWorker\.register/.test(html)],
