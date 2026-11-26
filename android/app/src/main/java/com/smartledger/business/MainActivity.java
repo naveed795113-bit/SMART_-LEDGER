@@ -91,7 +91,7 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                String bridge = "(function(){if(window.__smartLedgerNativeReady)return;window.__smartLedgerNativeReady=true;window.print=function(){SmartLedgerNative.printPage()};document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[download]'):null;if(!a||!a.href||!a.href.startsWith('blob:'))return;e.preventDefault();var name=a.download||'SmartLedger-export';fetch(a.href).then(function(r){return r.blob()}).then(function(b){var fr=new FileReader();fr.onload=function(){SmartLedgerNative.saveFile(name,b.type||'application/octet-stream',String(fr.result).split(',')[1]||'')};fr.readAsDataURL(b)}).catch(function(){alert('Could not prepare this download. Please try again.')})},true)})();";
+                String bridge = "(function(){if(window.__smartLedgerNativeReady)return;window.__smartLedgerNativeReady=true;window.print=function(){SmartLedgerNative.printPage()};document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[download]'):null;if(!a||!a.href||!a.href.startsWith('blob:'))return;e.preventDefault();var name=a.download||'SmartLedger-export';fetch(a.href).then(function(r){return r.blob()}).then(function(b){var fr=new FileReader();fr.onload=function(){SmartLedgerNative.saveFile(name,b.type||'application/octet-stream',String(fr.result).split(',')[1]||'')};fr.readAsDataURL(b)}).catch(function(){alert('Could not prepare this download. Please try again.')})},true);if(!window.__slBackInstalled){window.__slBackInstalled=true;window.__slPageStack=[];var originalGo=window.go;if(typeof originalGo==='function'){window.go=function(next){var active=document.querySelector('#nav button.active, #mobileNav button.active, .mobile-nav button.active');var current=active&&active.dataset.page;if(current&&current!==next){window.__slPageStack.push(current);if(window.__slPageStack.length>30)window.__slPageStack.shift()}return originalGo.apply(this,arguments)}}window.SmartLedgerHandleBack=function(){var modal=document.getElementById('modal');if(modal&&modal.classList.contains('show')){if(typeof window.closeModal==='function')window.closeModal();else modal.classList.remove('show');return true}var previous=window.__slPageStack.pop();if(previous&&typeof window.go==='function'){window.go(previous);return true}var active=document.querySelector('#nav button.active, #mobileNav button.active, .mobile-nav button.active');var current=active&&active.dataset.page;if(current&&current!=='Dashboard'&&typeof window.go==='function'){window.__slPageStack.length=0;window.go('Dashboard');return true}return false}}})();";
                 view.evaluateJavascript(bridge, null);
             }
 
@@ -429,8 +429,13 @@ public class MainActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+        if (webView == null) { super.onBackPressed(); return; }
+        webView.evaluateJavascript("(function(){return typeof window.SmartLedgerHandleBack==='function' ? window.SmartLedgerHandleBack() : false})()", value -> {
+            if (isFinishing() || isDestroyed()) return;
+            if ("true".equals(value)) return;
+            if (webView != null && webView.canGoBack()) webView.goBack();
+            else MainActivity.super.onBackPressed();
+        });
     }
 
     @Override protected void onDestroy() {
