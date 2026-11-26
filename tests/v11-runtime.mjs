@@ -113,6 +113,7 @@ assert.match(window.document.querySelector('#txnRemainingBalance').textContent, 
 window.document.querySelector('#modalbody form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
 const savedBilling = JSON.parse(window.localStorage.getItem('sl_sales')).at(-1);
 console.log('DEBUG_BILLING', JSON.stringify(savedBilling), 'salesCount', JSON.parse(window.localStorage.getItem('sl_sales')).length, 'lines', JSON.stringify(window.readTxnLines?.()), 'saveFn', String(window.saveTransaction).slice(0,180));
+console.log('DEBUG_FORM', window.document.querySelector('#modalbody form')?.getAttribute('onsubmit'), 'alerts', JSON.stringify(alerts), 'invoice', window.document.querySelector('#tinvoice')?.value, 'party', window.document.querySelector('#tparty')?.value, 'paid', window.document.querySelector('#tpaid')?.value, 'total', window.document.querySelector('#txnTotal')?.textContent);
 assert.equal(savedBilling.lastBalance, 160, 'Saved invoice records the previous balance');
 assert.equal(savedBilling.totalBalance, 196, 'Saved invoice records total balance');
 assert.equal(savedBilling.balanceDue, 191, 'Saved invoice records remaining balance');
