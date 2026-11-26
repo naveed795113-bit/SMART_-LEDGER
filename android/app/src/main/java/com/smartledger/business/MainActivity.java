@@ -18,6 +18,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,6 +65,7 @@ public class MainActivity extends Activity {
     private PermissionRequest pendingPermission;
     private WebViewAssetLoader assetLoader;
     private final ExecutorService ocrExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService aiExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -215,7 +221,66 @@ public class MainActivity extends Activity {
         return target;
     }
 
+
+    private void deliverNvidiaResult(String callbackId, String response, String error) {
+        if (webView == null) return;
+        String script = "if(window.SmartLedgerNvidia&&window.SmartLedgerNvidia.resolve){window.SmartLedgerNvidia.resolve("
+                + JSONObject.quote(callbackId == null ? "" : callbackId) + ","
+                + JSONObject.quote(response == null ? "" : response) + ","
+                + JSONObject.quote(error == null ? "" : error) + ")}";
+        runOnUiThread(() -> { if (webView != null) webView.evaluateJavascript(script, null); });
+    }
+
     private class NativeBridge {
+
+        @JavascriptInterface
+        public void requestNvidiaChatCompletion(String callbackId, String apiKey, String requestJson) {
+            if (apiKey == null || apiKey.trim().isEmpty() || requestJson == null || requestJson.length() > 120000) {
+                deliverNvidiaResult(callbackId, "", "Invalid NVIDIA request or API key.");
+                return;
+            }
+            aiExecutor.execute(() -> {
+                HttpURLConnection connection = null;
+                String responseText = "";
+                String failure = "";
+                try {
+                    connection = (HttpURLConnection) new URL("https://integrate.api.nvidia.com/v1/chat/completions").openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.setConnectTimeout(20000);
+                    connection.setReadTimeout(60000);
+                    connection.setDoOutput(true);
+                    connection.setRequestProperty("Content-Type", "application/json");
+                    connection.setRequestProperty("Authorization", "Bearer " + apiKey.trim());
+                    byte[] body = requestJson.getBytes(StandardCharsets.UTF_8);
+                    connection.setFixedLengthStreamingMode(body.length);
+                    try (OutputStream output = connection.getOutputStream()) { output.write(body); output.flush(); }
+                    int status = connection.getResponseCode();
+                    InputStream stream = status >= 200 && status < 400 ? connection.getInputStream() : connection.getErrorStream();
+                    if (stream != null) {
+                        StringBuilder result = new StringBuilder();
+                        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+                            String line;
+                            while ((line = reader.readLine()) != null) result.append(line);
+                        }
+                        responseText = result.toString();
+                    }
+                    if (status < 200 || status >= 300) {
+                        try {
+                            JSONObject errorJson = new JSONObject(responseText);
+                            JSONObject detail = errorJson.optJSONObject("error");
+                            String message = detail == null ? "" : detail.optString("message", "");
+                            failure = message.isEmpty() ? "NVIDIA API returned HTTP " + status : "NVIDIA API: " + message;
+                        } catch (Exception ignored) { failure = "NVIDIA API returned HTTP " + status; }
+                    }
+                } catch (Exception error) {
+                    failure = error.getMessage() == null ? "Could not connect to NVIDIA. Check internet access." : error.getMessage();
+                } finally {
+                    if (connection != null) connection.disconnect();
+                }
+                deliverNvidiaResult(callbackId, responseText, failure);
+            });
+        }
+
         @JavascriptInterface
         public void signInWithGoogle(String callbackId) {
             runOnUiThread(() -> {
@@ -497,6 +562,7 @@ public class MainActivity extends Activity {
 
     @Override protected void onDestroy() {
         ocrExecutor.shutdownNow();
+        aiExecutor.shutdownNow();
         if (fileCallback != null) { fileCallback.onReceiveValue(null); fileCallback = null; }
         if (pendingPermission != null) { try { pendingPermission.deny(); } catch (Exception ignored) {} pendingPermission = null; }
         if (webView != null) { webView.destroy(); webView = null; }
