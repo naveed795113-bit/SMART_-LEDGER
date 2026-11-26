@@ -149,7 +149,7 @@
         max_tokens:700,
         temperature:0.2,
         stream:false
-      },apiKey).catch(error=>{if(/401|403|unauthorized|forbidden/i.test(error.message||""))sessionStorage.removeItem("sl_nvidia_api_key");throw error;});
+      },apiKey).catch(error=>{if(/401|403|unauthorized|forbidden/i.test(error.message||"")){sessionStorage.removeItem("sl_nvidia_api_key");throw new Error("NVIDIA rejected the API key. Check your NVIDIA Build key and enter it again.");}throw error;});
       const answer=result.choices&&result.choices[0]&&result.choices[0].message&&result.choices[0].message.content;
       if(!answer)throw new Error("NVIDIA returned an empty answer.");
       if(loading.isConnected)loading.remove();
