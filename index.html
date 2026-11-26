@@ -791,7 +791,7 @@ function restoreData(input){
    prepared.forEach(([key,value])=>localStorage.setItem(key,JSON.stringify(value)));
    if(chart!==undefined)localStorage.setItem("sl_chart_accounts",JSON.stringify(chart));
    if(journals!==undefined)localStorage.setItem("sl_account_journals",JSON.stringify(journals));
-   profileKeys.forEach(key=>{if(Object.prototype.hasOwnProperty.call(profile,key))localStorage.setItem(key,String(profile[key]??""))});
+   const profileAliases={bizname:"name",bizaddress:"address",bizphone:"phone",bizphone2:"phone2",gstin:"gstin",bizlogo:"logo",bizsignature:"signature"};profileKeys.forEach(key=>{let alias=profileAliases[key];if(Object.prototype.hasOwnProperty.call(profile,key))localStorage.setItem(key,String(profile[key]??""));else if(alias&&Object.prototype.hasOwnProperty.call(profile,alias))localStorage.setItem(key,String(profile[alias]??""))});
    alert("Backup restored. SmartLedger will reload the saved business data.");location.reload();
   }catch(error){alert("Restore could not be completed: "+(error.message||"storage error"))}
   input.value="";
