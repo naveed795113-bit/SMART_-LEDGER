@@ -137,16 +137,6 @@ jobs:
         run: |
           gradle --no-daemon -p android assembleDebug assembleRelease
 
-      - name: Run offline OCR and invoice sharing tests on Android emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
-          disable-animations: true
-          script: gradle --no-daemon -p android connectedDebugAndroidTest
-
       - name: Verify APK outputs
         shell: bash
         run: |
@@ -169,3 +159,14 @@ jobs:
             apk-output/*.apk
           if-no-files-found: error
           retention-days: 30
+      - name: Run offline OCR and invoice sharing tests on Android emulator
+        timeout-minutes: 20
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: gradle --no-daemon -p android connectedDebugAndroidTest
+
