@@ -19,7 +19,7 @@ const checks = [
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['Business Suite theme uses readable light/dark palette tokens', /--v40-accent:#e2c98e/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8'))],
-  ['version constants', html.includes("APP_VERSION='47.0.0'")],
+  ['version constants', html.includes("APP_VERSION='69.0.0'")],
   ['v47 theme-aware typography runtime syntax', new Script(readFileSync('theme-v47-theme-aware-text.js','utf8'), { filename: 'theme-v47-theme-aware-text.js' })],
   ['v47 theme-aware typography loaded and precached', html.includes('theme-v47-theme-aware-text.js') && readFileSync('sw.js','utf8').includes('theme-v47-theme-aware-text.js')],
   ['v47 black text on light surfaces and white text on dark surfaces', readFileSync('theme-v47-theme-aware-text.js','utf8').includes('function chosen(bgs)') && readFileSync('theme-v47-theme-aware-text.js','utf8').includes('const BLACK="#101010",WHITE="#ffffff"') && readFileSync('theme-v47-theme-aware-text.js','utf8').includes('new MutationObserver')],
