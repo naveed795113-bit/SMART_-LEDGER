@@ -772,9 +772,10 @@ function restoreData(input){
  reader.onerror=()=>{alert("Could not read the backup file.");input.value=""};
  reader.onload=()=>{
   let backup;try{backup=JSON.parse(String(reader.result||""))}catch(_){alert("This is not a valid SmartLedger JSON backup.");input.value="";return}
-  const source=backup&&backup.data&&typeof backup.data==="object"?backup.data:backup;
-  if(!source||typeof source!=="object"||Array.isArray(source)){alert("Backup structure is not supported.");input.value="";return}
-  const mapping=Object.entries(db),prepared=[];
+  const data=backup&&backup.data&&typeof backup.data==="object"?backup.data:backup;
+  if(!data||typeof data!=="object"||Array.isArray(data)){alert("Backup structure is not supported.");input.value="";return}
+  if((data.schemaVersion!==undefined&&Number(data.schemaVersion)>BACKUP_SCHEMA_VERSION)||(backup.schemaVersion!==undefined&&Number(backup.schemaVersion)>BACKUP_SCHEMA_VERSION)){alert("Unsupported backup version. Update SmartLedger before restoring this file.");input.value="";return}
+  const source=data,mapping=Object.entries(db),prepared=[];
   for(const [name,key] of mapping){
    let value=source[key]!==undefined?source[key]:source[name];
    if(value!==undefined){if(!Array.isArray(value)){alert("Backup contains invalid data for "+name+". Nothing was restored.");input.value="";return}prepared.push([key,value])}
@@ -788,7 +789,8 @@ function restoreData(input){
   if(!hasData){alert("No SmartLedger business data was found in this backup.");input.value="";return}
   if(!confirm("Restore this SmartLedger backup? Matching records on this device will be replaced. Export a backup of the current data first.")){input.value="";return}
   try{
-   prepared.forEach(([key,value])=>localStorage.setItem(key,JSON.stringify(value)));
+   const keys=Object.values(db);exportData();
+   keys.forEach(key=>{const entry=prepared.find(([stored])=>stored===key);if(entry)localStorage.setItem(key,JSON.stringify(entry[1]))});
    if(chart!==undefined)localStorage.setItem("sl_chart_accounts",JSON.stringify(chart));
    if(journals!==undefined)localStorage.setItem("sl_account_journals",JSON.stringify(journals));
    const profileAliases={bizname:"name",bizaddress:"address",bizphone:"phone",bizphone2:"phone2",gstin:"gstin",bizlogo:"logo",bizsignature:"signature"};profileKeys.forEach(key=>{let alias=profileAliases[key];if(Object.prototype.hasOwnProperty.call(profile,key))localStorage.setItem(key,String(profile[key]??""));else if(alias&&Object.prototype.hasOwnProperty.call(profile,alias))localStorage.setItem(key,String(profile[alias]??""))});
