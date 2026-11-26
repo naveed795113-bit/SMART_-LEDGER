@@ -299,6 +299,21 @@ window.Storage.prototype.setItem = expenseSetItem;
 assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_expenses')), [], 'Failed expense save does not leave an expense without its cash entry');
 assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_cash')), [], 'Failed expense save restores the cash book');
 window.closeModal();
+window.localStorage.setItem('sl_items', JSON.stringify([{name:'Adjustment Item',qty:10,unit:'pcs',purchase:1,price:2}]));
+window.localStorage.setItem('sl_adjustments', JSON.stringify([]));
+window.adjustForm(0);
+window.document.querySelector('#adjqty').value = '2';
+const adjustmentSetItem = window.Storage.prototype.setItem;
+let failAdjustmentLog = true;
+window.Storage.prototype.setItem = function(key, value) {
+  if (key === 'sl_adjustments' && failAdjustmentLog) { failAdjustmentLog = false; throw new Error('simulated storage quota'); }
+  return adjustmentSetItem.call(this, key, value);
+};
+window.document.querySelector('#modalbody form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+window.Storage.prototype.setItem = adjustmentSetItem;
+assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].qty, 10, 'Failed stock adjustment restores item quantity');
+assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_adjustments')), [], 'Failed stock adjustment does not create an unlogged stock change');
+window.closeModal();
 
 console.log('PASS app boot');
 console.log('PASS dashboard and sales overview graph');
@@ -311,5 +326,6 @@ console.log('PASS valid backup restore and business profile');
 console.log('PASS invalid backup rejection without data loss');
 console.log('PASS atomic backup restore rollback on storage failure');
 console.log('PASS payment and expense ledger rollback on storage failure');
+console.log('PASS stock adjustment rollback on storage failure');
 console.log('TOTAL 8 runtime groups passed');
 dom.window.close();
