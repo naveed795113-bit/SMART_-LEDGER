@@ -1281,6 +1281,9 @@ function amountInWordsINR(value){
 function printInvoice(){
  const paper=$("#invoicepaper");
  if(!paper)return alert("Open an invoice preview before printing.");
+ if(window.SmartLedgerNative&&typeof window.shareInvoice==="function"&&window.lastInvoice){
+  return window.shareInvoice(window.lastInvoice.id,window.lastInvoiceKind||"sales");
+ }
  document.body.classList.add("printing-invoice");
  try{window.print()}catch(error){document.body.classList.remove("printing-invoice");alert("Printing is unavailable on this device.")}
  setTimeout(()=>document.body.classList.remove("printing-invoice"),1200);
