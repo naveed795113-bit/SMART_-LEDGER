@@ -1027,6 +1027,72 @@ function saveTransaction(e,k){
  put("cash",cash);
  closeModal();render();if(sales)showInvoice(record);
 }
+function batchExpiryPage(){
+ let rows=get("batches"),now=today,limit=new Date(Date.now()+30*86400000).toISOString().slice(0,10),active=rows.filter(x=>num(x.remaining)>0),expired=active.filter(x=>x.expiryDate&&x.expiryDate<now),soon=active.filter(x=>x.expiryDate&&x.expiryDate>=now&&x.expiryDate<=limit);
+ $("#view").innerHTML='<div class="welcome"><div><h1>Batch & expiry</h1><div class="muted">Batch balances and expiry monitoring</div></div></div><div class="grid"><div class="card"><div class="statlabel">Active batches</div><div class="stat">'+active.length+'</div></div><div class="card"><div class="statlabel">Expired batches</div><div class="stat">'+expired.length+'</div></div><div class="card"><div class="statlabel">Expiring in 30 days</div><div class="stat">'+soon.length+'</div></div></div><div class="section card"><h2>Batch register</h2>'+table(active.sort((a,b)=>(a.expiryDate||"9999").localeCompare(b.expiryDate||"9999")),[["item","Item"],["batchNo","Batch / lot"],["expiryDate","Expiry"],["receivedDate","Received"],["remaining","Remaining qty"],["purchaseRate","Purchase rate"]])+'</div><div class="notice">Batch balances begin tracking from purchases recorded in v13. Existing opening stock remains unbatched until you record a purchase or use stock adjustment.</div>';
+}
+function returnEsc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function returnLinesFor(tx){
+ if(Array.isArray(tx.lines)&&tx.lines.length)return tx.lines;
+ let qty=num(tx.qty),taxable=tx.taxable!==undefined?num(tx.taxable):num(tx.total)-num(tx.tax),rate=num(tx.rate)||(qty>0?taxable/qty:0),discount=Math.max(0,qty*rate-taxable),gstRate=taxable>0?num(tx.tax)/taxable*100:0;
+ return [{item:tx.item,qty,unit:tx.unit||"pcs",unitFactor:1,stockQty:qty,rate,discount,gstRate,tax:num(tx.tax),taxable,total:num(tx.total),cost:num(tx.cost),batchAllocations:tx.batchAllocations||[]}];
+}
+function returnForm(kind){
+ let sales=kind==="sales",tx=get(sales?"sales":"purchases");
+ if(!tx.length)return alert("No "+(sales?"sales invoices":"purchase bills")+" found to return");
+ modal(sales?"Sales return":"Purchase return",'<form onsubmit="saveReturn(event,'+JSON.stringify(kind)+')"><div class="formgrid"><div class="field"><label>Original '+(sales?"invoice":"purchase bill")+'</label><select id="returntx" onchange="setReturnMax()">'+tx.slice().reverse().map(x=>'<option value="'+x.id+'">'+returnEsc(x.invoice)+' · '+returnEsc(x.item)+' · '+x.qty+' qty · '+returnEsc(x.party)+'</option>').join("")+'</select></div><div class="field"><label>Item to return</label><select id="returnline" onchange="setReturnMax()"></select></div>'+field("Return quantity","returnqty","number",'step="any" min="0.001"')+field("Return rate (₹)","returnrate","number",'step="any" min="0"')+field("Date","returndate","date",'value="'+today+'"')+'</div><p class="muted" id="returnhint">Select the item and quantity to return.</p><p><button class="btn primary">Save return</button></p></form>');
+ window.returnKind=kind;
+ setReturnMax();
+}
+function setReturnMax(){
+ let kind=window.returnKind||"sales",sales=kind==="sales",id=Number($("#returntx")?.value),tx=get(sales?"sales":"purchases").find(x=>x.id===id),select=$("#returnline");
+ if(!tx||!select)return;
+ let lines=returnLinesFor(tx);
+ if(select.dataset.txid!==String(id)){
+  select.innerHTML=lines.map((line,index)=>'<option value="'+index+'">'+returnEsc(line.item||"Item "+(index+1))+' · '+num(line.qty)+' '+returnEsc(line.unit||"pcs")+'</option>').join("");
+  select.dataset.txid=String(id);
+ }
+ let index=Math.max(0,Math.min(lines.length-1,Number(select.value)||0)),line=lines[index],returns=get(sales?"salesReturns":"purchaseReturns");
+ let already=sum(returns.filter(x=>String(x.originalId)===String(id)&&Number(x.lineIndex??0)===index),x=>x.qty),max=Math.max(0,num(line.qty)-already);
+ $("#returnqty").max=max;$("#returnqty").value=max;$("#returnrate").value=num(line.rate);
+ $("#returnhint").textContent="Item: "+line.item+" · Maximum returnable: "+max+" "+(line.unit||"pcs")+" · Original "+tx.invoice;
+}
+function saveReturn(e,kind){
+ e.preventDefault();
+ let sales=kind==="sales",id=Number($("#returntx").value),tx=get(sales?"sales":"purchases").find(x=>x.id===id),lineIndex=Number($("#returnline").value||0),qty=num($("#returnqty").value),rate=num($("#returnrate").value),date=$("#returndate").value,returns=get(sales?"salesReturns":"purchaseReturns");
+ if(!tx||!date||qty<=0||rate<0)return alert("Enter valid return details");
+ let lines=returnLinesFor(tx),line=lines[lineIndex];
+ if(!line)return alert("Select a valid original invoice item");
+ let already=sum(returns.filter(x=>String(x.originalId)===String(id)&&Number(x.lineIndex??0)===lineIndex),x=>x.qty);
+ if(qty>num(line.qty)-already+1e-9)return alert("Return quantity exceeds the unreturned quantity for this item");
+ let ratio=qty/Math.max(1e-9,num(line.qty)),stockQty=num(line.stockQty)>0?num(line.stockQty)*ratio:qty*(num(line.unitFactor)||1),discount=num(line.discount)*ratio,amount=Math.max(0,qty*rate-discount),gstRate=num(line.gstRate),tax=gstRate>0?amount*gstRate/100:num(line.tax)*ratio,cost=num(line.cost)*ratio;
+ let cgst=tx.supplyType==="intra"?tax/2:(num(tx.cgst)&&num(tx.qty)>0?num(tx.cgst)*stockQty/num(tx.qty):0),sgst=tx.supplyType==="intra"?tax/2:(num(tx.sgst)&&num(tx.qty)>0?num(tx.sgst)*stockQty/num(tx.qty):0),igst=tx.supplyType==="inter"?tax:(num(tx.igst)&&num(tx.qty)>0?num(tx.igst)*stockQty/num(tx.qty):0);
+ let items=get("items"),item=items.find(x=>x.name===line.item);
+ if(!item)return alert("Original item no longer exists");
+ let batches=get("batches");
+ if(sales){
+  item.qty=num(item.qty)+stockQty;
+  let allocations=Array.isArray(line.batchAllocations)?line.batchAllocations:(!Array.isArray(tx.lines)||!tx.lines.length?(tx.batchAllocations||[]):[]);
+  if(allocations.length){
+   let left=stockQty;
+   for(const part of allocations){if(left<=1e-9)break;let b=batches.find(x=>x.id===part.batchId);if(b){let putBack=Math.min(left,num(part.qty));b.remaining=num(b.remaining)+putBack;left-=putBack}}
+   if(left>1e-9)batches.push({id:"BR"+Date.now(),item:item.name,batchNo:"SALES-RETURN",expiryDate:"",receivedDate:date,qtyReceived:left,remaining:left,purchaseRate:cost/Math.max(stockQty,1e-9),purchaseId:null});
+  }else batches.push({id:"BR"+Date.now(),item:item.name,batchNo:"SALES-RETURN-"+(lineIndex+1),expiryDate:"",receivedDate:date,qtyReceived:stockQty,remaining:stockQty,purchaseRate:cost/Math.max(stockQty,1e-9),purchaseId:null});
+ }else{
+  if(stockQty>num(item.qty)+1e-9)return alert("Cannot return more stock than currently available");
+  let originalBatches=batches.filter(x=>x.item===item.name&&String(x.purchaseId)===String(tx.id)),left=stockQty;
+  for(const b of originalBatches.slice().sort((a,b)=>(a.expiryDate||"9999").localeCompare(b.expiryDate||"9999"))){let take=Math.min(left,num(b.remaining));b.remaining-=take;left-=take;if(left<=1e-9)break}
+  if(originalBatches.length&&left>1e-9)return alert("Not enough stock from this original purchase batch remains to return that quantity");
+  item.qty=num(item.qty)-stockQty;
+ }
+ put("items",items);put("batches",batches);
+ let record={id:Date.now()*1000+Math.floor(Math.random()*1000),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cgst,sgst,igst,cost,kind:sales?"Sales return":"Purchase return"};
+ returns.push(record);put(sales?"salesReturns":"purchaseReturns",returns);
+ let cash=get("cash");cash.push({date,type:sales?"Money Out":"Money In",method:"Cash",note:(sales?"Sales return ":"Purchase return ")+tx.invoice+" — "+line.item,amount:amount+tax});put("cash",cash);
+ closeModal();render();alert((sales?"Sales":"Purchase")+" return saved. Stock and tax updated.");
+}
+function salesReturnForm(){returnForm("sales")}
+function purchaseReturnForm(){returnForm("purchases")}
 function amountInWordsINR(value){
  let n=Math.round((num(value)+Number.EPSILON)*100)/100,rupees=Math.floor(n),paise=Math.round((n-rupees)*100);
  const one=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"],ten=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
