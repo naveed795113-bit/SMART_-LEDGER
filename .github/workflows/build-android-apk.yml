@@ -137,17 +137,14 @@ jobs:
             exit 1
           fi
 
-      - name: Prepare release signing key (when configured)
+      - name: Prepare mandatory release signing key
         env:
           SMARTLEDGER_KEYSTORE_BASE64: ${{ secrets.SMARTLEDGER_KEYSTORE_BASE64 }}
         run: |
-          if [ -n "$SMARTLEDGER_KEYSTORE_BASE64" ]; then
-            mkdir -p android/keystore
-            echo "$SMARTLEDGER_KEYSTORE_BASE64" | base64 --decode > android/keystore/smartledger-release.jks
-            test -s android/keystore/smartledger-release.jks
-          else
-            echo "No release keystore configured; release build will remain unsigned."
-          fi
+          test -n "$SMARTLEDGER_KEYSTORE_BASE64" || { echo "Release keystore secret is required; refusing to publish an unsigned APK." >&2; exit 1; }
+          mkdir -p android/keystore
+          echo "$SMARTLEDGER_KEYSTORE_BASE64" | base64 --decode > android/keystore/smartledger-release.jks
+          test -s android/keystore/smartledger-release.jks
 
       - name: Build debug and release APKs
         env:
@@ -162,22 +159,22 @@ jobs:
         shell: bash
         run: |
           test -s android/app/build/outputs/apk/debug/app-debug.apk
-          test -s android/app/build/outputs/apk/release/app-release.apk || test -s android/app/build/outputs/apk/release/app-release-unsigned.apk
-          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/eng.traineddata'
-          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/hin.traineddata'
-          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/urd.traineddata'
-          unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'lib/arm64-v8a/libtesseract.so'
+          RELEASE_APK="android/app/build/outputs/apk/release/app-release.apk"
+          test -s "$RELEASE_APK" || { echo "Signed release APK is missing; refusing to publish a debug-only or unsigned build." >&2; exit 1; }
+          for resource in eng hin urd; do
+            unzip -l "$RELEASE_APK" | grep -q "assets/tessdata/$resource.traineddata"
+          done
+          unzip -l "$RELEASE_APK" | grep -q 'lib/arm64-v8a/libtesseract.so'
           mkdir -p apk-output
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v70.apk
-          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
-            cp android/app/build/outputs/apk/release/app-release.apk apk-output/SmartLedger-v70-release-signed.apk
-            APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner -print | sort -V | tail -n 1)"
-            test -n "$APKSIGNER" && test -x "$APKSIGNER"
-            "$APKSIGNER" verify --verbose apk-output/SmartLedger-v70-release-signed.apk
-          else
-            cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v70-release-unsigned.apk
-            echo "Release keystore secrets are not configured; unsigned release retained."
-          fi
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v70-debug.apk
+          cp "$RELEASE_APK" apk-output/SmartLedger-v70-release.apk
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner -print | sort -V | tail -n 1)"
+          test -n "$APKSIGNER" && test -x "$APKSIGNER"
+          "$APKSIGNER" verify --verbose apk-output/SmartLedger-v70-release.apk
+          CERT_SHA1="$("$APKSIGNER" verify --print-certs apk-output/SmartLedger-v70-release.apk | sed -n 's/.*certificate SHA-1 digest: //p' | head -n 1 | tr -d ':' | tr '[:lower:]' '[:upper:]')"
+          EXPECTED_SHA1="148AA7F6134B4593226E91EAF3D398173946DD8D"
+          test "$CERT_SHA1" = "$EXPECTED_SHA1" || { echo "Release signer fingerprint mismatch. Expected $EXPECTED_SHA1 but got $CERT_SHA1." >&2; exit 1; }
+          echo "Release APK signer fingerprint verified: $CERT_SHA1"
           ls -lh apk-output/
 
       - name: Upload installable APKs
