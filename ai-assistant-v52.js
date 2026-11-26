@@ -118,7 +118,8 @@
       recentPurchases:m.p.slice(-15).map(x=>({date:x.date,invoice:x.invoice,total:n(x.total),paid:n(x.paid),party:x.party||"Supplier"}))
     };
   }
-  window.smartLedgerResetAIConsent=function(){if(confirm("Stop sending SmartLedger business summaries to OpenAI? You will be asked again before the next AI request.")){localStorage.removeItem("sl_openai_data_consent");alert("AI data consent has been reset.");}};\n  window.askBusinessAssistant=async function(){
+  window.smartLedgerResetAIConsent=function(){if(confirm("Stop sending SmartLedger business summaries to OpenAI? You will be asked again before the next AI request.")){localStorage.removeItem("sl_openai_data_consent");alert("AI data consent has been reset.");}};
+  window.askBusinessAssistant=async function(){
     const input=$("aiquestion"),q=input?input.value.trim():"";if(!q)return;
     if(!localStorage.getItem("sl_openai_data_consent")){
       const ok=confirm("SmartLedger AI uses OpenAI to answer questions. A limited summary of your shop records (sales, stock, purchases and balances) will be sent securely to OpenAI for this request. Do you agree?");
