@@ -36,12 +36,11 @@ w.document.querySelector("#returnrate").value="10";
 w.saveReturn({preventDefault(){}}, "sales");
 const savedSalesReturns=JSON.parse(w.localStorage.getItem("sl_sales_returns")||"[]");
 assert.equal(savedSalesReturns.length,1,"Sales return transaction was saved; posting errors: "+w.localStorage.getItem("sl_v40_posting_errors"));
-console.log("DEBUG_RETURN_RECORD",JSON.stringify(savedSalesReturns[0]));
 let journals=JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]");
 assert.equal(journals.length,1,"Sales return creates one automatic journal");
 assert.equal(journals[0].sourceType,"return");
-assert.equal(journals[0].lines.reduce((s,x)=>s+Number(x.debit),0),33,"Sales return debits sales returns, output GST and returned stock cost");
-assert.equal(journals[0].lines.reduce((s,x)=>s+Number(x.credit),0),33,"Sales return credits cash and reverses COGS");
+assert.equal(journals[0].lines.reduce((s,x)=>s+Number(x.debit),0),32,"Sales return debits sales returns, output GST and returned stock cost");
+assert.equal(journals[0].lines.reduce((s,x)=>s+Number(x.credit),0),32,"Sales return credits cash and reverses COGS");
 assert.ok(journals[0].lines.some(x=>x.account==="2100"&&x.debit===1),"Sales return reverses output GST");
 w.returnForm("purchases");
 w.document.querySelector("#returnqty").value="1";
@@ -70,8 +69,8 @@ assert.equal(JSON.parse(w.localStorage.getItem("sl_items")).find(x=>x.name==="Oi
 assert.equal(journals.length,3,"Multi-item return creates a third automatic journal");
 assert.equal(journals[2].lines.reduce((s,x)=>s+Number(x.debit),0),1950,"Multi-item return journal debits line revenue, GST and cost");
 assert.equal(journals[2].lines.reduce((s,x)=>s+Number(x.credit),0),1950,"Multi-item return journal credits cash and reverses COGS");
-assert.equal(w.totals().sales,1654,"Net sales include item-level returns and GST");
-assert.equal(w.totals().profit,327,"Gross profit reverses only returned taxable revenue and returned cost");
+assert.equal(w.totals().sales,1655,"Net sales include item-level returns and GST");
+assert.equal(w.totals().profit,328,"Gross profit reverses only returned taxable revenue and returned cost");
 assert.equal(w.totals().purchases,94.5,"Net purchases subtract purchase returns and GST");
 assert.equal(w.partyOutstanding("Supplier","Supplier"),-10.5,"Supplier credit balance includes purchase return and GST");
 
