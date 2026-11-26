@@ -97,7 +97,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p android/app/src/main/assets/www/vendor
-          rsync -a --exclude='.git' --exclude='.github' --exclude='android' --exclude='README.md' --exclude='*.md' ./ android/app/src/main/assets/www/
+          rsync -a --exclude='.git' --exclude='.github' --exclude='android' --exclude='node_modules' --exclude='tests' --exclude='package.json' --exclude='package-lock.json' --exclude='README.md' --exclude='*.md' ./ android/app/src/main/assets/www/
           curl -fL 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js' -o android/app/src/main/assets/www/vendor/xlsx.full.min.js
           curl -fL 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js' -o android/app/src/main/assets/www/vendor/html2canvas.min.js
           curl -fL 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js' -o android/app/src/main/assets/www/vendor/jspdf.umd.min.js
