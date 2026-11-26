@@ -329,3 +329,60 @@ styles();initAccounts();hooks();window.__SMARTLEDGER_V40__={version:"40.0.0",cal
  `;
  document.head.appendChild(style);
 })();
+
+
+/* v71 — universal full-viewport section sizing and overflow repair. */
+(function(){
+ "use strict";
+ const id="smartledger-v71-fullscreen-layout";
+ if(document.getElementById(id))return;
+ const style=document.createElement("style");style.id=id;
+ style.textContent=`
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{max-width:100%;overflow-x:hidden}
+  .app,.main,.main>.content,#view{min-width:0;max-width:100%}
+  .main>.content{width:100%!important}
+  #view{width:100%!important;min-height:calc(100dvh - 120px);height:auto!important}
+  #view>*{box-sizing:border-box;min-width:0;max-width:100%}
+  #view img,#view video,#view canvas,#view iframe{max-width:100%}
+  #view input,#view select,#view textarea{max-width:100%;min-width:0}
+  #view .formgrid,#view .grid,#view .quick,#view .section-quick,
+  #view .v40-grid,#view .v40-columns{min-width:0;max-width:100%}
+  #view .formgrid>* ,#view .grid>* ,#view .quick>* ,
+  #view .section-quick>* ,#view .v40-grid>* ,#view .v40-columns>*{min-width:0}
+  #view .tablewrap,#view .v40-table{max-width:100%;min-width:0}
+  #view .tablewrap table,#view .v40-table table{max-width:100%}
+  .modal.show{padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
+  .modal.show .dialog{width:min(720px,100%);min-width:0;max-width:100%;max-height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto}
+  @media(max-width:850px){
+   .app,.main,.main>.content{width:100%!important;max-width:100%!important}
+   .main>.content{padding-left:max(12px,env(safe-area-inset-left))!important;padding-right:max(12px,env(safe-area-inset-right))!important}
+   #view{width:100%!important;min-height:calc(100svh - 110px)!important;padding-bottom:8px}
+   #view>*{width:100%;max-width:100%;min-width:0}
+   #view .formgrid{grid-template-columns:minmax(0,1fr)!important}
+   #view .field.full{grid-column:1!important}
+   #view .sectionhead{flex-wrap:wrap;gap:10px}
+   #view .actions,#view .v40-actions{max-width:100%;flex-wrap:wrap}
+   #view .actions>* ,#view .v40-actions>*{max-width:100%;min-width:0}
+   #view .card,#view .v40-card,#view .panel,#view .workspace,
+   #view .page-section{width:100%;max-width:100%;min-width:0}
+   .modal.show .dialog{width:100%!important;max-width:100%!important}
+  }
+  @media(max-width:520px){
+   .main>.content{padding-left:10px!important;padding-right:10px!important}
+   #view{min-height:calc(100svh - 110px)!important}
+   #view .grid,#view .v40-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+   #view .formgrid{grid-template-columns:minmax(0,1fr)!important}
+   #view .sectionhead .actions{width:100%}
+   #view button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+  }
+  @media(min-width:851px){
+   .main>.content{width:100%!important;max-width:none!important}
+   #view{min-height:calc(100dvh - 90px)}
+  }
+ `;
+ document.head.appendChild(style);
+ window.__SMARTLEDGER_V71_LAYOUT__={version:"71.0.0",refresh:()=>{document.documentElement.style.setProperty("--sl-viewport-height",window.innerHeight+"px")}};
+ window.addEventListener("resize",window.__SMARTLEDGER_V71_LAYOUT__.refresh,{passive:true});
+ window.__SMARTLEDGER_V71_LAYOUT__.refresh();
+})();
