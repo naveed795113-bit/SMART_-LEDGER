@@ -757,12 +757,10 @@ function exportData(){
  const keys=Object.values(db),profileKeys=["bizname","bizaddress","bizphone","bizphone2","gstin","bizlogo","bizsignature"];
  const data={};
  keys.forEach(key=>{try{const value=JSON.parse(localStorage.getItem(key)||"[]");data[key]=value}catch(_){data[key]=[]}});
- const chartOfAccounts:JSON.parse(localStorage.getItem("sl_chart_accounts")||"[]");
- const accountJournals:JSON.parse(localStorage.getItem("sl_account_journals")||"[]");
- data["sl_chart_accounts"]=chartOfAccounts;
- data["sl_account_journals"]=accountJournals;
  const profile={};profileKeys.forEach(key=>{if(localStorage.getItem(key)!==null)profile[key]=localStorage.getItem(key)});
- const backup={app:"SmartLedger",schemaVersion:BACKUP_SCHEMA_VERSION,exportedAt:new Date().toISOString(),data,chartOfAccounts,accountJournals,profile};
+ const backup={app:"SmartLedger",schemaVersion:BACKUP_SCHEMA_VERSION,exportedAt:new Date().toISOString(),data,chartOfAccounts:JSON.parse(localStorage.getItem("sl_chart_accounts")||"[]"),accountJournals:JSON.parse(localStorage.getItem("sl_account_journals")||"[]"),profile};
+ data["sl_chart_accounts"]=backup.chartOfAccounts;
+ data["sl_account_journals"]=backup.accountJournals;
  const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="SmartLedger-Backup-"+today+".json";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
