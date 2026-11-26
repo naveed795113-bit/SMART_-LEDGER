@@ -105,7 +105,7 @@
   function addMessage(role,text,save=true){const box=$("ai-chat-history");if(!box)return;const el=document.createElement("div");el.className="ai-message "+(role==="user"?"ai-user":"ai-bot");el.textContent=text;box.appendChild(el);box.scrollTop=box.scrollHeight;if(save){let h=[];try{h=JSON.parse(sessionStorage.getItem("sl_ai_chat_v52")||"[]");}catch(e){}h.push({role,text});sessionStorage.setItem("sl_ai_chat_v52",JSON.stringify(h.slice(-20)));}}
   window.smartLedgerAsk=function(q){if(activeTab!=="chat")renderTab("chat");const input=$("aiquestion");if(input)input.value=q;window.askBusinessAssistant();};
   const NVIDIA_ENDPOINT="https://integrate.api.nvidia.com/v1/chat/completions";
-  const NVIDIA_MODEL="meta/llama-3.3-70b-instruct";
+  const NVIDIA_MODEL="nvidia/nemotron-3.5-lightning-30b-a3b";
   function aiSnapshot(){
     const m=metrics();
     return {
