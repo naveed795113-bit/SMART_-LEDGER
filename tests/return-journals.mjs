@@ -73,8 +73,32 @@ assert.equal(w.totals().sales,1655,"Net sales include item-level returns and GST
 assert.equal(w.totals().profit,328,"Gross profit reverses only returned taxable revenue and returned cost");
 assert.equal(w.totals().purchases,94.5,"Net purchases subtract purchase returns and GST");
 assert.equal(w.partyOutstanding("Supplier","Supplier"),-10.5,"Supplier credit balance includes purchase return and GST");
+const riceBeforeFailedReturn=JSON.parse(w.localStorage.getItem("sl_items")).find(x=>x.name==="Rice").qty;
+const batchBeforeFailedReturn=w.localStorage.getItem("sl_batches");
+const returnsBeforeFailedReturn=w.localStorage.getItem("sl_sales_returns");
+const cashBeforeFailedReturn=w.localStorage.getItem("sl_cash");
+w.returnForm("sales");
+w.document.querySelector("#returntx").value="810";
+w.setReturnMax();
+w.document.querySelector("#returnqty").value="1";
+w.document.querySelector("#returnrate").value="10";
+const originalSetItem=w.Storage.prototype.setItem;
+let failReturnWrite=true;
+w.Storage.prototype.setItem=function(key,value){
+ if(key==="sl_sales_returns"&&failReturnWrite){failReturnWrite=false;throw new Error("simulated storage quota")}
+ return originalSetItem.call(this,key,value);
+};
+w.saveReturn({preventDefault(){}}, "sales");
+w.Storage.prototype.setItem=originalSetItem;
+assert.equal(JSON.parse(w.localStorage.getItem("sl_items")).find(x=>x.name==="Rice").qty,riceBeforeFailedReturn,"Failed return restores inventory quantity");
+assert.equal(w.localStorage.getItem("sl_batches"),batchBeforeFailedReturn,"Failed return restores batch allocation");
+assert.equal(w.localStorage.getItem("sl_sales_returns"),returnsBeforeFailedReturn,"Failed return does not append a return record");
+assert.equal(w.localStorage.getItem("sl_cash"),cashBeforeFailedReturn,"Failed return does not add cash movement");
+assert.equal(JSON.parse(w.localStorage.getItem("sl_account_journals")).length,3,"Failed return does not create an accounting journal");
+
 
 
 assert.equal(errors.length,0,"No runtime errors: "+errors.join("; "));
 console.log("PASS sales and purchase return double-entry journals and proportional GST reversals");
+console.log("PASS atomic return rollback on storage failure");
 dom.window.close();
