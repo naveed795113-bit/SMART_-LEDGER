@@ -101,7 +101,21 @@ assert.equal(JSON.parse(w.localStorage.getItem("sl_account_journals")).length,3,
 
 
 
+w.returnForm("sales");
+w.document.querySelector("#returntx").value="810";
+w.setReturnMax();
+w.document.querySelector("#returnqty").value="1";
+w.document.querySelector("#returnrate").value="10";
+w.document.querySelector("#returnsettlement").value="Cash";
+w.saveReturn({preventDefault(){}}, "sales");
+const refundCash=JSON.parse(w.localStorage.getItem("sl_cash")||"[]");
+assert.equal(refundCash.length,1,"Explicit cash refund creates a cash-book movement");
+assert.equal(refundCash[0].type,"Money Out","Sales return cash settlement is recorded as money out");
+journals=JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]");
+assert.equal(journals.length,4,"Explicitly settled return creates its accounting journal");
+assert.ok(journals[3].lines.some(x=>x.account==="1000"&&x.credit>0),"Cash refund credits cash in the return journal");
 assert.equal(errors.length,0,"No runtime errors: "+errors.join("; "));
 console.log("PASS sales and purchase return double-entry journals and proportional GST reversals");
 console.log("PASS atomic return rollback on storage failure");
+console.log("PASS explicit cash refund settlement and cash-book posting");
 dom.window.close();
