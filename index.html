@@ -772,6 +772,7 @@ function restoreData(input){
  reader.onerror=()=>{alert("Could not read the backup file.");input.value=""};
  reader.onload=()=>{
   let backup;try{backup=JSON.parse(String(reader.result||""))}catch(_){alert("This is not a valid SmartLedger JSON backup.");input.value="";return}
+  if(backup&&backup.app&&backup.app!=="SmartLedger"){alert("This backup belongs to a different application.");input.value="";return}
   const data=backup&&backup.data&&typeof backup.data==="object"?backup.data:backup;
   if(!data||typeof data!=="object"||Array.isArray(data)){alert("Backup structure is not supported.");input.value="";return}
   if((data.schemaVersion!==undefined&&Number(data.schemaVersion)>BACKUP_SCHEMA_VERSION)||(backup.schemaVersion!==undefined&&Number(backup.schemaVersion)>BACKUP_SCHEMA_VERSION)){alert("Unsupported backup version. Update SmartLedger before restoring this file.");input.value="";return}
