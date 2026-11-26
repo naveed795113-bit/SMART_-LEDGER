@@ -64,9 +64,16 @@
    if(excluded(el)||!visible(el))return;
    const has=ownText(el)||el.matches("button[aria-label],a[aria-label],label[for],summary,[role='button'],svg text");
    if(has){
-    const color=chosen(backgrounds(el));
-    el.style.setProperty("color",color,"important");
-    if(el.matches("svg text"))el.style.setProperty("fill",color,"important");
+    const bgs=backgrounds(el);
+    const current=parse(getComputedStyle(el).color);
+    /* Preserve intentional semantic colours (success, warning, danger, chart labels)
+       whenever they already meet WCAG AA contrast. Only repair unreadable text. */
+    const readable=current&&Math.min(...bgs.map(bg=>ratio(current,bg)))>=4.5;
+    if(!readable){
+     const color=chosen(bgs);
+     el.style.setProperty("color",color,"important");
+     if(el.matches("svg text"))el.style.setProperty("fill",color,"important");
+    }
    }
    if(el.matches("input,select,textarea")){
     const color=chosen(backgrounds(el));
