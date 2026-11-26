@@ -24,9 +24,24 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
+    signingConfigs {
+        release {
+            def ksPath = System.getenv('SMARTLEDGER_KEYSTORE_PATH')
+            if (ksPath) {
+                storeFile file(ksPath)
+                storePassword System.getenv('SMARTLEDGER_STORE_PASSWORD')
+                keyAlias System.getenv('SMARTLEDGER_KEY_ALIAS')
+                keyPassword System.getenv('SMARTLEDGER_KEY_PASSWORD')
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
+            if (System.getenv('SMARTLEDGER_KEYSTORE_PATH')) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
