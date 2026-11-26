@@ -1030,8 +1030,14 @@ function saveEditItem(e,i){
  if(!name)return alert("Enter an item name.");if(a.some((p,j)=>j!==i&&String(p.name).toLowerCase()===name.toLowerCase()))return alert("Another item already uses this name.");if(code&&a.some((p,j)=>j!==i&&String(p.code||"").toLowerCase()===code.toLowerCase()))return alert("This SKU / barcode is already assigned to another item.");
  if([qty,purchase,price,wholesale,minStock].some(v=>!Number.isFinite(v)||v<0))return alert("Quantity, prices and reorder level must be valid non-negative numbers.");
  try{unitData=readUnitFields("ei")}catch(err){return alert(err.message)}
- const oldName=x.name,aliases=Array.isArray(x.aliases)?x.aliases.slice():[];if(oldName!==name&&!aliases.includes(oldName))aliases.push(oldName);a[i]={...x,name,code,qty,...unitData,purchase,price,wholesale,hsn:$("#eihsn").value.trim(),minStock,gst:num($("#eigST").value),aliases:[...new Set(aliases)].filter(alias=>alias!==name)};put("items",a);
- if(oldName!==name){let batches=get("batches"),changed=false;batches.forEach(b=>{if(b.item===oldName){b.item=name;changed=true}});if(changed)put("batches",batches)}
+ const oldName=x.name,oldQty=num(x.qty),aliases=Array.isArray(x.aliases)?x.aliases.slice():[];if(oldName!==name&&!aliases.includes(oldName))aliases.push(oldName);a[i]={...x,name,code,qty,...unitData,purchase,price,wholesale,hsn:$("#eihsn").value.trim(),minStock,gst:num($("#eigST").value),aliases:[...new Set(aliases)].filter(alias=>alias!==name)};
+ let batches=get("batches"),delta=qty-oldQty,batchChanged=false;
+ if(delta<0){consumeBatchStock(oldName,-delta,batches);batchChanged=true}
+ if(oldName!==name){batches.forEach(b=>{if(b.item===oldName){b.item=name;batchChanged=true}})}
+ if(delta>0){let stamp=Date.now();batches.push({id:"EDIT"+stamp,item:name,batchNo:"MANUAL-EDIT-"+stamp,expiryDate:"",receivedDate:today,qtyReceived:delta,remaining:delta,purchaseRate:purchase,purchaseId:null});batchChanged=true}
+ const updates=new Map([[db.items,JSON.stringify(a)]]);
+ if(batchChanged)updates.set(db.batches,JSON.stringify(batches));
+ if(!commitLocalUpdates(updates,"Item update"))return;
  closeModal();render();
 }
 
