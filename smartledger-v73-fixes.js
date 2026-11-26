@@ -4,7 +4,7 @@
 const $=s=>document.querySelector(s),E=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const oldShow=window.showInvoice,oldPurchase=window.showPurchaseBill,oldMore=window.openSectionMore,bridge=()=>window.SmartLedgerNative;
 const digits=v=>{let d=String(v||"").replace(/\D/g,"");if(d.length===10)d="91"+d;else if(d.length===11&&d[0]==="0")d="91"+d.slice(1);return d};
-function actions(x,k){window.lastInvoice=x;window.lastInvoiceKind=k;const el=$("#modalbody .invoice-actions");if(el)el.innerHTML='<button class="btn primary" onclick="printInvoice()">🖨 Print PDF</button><button class="btn" onclick="shareInvoicePDF('+JSON.stringify(String(x.id))+','+JSON.stringify(k)+')">📄 Share PDF on WhatsApp</button><button class="btn" onclick="shareInvoiceImage('+JSON.stringify(String(x.id))+','+JSON.stringify(k)+')">🖼 Share HD+ Image</button>'}
+function actions(x,k){window.lastInvoice=x;window.lastInvoiceKind=k;const el=$("#modalbody .invoice-actions");if(!el)return;el.innerHTML='<button type="button" class="btn primary" data-sl-print>🖨 Print PDF</button><button type="button" class="btn" data-sl-pdf>📄 Share PDF on WhatsApp</button><button type="button" class="btn" data-sl-image>🖼 Share HD+ Image</button>';el.querySelector("[data-sl-print]").onclick=()=>window.printInvoice();el.querySelector("[data-sl-pdf]").onclick=()=>window.shareInvoicePDF(x.id,k);el.querySelector("[data-sl-image]").onclick=()=>window.shareInvoiceImage(x.id,k)}
 window.showInvoice=x=>{oldShow(x);actions(x,"sales")};
 window.showPurchaseBill=x=>{oldPurchase(x);actions(x,"purchases")};
 async function artifacts(id,k){
