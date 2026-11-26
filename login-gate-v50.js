@@ -47,6 +47,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+window.smartLedgerGetIdToken = async () => { const user = auth.currentUser; return user ? user.getIdToken() : null; };
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
 
