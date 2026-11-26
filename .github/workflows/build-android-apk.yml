@@ -138,17 +138,20 @@ jobs:
           fi
 
       - name: Prepare release signing key (when configured)
-        if: ${{ secrets.SMARTLEDGER_KEYSTORE_BASE64 != '' }}
         env:
           SMARTLEDGER_KEYSTORE_BASE64: ${{ secrets.SMARTLEDGER_KEYSTORE_BASE64 }}
         run: |
-          mkdir -p android/keystore
-          echo "$SMARTLEDGER_KEYSTORE_BASE64" | base64 --decode > android/keystore/smartledger-release.jks
-          test -s android/keystore/smartledger-release.jks
+          if [ -n "$SMARTLEDGER_KEYSTORE_BASE64" ]; then
+            mkdir -p android/keystore
+            echo "$SMARTLEDGER_KEYSTORE_BASE64" | base64 --decode > android/keystore/smartledger-release.jks
+            test -s android/keystore/smartledger-release.jks
+          else
+            echo "No release keystore configured; release build will remain unsigned."
+          fi
 
       - name: Build debug and release APKs
         env:
-          SMARTLEDGER_KEYSTORE_PATH: ${{ secrets.SMARTLEDGER_KEYSTORE_BASE64 != '' && 'keystore/smartledger-release.jks' || '' }}
+          SMARTLEDGER_KEYSTORE_PATH: ${{ secrets.SMARTLEDGER_KEYSTORE_BASE64 != '' && '../keystore/smartledger-release.jks' || '' }}
           SMARTLEDGER_STORE_PASSWORD: ${{ secrets.SMARTLEDGER_STORE_PASSWORD }}
           SMARTLEDGER_KEY_ALIAS: ${{ secrets.SMARTLEDGER_KEY_ALIAS }}
           SMARTLEDGER_KEY_PASSWORD: ${{ secrets.SMARTLEDGER_KEY_PASSWORD }}
