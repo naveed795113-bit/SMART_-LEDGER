@@ -1,5 +1,9 @@
 name: Build SmartLedger Android APK
 
+concurrency:
+  group: smartledger-android-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [main]
