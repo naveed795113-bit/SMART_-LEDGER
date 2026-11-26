@@ -1251,7 +1251,7 @@ function returnLinesFor(tx){
 function returnForm(kind){
  let sales=kind==="sales",tx=get(sales?"sales":"purchases");
  if(!tx.length)return alert("No "+(sales?"sales invoices":"purchase bills")+" found to return");
- modal(sales?"Sales return":"Purchase return",'<form onsubmit="saveReturn(event,\''+kind+'\')"><div class="formgrid"><div class="field"><label>Original '+(sales?"invoice":"purchase bill")+'</label><select id="returntx" onchange="setReturnMax()">'+tx.slice().reverse().map(x=>'<option value="'+x.id+'">'+returnEsc(x.invoice)+' · '+returnEsc(x.item)+' · '+x.qty+' qty · '+returnEsc(x.party)+'</option>').join("")+'</select></div><div class="field"><label>Item to return</label><select id="returnline" onchange="setReturnMax()"></select></div>'+field("Return quantity","returnqty","number",'step="any" min="0.001"')+field("Return rate (₹)","returnrate","number",'step="any" min="0"')+field("Date","returndate","date",'value="'+today+'"')+'</div><p class="muted" id="returnhint">Select the item and quantity to return.</p><p><button class="btn primary">Save return</button></p></form>');
+ modal(sales?"Sales return":"Purchase return",'<form onsubmit="saveReturn(event,\''+kind+'\')"><div class="formgrid"><div class="field"><label>Original '+(sales?"invoice":"purchase bill")+'</label><select id="returntx" onchange="setReturnMax()">'+tx.slice().reverse().map(x=>'<option value="'+x.id+'">'+returnEsc(x.invoice)+' · '+returnEsc(x.item)+' · '+x.qty+' qty · '+returnEsc(x.party)+'</option>').join("")+'</select></div><div class="field"><label>Item to return</label><select id="returnline" onchange="setReturnMax()"></select></div>'+field("Return quantity","returnqty","number",'step="any" min="0.001"')+field("Return rate (₹)","returnrate","number",'step="any" min="0"')+field("Date","returndate","date",'value="'+today+'"')+'<div class="field"><label>Return settlement</label><select id="returnsettlement"><option value="balance">Adjust customer / supplier balance</option><option value="Cash">Cash refund / received</option><option value="UPI">UPI refund / received</option><option value="Bank">Bank refund / received</option></select></div></div><p class="muted" id="returnhint">Choose whether to adjust the party balance or record money actually refunded / received.</p><p><button class="btn primary">Save return</button></p></form>');
  window.returnKind=kind;
  setReturnMax();
 }
@@ -1270,7 +1270,7 @@ function setReturnMax(){
 }
 function saveReturn(e,kind){
  e.preventDefault();
- let sales=kind==="sales",id=Number($("#returntx").value),tx=get(sales?"sales":"purchases").find(x=>x.id===id),lineIndex=Number($("#returnline").value||0),qty=num($("#returnqty").value),rate=num($("#returnrate").value),date=$("#returndate").value,returns=get(sales?"salesReturns":"purchaseReturns");
+ let sales=kind==="sales",id=Number($("#returntx").value),tx=get(sales?"sales":"purchases").find(x=>x.id===id),lineIndex=Number($("#returnline").value||0),qty=num($("#returnqty").value),rate=num($("#returnrate").value),date=$("#returndate").value,settlement=$("#returnsettlement")?.value||"balance",returns=get(sales?"salesReturns":"purchaseReturns");
  if(!tx||!date||qty<=0||rate<0)return alert("Enter valid return details");
  let lines=returnLinesFor(tx),line=lines[lineIndex];
  if(!line)return alert("Select a valid original invoice item");
@@ -1296,10 +1296,10 @@ function saveReturn(e,kind){
   if(originalBatches.length&&left>1e-9)return alert("Not enough stock from this original purchase batch remains to return that quantity");
   item.qty=num(item.qty)-stockQty;
  }
- let record={id:Date.now()*1000+Math.floor(Math.random()*1000),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cgst,sgst,igst,cost,kind:sales?"Sales return":"Purchase return"};
+ let record={id:Date.now()*1000+Math.floor(Math.random()*1000),originalId:id,lineIndex,invoice:tx.invoice,date,item:line.item,party:tx.party,qty,stockQty,unit:line.unit||item.unit||"pcs",unitFactor:num(line.unitFactor)||stockQty/Math.max(qty,1e-9),rate,amount,tax,cgst,sgst,igst,cost,kind:sales?"Sales return":"Purchase return",settlement};
  returns.push(record);
- let cash=get("cash");cash.push({date,type:sales?"Money Out":"Money In",method:"Cash",note:(sales?"Sales return ":"Purchase return ")+tx.invoice+" — "+line.item,amount:amount+tax});
- const updates=new Map([[db.items,JSON.stringify(items)],[db.batches,JSON.stringify(batches)],[db[sales?"salesReturns":"purchaseReturns"],JSON.stringify(returns)],[db.cash,JSON.stringify(cash)]]);
+ const updates=new Map([[db.items,JSON.stringify(items)],[db.batches,JSON.stringify(batches)],[db[sales?"salesReturns":"purchaseReturns"],JSON.stringify(returns)]]);
+ if(settlement!=="balance"){let cash=get("cash");cash.push({date,type:sales?"Money Out":"Money In",method:settlement,note:(sales?"Sales return refund ":"Purchase return received ")+tx.invoice+" — "+line.item,amount:amount+tax});updates.set(db.cash,JSON.stringify(cash))}
  const previous=new Map([...updates.keys()].map(key=>[key,localStorage.getItem(key)]));
  try{updates.forEach((value,key)=>localStorage.setItem(key,value))}
  catch(error){
@@ -1307,7 +1307,7 @@ function saveReturn(e,kind){
   catch(rollbackError){alert("Return save failed and automatic stock rollback was incomplete. Export your data before making further changes.")}
   return alert("Return could not be saved. Existing stock, batches and cash records were restored: "+(error.message||"storage error"));
  }
- closeModal();render();alert((sales?"Sales":"Purchase")+" return saved. Stock and tax updated.");
+ closeModal();render();alert((sales?"Sales":"Purchase")+" return saved. Stock and party balance updated.");
 }
 function salesReturnForm(){returnForm("sales")}
 function purchaseReturnForm(){returnForm("purchases")}
