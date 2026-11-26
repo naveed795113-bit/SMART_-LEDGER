@@ -104,7 +104,44 @@
   function restoreChat(){const box=$("ai-chat-history");if(!box)return;let history=[];try{history=JSON.parse(sessionStorage.getItem("sl_ai_chat_v52")||"[]");}catch(e){}history.slice(-20).forEach(x=>addMessage(x.role,x.text,false));box.scrollTop=box.scrollHeight;}
   function addMessage(role,text,save=true){const box=$("ai-chat-history");if(!box)return;const el=document.createElement("div");el.className="ai-message "+(role==="user"?"ai-user":"ai-bot");el.textContent=text;box.appendChild(el);box.scrollTop=box.scrollHeight;if(save){let h=[];try{h=JSON.parse(sessionStorage.getItem("sl_ai_chat_v52")||"[]");}catch(e){}h.push({role,text});sessionStorage.setItem("sl_ai_chat_v52",JSON.stringify(h.slice(-20)));}}
   window.smartLedgerAsk=function(q){if(activeTab!=="chat")renderTab("chat");const input=$("aiquestion");if(input)input.value=q;window.askBusinessAssistant();};
-  window.askBusinessAssistant=function(){const input=$("aiquestion"),q=input?input.value.trim():"";if(!q)return;addMessage("user",q);const a=answerQuestion(q);addMessage("assistant",a);if(input){input.value="";input.focus();}};
+  const AI_ENDPOINT="https://asia-south1-smart-ledger-288a4.cloudfunctions.net/smartLedgerAI";
+  function aiSnapshot(){
+    const m=metrics();
+    return {
+      currency:"INR",
+      generatedOn:todayKey(),
+      totals:{salesAllTime:sumBy(m.s,x=>x.total),salesThisMonth:m.monthlySales,salesToday:sumBy(m.day,x=>x.total),purchases:sumBy(m.p,x=>x.total),grossProfitEstimate:m.gross,netProfitEstimate:m.net,recordedExpenses:sumBy(m.e,x=>x.amount),customerReceivables:m.receivable,supplierPayables:m.payable,stockPurchaseValue:m.stockValue,missingSalesCostTransactions:m.missing},
+      inventory:m.it.slice(0,100).map(x=>({product:String(x.name||"").slice(0,80),stock:n(x.qty),unit:String(x.unit||"").slice(0,16),purchaseRate:n(x.purchase),sellingRate:n(x.price),reorderLevel:n(x.minStock??5)})),
+      topProducts:m.products.slice(0,10).map(x=>({product:x.name,quantitySold:x.qty,revenue:x.revenue})),
+      topCustomers:m.customerRows.slice(0,8).map(x=>({customer:x.name,sales:x.sales,invoices:x.count,lastSale:x.last})),
+      recentSales:m.s.slice(-25).map(x=>({date:x.date,invoice:x.invoice,total:n(x.total),paid:n(x.paid),party:x.party||"Walk-in"})),
+      recentPurchases:m.p.slice(-15).map(x=>({date:x.date,invoice:x.invoice,total:n(x.total),paid:n(x.paid),party:x.party||"Supplier"}))
+    };
+  }
+  window.askBusinessAssistant=async function(){
+    const input=$("aiquestion"),q=input?input.value.trim():"";if(!q)return;
+    if(!localStorage.getItem("sl_openai_data_consent")){
+      const ok=confirm("SmartLedger AI uses OpenAI to answer questions. A limited summary of your shop records (sales, stock, purchases and balances) will be sent securely to OpenAI for this request. Do you agree?");
+      if(!ok)return;
+      localStorage.setItem("sl_openai_data_consent","yes");
+    }
+    addMessage("user",q);
+    const box=$("ai-chat-history"),loading=document.createElement("div");loading.className="ai-message ai-bot";loading.textContent="Analysing your business records…";if(box)box.appendChild(loading);
+    if(input){input.value="";input.disabled=true;}
+    try{
+      if(typeof window.smartLedgerGetIdToken!=="function")throw new Error("Secure sign-in is not ready. Sign out and sign in again.");
+      const token=await window.smartLedgerGetIdToken();
+      if(!token)throw new Error("Sign in to use OpenAI SmartLedger AI.");
+      const response=await fetch(AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({question:q,businessSnapshot:aiSnapshot()})});
+      const result=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(result.error||"AI request failed ("+response.status+").");
+      if(loading.isConnected)loading.remove();
+      addMessage("assistant",result.answer||"The AI service returned no answer.");
+    }catch(error){
+      if(loading.isConnected)loading.remove();
+      addMessage("assistant","AI unavailable: "+(error.message||"Please try again."));
+    }finally{if(input){input.disabled=false;input.focus();}}
+  };
   window.smartLedgerVoiceInput=function(){
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     if(!SR){alert("Voice input is not supported in this browser. Use the keyboard instead.");return;}
