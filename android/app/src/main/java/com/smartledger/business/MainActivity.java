@@ -107,10 +107,16 @@ public class MainActivity extends Activity {
             @Override public boolean onShowFileChooser(WebView view, ValueCallback<Uri[]> callback, FileChooserParams params) {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
                 fileCallback = callback;
-                Intent intent = params.createIntent();
-                try { startActivityForResult(intent, FILE_CHOOSER_REQUEST); }
-                catch (Exception e) { fileCallback = null; return false; }
-                return true;
+                try {
+                    Intent intent = params.createIntent();
+                    startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                    return true;
+                } catch (Exception e) {
+                    if (fileCallback != null) fileCallback.onReceiveValue(null);
+                    fileCallback = null;
+                    Toast.makeText(MainActivity.this, "File picker could not be opened", Toast.LENGTH_LONG).show();
+                    return true;
+                }
             }
 
             @Override public void onPermissionRequest(PermissionRequest request) {
@@ -327,7 +333,9 @@ public class MainActivity extends Activity {
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_CHOOSER_REQUEST && fileCallback != null) {
-            Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+            Uri[] result = null;
+            try { result = WebChromeClient.FileChooserParams.parseResult(resultCode, data); }
+            catch (Exception ignored) {}
             fileCallback.onReceiveValue(result);
             fileCallback = null;
         }
@@ -355,6 +363,8 @@ public class MainActivity extends Activity {
 
     @Override protected void onDestroy() {
         ocrExecutor.shutdownNow();
+        if (fileCallback != null) { fileCallback.onReceiveValue(null); fileCallback = null; }
+        if (pendingPermission != null) { try { pendingPermission.deny(); } catch (Exception ignored) {} pendingPermission = null; }
         if (webView != null) { webView.destroy(); webView = null; }
         super.onDestroy();
     }
