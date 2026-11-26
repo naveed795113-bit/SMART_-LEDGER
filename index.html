@@ -981,7 +981,81 @@ function saveItem(e){
 }
 function partyForm(k){modal(k==='customers'?'Add customer':'Add supplier','<form onsubmit="saveParty(event,'+JSON.stringify(k)+')"><div class="formgrid">'+field('Name','pname')+field('Phone','pphone')+field('Address','paddress')+field('Opening balance (₹)','popening','number','step="any" value="0"')+'</div><p><button class="btn primary">Save</button></p></form>')}
 function saveParty(e,k){e.preventDefault();let a=get(k),name=$('#pname').value.trim(),opening=num($('#popening').value);if(!name)return alert('Enter a party name');if(a.some(x=>x.name.toLowerCase()===name.toLowerCase()))return alert('This party already exists');if(opening<0)return alert('Opening balance cannot be negative');a.push({name,phone:$('#pphone').value.trim(),address:$('#paddress').value.trim(),opening});put(k,a);closeModal();render()}
-function transactionForm(k){let sales=k==='sales',items=get('items'),parties=get(sales?'customers':'suppliers');let partyField=sales?'<div class="field"><label for="tparty">Customer name</label><input id="tparty" list="salesCustomerList" value="Walk-in" placeholder="Choose saved customer or type a new name" autocomplete="off"><datalist id="salesCustomerList">'+parties.map(p=>'<option value="'+itemEscape(p.name)+'"></option>').join('')+'</datalist></div>':'<div class="field"><label>Supplier</label><select id="tparty"><option value="">Select supplier</option>'+parties.map(p=>'<option>'+itemEscape(p.name)+'</option>').join('')+'</select></div>';modal(sales?'New sale invoice':'New purchase bill','<form onsubmit="saveTransaction(event,'+JSON.stringify(k)+')"><div class="formgrid">'+field('Date','tdate','date','value="'+today+'"')+field('Invoice / bill number','tinvoice','text','value="'+(sales?'SL-':'PB-')+Date.now().toString().slice(-6)+'"')+partyField+'<div class="field"><label>Item</label><select id="titem" onchange="setRate()"><option value="">Select item</option>'+items.map((p,i)=>'<option value="'+i+'">'+itemEscape(p.name)+'</option>').join('')+'</select></div>'+field('Quantity','tqty','number','step="any" value="1" oninput="calcTotal()"')+field(sales?'Sale rate (₹)':'Purchase rate (₹)','trate','number','step="any" value="0" oninput="calcTotal()"')+field('Discount (₹)','tdiscount','number','step="any" value="0" oninput="calcTotal()"')+'<div class="field"><label>GST rate (%)</label><select id="tgst" onchange="calcTotal()"><option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option></select></div>'+(sales?'':field('Batch / lot number','tbatch')+field('Expiry date','texpiry','date'))+field('Amount paid (₹)','tpaid','number','step="any" value="0"')+'<div class="field"><label>Taxable value</label><input id="ttaxable" value="0" readonly></div><div class="field"><label>GST amount</label><input id="ttax" value="0" readonly></div><div class="field"><label>Invoice total</label><input id="ttotal" value="0" readonly></div><div class="field"><label>Payment mode</label><select id="tmethod"><option>Cash</option><option>UPI</option><option>Bank</option><option>Credit</option></select></div></div><p><button class="btn primary">Save '+(sales?'sale':'purchase')+'</button></p></form>');window.currentTxn=k}
+function txnLineHTML(lineIndex){
+ let items=get("items"),sales=window.currentTxn==="sales",productOptions=items.map((p,i)=>'<option value="'+i+'">'+escapeHTML(p.name)+'</option>').join(""),cards=items.map((p,i)=>'<button type="button" class="txn-product-option" data-txn-product data-index="'+i+'" data-search="'+escapeHTML([p.name,p.code,p.hsn].join(" ").toLowerCase())+'" onclick="chooseTxnProduct(this,'+i+')"><span class="txn-product-option-top"><b>'+escapeHTML(p.name)+'</b><em>'+escapeHTML(p.code||"No SKU")+'</em></span><span class="txn-product-option-bottom"><small>Stock: '+escapeHTML(p.qty)+' '+escapeHTML(p.unit||"pcs")+'</small><strong>'+money(sales?p.price:p.purchase)+'</strong></span></button>').join("");
+ return '<section class="txnline card" data-line-index="'+lineIndex+'"><div class="txnline-heading" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Product '+(lineIndex+1)+'</b><button type="button" class="btn" onclick="removeTxnLine(this)">Remove product</button></div><div class="formgrid"><div class="field full"><label>Search products</label><input class="txn-product-search" type="search" placeholder="Search by item name or SKU" oninput="filterTxnProducts(this)"><label>Select product</label><select class="txitem" onchange="txnRate(this)"><option value="">Select product</option>'+productOptions+'</select><div class="txn-selected-product">Select a product to view its details and available stock.</div><div class="txn-product-grid">'+cards+'</div></div><div class="field"><label>Product description / name</label><input class="txdescription" placeholder="Item description" oninput="updateTxnTotals()"></div><div class="field"><label>Quantity</label><input class="txqty" type="number" min="0.001" step="any" value="1" oninput="updateTxnTotals()"></div><div class="field"><label>Unit</label><select class="txunit" onchange="updateTxnTotals()"><option value="">Select product first</option></select></div><div class="field"><label>'+(sales?'Sale':'Purchase')+' rate (₹)</label><input class="txrate" type="number" min="0" step="any" value="0" oninput="updateTxnTotals()"></div><div class="field"><label>Discount (₹)</label><input class="txdiscount" type="number" min="0" step="any" value="0" oninput="updateTxnTotals()"></div><div class="field"><label>GST rate (%)</label><select class="txgst" onchange="updateTxnTotals()"><option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option></select></div>'+(sales?"":'<div class="field"><label>Batch / lot number</label><input class="txbatch" placeholder="Optional batch number"></div><div class="field"><label>Expiry date</label><input class="txexpiry" type="date"></div>')+'</div></section>';
+}
+function filterTxnProducts(input){
+ let grid=input.closest(".txnline").querySelector(".txn-product-grid"),q=input.value.trim().toLowerCase(),shown=0;
+ grid.querySelectorAll("[data-txn-product]").forEach(card=>{let match=(card.dataset.search||"").includes(q);card.style.display=match?"":"none";if(match)shown++});
+ let empty=grid.querySelector(".txn-product-empty");
+ if(!shown&&!empty){empty=document.createElement("div");empty.className="txn-product-empty";empty.textContent="No matching products. Try another name or SKU.";grid.appendChild(empty)}
+ else if(empty)empty.style.display=shown?"none":"";
+}
+function chooseTxnProduct(button,index){
+ let row=button.closest(".txnline"),select=row.querySelector(".txitem");
+ if(!select)return;
+ select.value=String(index);txnRate(select);
+ row.querySelectorAll("[data-txn-product]").forEach(card=>card.classList.toggle("selected",card===button));
+}
+function txnRate(select){
+ let raw=select.value,p=raw===""?null:get("items")[Number(raw)],row=select.closest(".txnline");
+ if(!row)return;
+ if(p){
+  row.querySelector(".txrate").value=window.currentTxn==="sales"?p.price:p.purchase;
+  row.querySelector(".txgst").value=String(p.gst||0);
+  row.querySelector(".txdescription").value=p.name;
+  row.querySelector(".txunit").innerHTML=transactionUnitOptions(p);
+  row.querySelector(".txunit").value=p.unit||p.baseUnit||"pcs";
+  row.querySelector(".txn-selected-product").innerHTML='<b>'+escapeHTML(p.name)+'</b> · Available stock: <strong>'+escapeHTML(p.qty)+' '+escapeHTML(p.unit||"pcs")+'</strong> · HSN: '+escapeHTML(p.hsn||"—");
+  row.querySelectorAll("[data-txn-product]").forEach(card=>card.classList.toggle("selected",Number(card.dataset.index)===Number(raw)));
+ }else{
+  row.querySelector(".txunit").innerHTML='<option value="">Select product first</option>';
+  row.querySelector(".txn-selected-product").textContent="Select a product to view its details and available stock.";
+  row.querySelectorAll("[data-txn-product]").forEach(card=>card.classList.remove("selected"));
+ }
+ updateTxnTotals();
+}
+function addTxnLine(){
+ let host=$("#txnLines");if(!host)return;
+ let index=host.querySelectorAll(".txnline").length;
+ host.insertAdjacentHTML("beforeend",txnLineHTML(index));updateTxnTotals();
+}
+function removeTxnLine(button){
+ let host=$("#txnLines");if(!host)return;
+ if(host.querySelectorAll(".txnline").length<=1)return alert("At least one product line is required");
+ button.closest(".txnline").remove();
+ host.querySelectorAll(".txnline").forEach((row,index)=>{row.dataset.lineIndex=index;let title=row.querySelector(".txnline-heading b");if(title)title.textContent="Product "+(index+1)});
+ updateTxnTotals();
+}
+function readTxnLines(){
+ return Array.from(document.querySelectorAll(".txnline")).map(row=>{
+  let rawIndex=row.querySelector(".txitem").value,index=rawIndex===""?-1:Number(rawIndex),p=index>=0?get("items")[index]:null,qty=num(row.querySelector(".txqty").value),rate=num(row.querySelector(".txrate").value),discount=num(row.querySelector(".txdiscount").value),gstRate=num(row.querySelector(".txgst").value),unit=row.querySelector(".txunit")?.value||(p&&p.unit)||"pcs",unitFactor=p?unitFactorForItem(p,unit):1,stockQty=p&&unitFactor!==null?qty*unitFactor/itemUnitFactor(p):NaN,taxable=Math.max(0,qty*rate-discount),tax=taxable*gstRate/100;
+  return {itemIndex:index,item:p?p.name:"",description:row.querySelector(".txdescription")?.value.trim()||"",qty,unit,unitFactor,stockQty,rate,discount,gstRate,taxable,tax,total:taxable+tax,cost:stockQty*num(p&&p.purchase),batchNo:row.querySelector(".txbatch")?.value.trim()||"",expiryDate:row.querySelector(".txexpiry")?.value||""};
+ }).filter(x=>x.item);
+}
+function currentTxnLastBalance(){
+ let party=$("#tparty")?.value?.trim()||"";
+ if(!party||party.toLowerCase()==="walk-in")return 0;
+ return partyOutstanding(window.currentTxn==="sales"?"Customer":"Supplier",party);
+}
+function updateTxnTotals(){
+ let lines=readTxnLines(),taxable=lines.reduce((sum,x)=>sum+x.taxable,0),tax=lines.reduce((sum,x)=>sum+x.tax,0),total=taxable+tax,last=currentTxnLastBalance(),paid=num($("#tpaid")?.value);
+ if($("#txnTaxable"))$("#txnTaxable").textContent=money(taxable);
+ if($("#txnTax"))$("#txnTax").textContent=money(tax);
+ if($("#txnTotal"))$("#txnTotal").textContent=money(total);
+ if($("#txnLastBalance"))$("#txnLastBalance").textContent=money(last);
+ if($("#txnTotalBalance"))$("#txnTotalBalance").textContent=money(last+total);
+ if($("#txnPaid"))$("#txnPaid").textContent=money(paid);
+ if($("#txnRemainingBalance"))$("#txnRemainingBalance").textContent=money(last+total-paid);
+}
+function transactionForm(k){
+ window.currentTxn=k;
+ let sales=k==="sales",parties=get(sales?"customers":"suppliers");
+ let partyField=sales?'<div class="field"><label for="tparty">Customer name</label><input id="tparty" list="salesCustomerList" value="Walk-in" placeholder="Choose saved customer or type a new name" autocomplete="off"><datalist id="salesCustomerList">'+parties.map(p=>'<option value="'+escapeHTML(p.name)+'"></option>').join("")+'</datalist></div>':'<div class="field"><label for="tparty">Supplier</label><select id="tparty"><option value="">Select supplier</option>'+parties.map(p=>'<option value="'+escapeHTML(p.name)+'">'+escapeHTML(p.name)+'</option>').join("")+'</select></div>';
+ let html='<form onsubmit="saveTransaction(event,'+JSON.stringify(k)+')"><div class="formgrid">'+field("Date","tdate","date",'value="'+today+'"')+field("Invoice / bill number","tinvoice","text",'value="'+(sales?"SL-":"PB-")+Date.now().toString().slice(-6)+'"')+partyField+'<div class="field"><label>Supply type</label><select id="txnsupply"><option value="intra">Intra-state · CGST + SGST</option><option value="inter">Inter-state · IGST</option></select></div></div><div id="txnLines">'+txnLineHTML(0)+'</div><p><button type="button" class="btn" onclick="addTxnLine()">＋ Add another product</button></p><div class="formgrid"><div class="field"><label>Last balance</label><strong id="txnLastBalance">₹0.00</strong></div><div class="field"><label>Total balance</label><strong id="txnTotalBalance">₹0.00</strong></div>'+field("Amount paid (₹)","tpaid","number",'min="0" step="any" value="0" oninput="updateTxnTotals()"')+'<div class="field"><label>Taxable value</label><strong id="txnTaxable">₹0.00</strong></div><div class="field"><label>GST amount</label><strong id="txnTax">₹0.00</strong></div><div class="field"><label>Invoice total</label><strong id="txnTotal">₹0.00</strong></div><div class="field"><label>Paid now</label><strong id="txnPaid">₹0.00</strong></div><div class="field"><label>Remaining balance</label><strong id="txnRemainingBalance">₹0.00</strong></div><div class="field"><label>Payment mode</label><select id="tmethod"><option>Cash</option><option>UPI</option><option>Bank</option><option>Credit</option></select></div></div><p><button class="btn primary">Save '+(sales?"sale invoice":"purchase bill")+'</button></p></form>';
+ modal(sales?"New sale invoice":"New purchase bill",html);
+}
 function setRate(){let i=get('items')[$('#titem').value];$('#trate').value=i?(window.currentTxn==='sales'?i.price:i.purchase):0;if($('#tgst'))$('#tgst').value=i?(i.gst||0):0;calcTotal()}
 function calcTotal(){let taxable=Math.max(0,num($('#tqty').value)*num($('#trate').value)-num($('#tdiscount').value)),tax=taxable*num($('#tgst')?.value)/100;$('#ttaxable').value=taxable.toFixed(2);$('#ttax').value=tax.toFixed(2);$('#ttotal').value=(taxable+tax).toFixed(2)}
 function consumeBatchStock(itemName,qty){let batches=get('batches'),sorted=batches.filter(b=>b.item===itemName&&num(b.remaining)>0).sort((a,b)=>(a.expiryDate||'9999-12-31').localeCompare(b.expiryDate||'9999-12-31')),left=qty,alloc=[];for(const b of sorted){if(left<=0)break;let take=Math.min(left,num(b.remaining));b.remaining=num(b.remaining)-take;left-=take;alloc.push({batchId:b.id,qty:take})}put('batches',batches);return alloc}
