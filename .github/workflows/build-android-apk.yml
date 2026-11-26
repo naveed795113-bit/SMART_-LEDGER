@@ -229,9 +229,9 @@ jobs:
           emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
           EMULATOR_PID=$!
           cleanup() {
-            adb -s emulator-5554 emu kill >/dev/null 2>&1 || true
+            # Do not let emulator shutdown block the CI step after tests have passed.
+            timeout --signal=TERM --kill-after=5s 10s adb -s emulator-5554 emu kill >/dev/null 2>&1 || true
             kill "$EMULATOR_PID" >/dev/null 2>&1 || true
-            wait "$EMULATOR_PID" >/dev/null 2>&1 || true
           }
           trap cleanup EXIT
           adb -s emulator-5554 wait-for-device
