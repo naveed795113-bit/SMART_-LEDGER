@@ -41,6 +41,7 @@ jobs:
         run: |
           node --check smartledger-enhancements-v67.js
           node --check smartledger-v73-fixes.js
+          node --check smartledger-v74-upgrades.js
           node --check offline-ocr-v69.js
           node --input-type=module --check < login-gate-v50.js
           node --check accounting.js
@@ -62,6 +63,7 @@ jobs:
           node tests/offline-ocr.mjs
           node tests/whatsapp-share.mjs
           node tests/v73-features.mjs
+          node tests/v74-upgrades.mjs
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -133,6 +135,7 @@ jobs:
           test -s android/app/src/main/assets/www/accounting.js
           test -s android/app/src/main/assets/www/business-suite-v40.js
           test -s android/app/src/main/assets/www/smartledger-v73-fixes.js
+          test -s android/app/src/main/assets/www/smartledger-v74-upgrades.js
           test -s android/app/src/main/assets/www/login-gate-v50.js
           test -s android/app/src/main/assets/www/vendor/xlsx.full.min.js
           test -s android/app/src/main/assets/www/vendor/html2canvas.min.js
@@ -181,8 +184,8 @@ jobs:
           done
           unzip -l "$RELEASE_APK" | grep -q 'lib/arm64-v8a/libtesseract.so'
           mkdir -p apk-output
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v73-debug.apk
-          cp "$RELEASE_APK" apk-output/SmartLedger-v73-release.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v74-debug.apk
+          cp "$RELEASE_APK" apk-output/SmartLedger-v74-release.apk
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner -print | sort -V | tail -n 1)"
           test -n "$APKSIGNER" && test -x "$APKSIGNER"
           "$APKSIGNER" verify --verbose apk-output/SmartLedger-v73-release.apk
@@ -195,7 +198,7 @@ jobs:
       - name: Upload installable APKs
         uses: actions/upload-artifact@v4
         with:
-          name: SmartLedger-Android-APK-v73
+          name: SmartLedger-Android-APK-v74
           path: |
             apk-output/*.apk
           if-no-files-found: error
