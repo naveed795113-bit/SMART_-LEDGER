@@ -121,6 +121,47 @@ assert.match(window.document.querySelector('#invoicepaper').textContent, /Last B
 assert.match(window.document.querySelector('#invoicepaper').textContent, /Total Balance/, 'Invoice preview includes total balance');
 assert.match(window.document.querySelector('#invoicepaper').textContent, /Remaining Balance/, 'Invoice preview includes remaining balance');
 window.closeModal();
+const customersBeforeDuplicate = JSON.parse(window.localStorage.getItem('sl_customers'));
+window.transactionForm('sales');
+window.addTxnLine();
+const duplicateItem = window.document.querySelector('.txitem');
+duplicateItem.value = '0';
+window.txnRate(duplicateItem);
+window.document.querySelector('.txqty').value = '1';
+window.document.querySelector('#tparty').value = 'Customer Must Not Be Created';
+window.document.querySelector('#tinvoice').value = 'OLD-100';
+window.document.querySelector('#tpaid').value = '0';
+window.document.querySelector('#modalbody form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+assert.deepEqual(JSON.parse(window.localStorage.getItem('sl_customers')), customersBeforeDuplicate, 'Duplicate invoice rejection must not create a stray customer');
+window.closeModal();
+
+window.localStorage.setItem('sl_batches', JSON.stringify([{id:'B-ATOMIC',item:'Billing Test Item',batchNo:'B-1',remaining:8,qtyReceived:8}]));
+window.transactionForm('sales');
+window.addTxnLine();
+const atomicItem = window.document.querySelector('.txitem');
+atomicItem.value = '0';
+window.txnRate(atomicItem);
+window.document.querySelector('.txqty').value = '1';
+window.document.querySelector('#tparty').value = 'Atomic Failure Customer';
+window.document.querySelector('#tinvoice').value = 'FAIL-ATOMIC-1';
+window.document.querySelector('#tpaid').value = '0';
+const originalStorageSet = window.Storage.prototype.setItem;
+let failSalesWrite = true;
+window.Storage.prototype.setItem = function(key, value) {
+  if (key === 'sl_sales' && failSalesWrite) {
+    failSalesWrite = false;
+    throw new Error('simulated storage quota');
+  }
+  return originalStorageSet.call(this, key, value);
+};
+window.document.querySelector('#modalbody form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+window.Storage.prototype.setItem = originalStorageSet;
+assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].qty, 8, 'Failed transaction restores inventory quantity');
+assert.equal(JSON.parse(window.localStorage.getItem('sl_batches'))[0].remaining, 8, 'Failed transaction restores batch allocation');
+assert.equal(JSON.parse(window.localStorage.getItem('sl_sales')).length, 2, 'Failed transaction does not append a sale');
+assert.ok(!JSON.parse(window.localStorage.getItem('sl_customers')).some(x => x.name === 'Atomic Failure Customer'), 'Failed transaction does not create a customer');
+window.closeModal();
+window.closeModal();
 window.go('Purchases');
 assert.match(window.document.querySelector('#view').textContent, /New purchase/, 'Purchases page navigation works');
 window.go('Reports');
@@ -228,6 +269,7 @@ console.log('PASS v16 live billing balances, saved invoice values and printed in
 console.log('PASS inventory, show-more launcher, item insights, sales, purchases, reports and ledger navigation');
 console.log('PASS v11.0 settings and backup controls');
 console.log('PASS responsive layout breakpoints and isolated content scrolling');
+console.log('PASS duplicate invoice and atomic transaction rollback');
 console.log('PASS valid backup restore and business profile');
 console.log('PASS invalid backup rejection without data loss');
 console.log('PASS atomic backup restore rollback on storage failure');
