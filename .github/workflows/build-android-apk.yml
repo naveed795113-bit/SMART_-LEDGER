@@ -183,7 +183,6 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" --sdk_root="$ANDROID_HOME" "emulator" "platform-tools" "system-images;android-35;google_apis;x86_64"
           echo no | "$AVDMANAGER" --verbose create avd --force -n test --package "system-images;android-35;google_apis;x86_64" --device "pixel_2"
-          printf '\\nhw.cpu.ncore=2\\nhw.ramSize=2048\\n' >> "$HOME/.android/avd/test.avd/config.ini"
           test -x "$ANDROID_HOME/platform-tools/adb"
           test -x "$ANDROID_HOME/emulator/emulator"
 
