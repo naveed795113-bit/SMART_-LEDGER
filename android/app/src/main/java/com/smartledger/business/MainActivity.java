@@ -52,7 +52,7 @@ import android.view.WindowManager;
 
 public class MainActivity extends Activity {
     // OAuth Web client ID is the server client ID used to mint Google ID tokens.
-    private static final String GOOGLE_WEB_CLIENT_ID = "300668500980-0tnrrbavikc17s598f3dtsh1hj5vo42u.apps.googleusercontent.com";
+    private static final String GOOGLE_WEB_CLIENT_ID = "600259265217-dgavke1sfnafsa5u7h2kbu98cq6qvhb3.apps.googleusercontent.com";
     private static final int FILE_CHOOSER_REQUEST = 4101;
     private static final int CAMERA_PERMISSION_REQUEST = 4102;
     private WebView webView;
