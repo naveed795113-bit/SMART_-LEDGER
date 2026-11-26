@@ -141,7 +141,7 @@ assert.ok(html.includes('./ai-assistant-v52.js') && sw.includes('./ai-assistant-
 for (const feature of ['SmartLedger AI Business Manager','data-ai-tab="chat"','data-ai-tab="insights"','data-ai-tab="inventory"','data-ai-tab="alerts"','data-ai-tab="reports"','smartLedgerVoiceInput','smartLedgerPrintReport','smartLedgerExportCSV','inventoryAdvice','buildAlerts','answerQuestion']) {
   assert.ok(ai52.includes(feature), 'Missing v52 AI feature: ' + feature);
 }
-assert.ok(ai52.includes('SpeechRecognition') && ai52.includes('sessionStorage') && ai52.includes('AI requests send a limited business summary to OpenAI') && ai52.includes('smartLedgerResetAIConsent'), 'Voice, session history, OpenAI data disclosure and consent reset');
+assert.ok(ai52.includes('SpeechRecognition') && ai52.includes('sessionStorage') && ai52.includes('NVIDIA_ENDPOINT') && ai52.includes('integrate.api.nvidia.com/v1/chat/completions') && ai52.includes('NVIDIA_MODEL') && ai52.includes('sl_nvidia_api_key') && ai52.includes('smartLedgerResetAIConsent'), 'Voice, session history, NVIDIA hosted AI, session-only key and key reset');
 console.log('PASS v52 AI Business Manager syntax and feature coverage');
 
 const firebaseLoader = readFileSync('login-gate-loader-v60.js', 'utf8');
