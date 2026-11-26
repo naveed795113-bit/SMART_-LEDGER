@@ -36,6 +36,7 @@ w.document.querySelector("#returnrate").value="10";
 w.saveReturn({preventDefault(){}}, "sales");
 const savedSalesReturns=JSON.parse(w.localStorage.getItem("sl_sales_returns")||"[]");
 assert.equal(savedSalesReturns.length,1,"Sales return transaction was saved; posting errors: "+w.localStorage.getItem("sl_v40_posting_errors"));
+console.log("DEBUG_RETURN_RECORD",JSON.stringify(savedSalesReturns[0]));
 let journals=JSON.parse(w.localStorage.getItem("sl_account_journals")||"[]");
 assert.equal(journals.length,1,"Sales return creates one automatic journal");
 assert.equal(journals[0].sourceType,"return");
