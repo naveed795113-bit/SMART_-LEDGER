@@ -28,7 +28,6 @@ w.localStorage.setItem("sl_sales",JSON.stringify([{id:810,date:"2026-11-25",invo
 w.localStorage.setItem("sl_purchases",JSON.stringify([{id:811,date:"2026-11-25",invoice:"P-811",party:"Supplier",item:"Rice",qty:10,rate:10,total:105,taxable:100,tax:5,paid:105}]));
 w.localStorage.setItem("sl_batches",JSON.stringify([]));
 assert.equal(w.saveReturn.__v40,true,"Automatic return-journal hook is installed");
-const balanceBeforeCashRefund=w.partyOutstanding("Customer","Customer"),allReceivablesBeforeCashRefund=w.outstandingTotal("Customer");
 w.returnForm("sales");
 w.document.querySelector("#returntx").value="810";
 w.setReturnMax();
@@ -102,6 +101,7 @@ assert.equal(JSON.parse(w.localStorage.getItem("sl_account_journals")).length,3,
 
 
 
+const balanceBeforeCashRefund=w.partyOutstanding("Customer","Customer"),allReceivablesBeforeCashRefund=w.outstandingTotal("Customer");
 w.returnForm("sales");
 w.document.querySelector("#returntx").value="810";
 w.setReturnMax();
