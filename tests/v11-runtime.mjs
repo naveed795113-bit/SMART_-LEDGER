@@ -72,6 +72,7 @@ window.document.querySelector('#editItemForm').dispatchEvent(new window.Event('s
 assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].name, 'Edited test item', 'Edit saves item name');
 assert.ok(JSON.parse(window.localStorage.getItem('sl_items'))[0].aliases.includes('Original test item'), 'Renamed item retains its previous name for historical returns');
 assert.equal(JSON.parse(window.localStorage.getItem('sl_batches'))[0].item, 'Edited test item', 'Renaming an item updates its batch records');
+assert.equal(JSON.parse(window.localStorage.getItem('sl_batches')).reduce((sum,b)=>sum+Number(b.remaining||0),0),17, 'Editing stock quantity reconciles batch quantities');
 assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].qty, 17, 'Edit saves stock quantity');
 window.go('Items');
 assert.match(window.document.querySelector('#itemrows').textContent, /Edited test item/, 'Updated product renders after save');
