@@ -2,7 +2,7 @@ import {readFileSync} from "node:fs";
 import assert from "node:assert/strict";
 const ui=readFileSync("smartledger-v74-upgrades.js","utf8");
 const html=readFileSync("index.html","utf8");
-assert.match(html,/smartledger-v74-upgrades\\.js/);
+assert.match(html,/smartledger-v74-upgrades\.js/);
 assert.match(ui,/tpartyphone/,"sale and purchase forms capture the party phone");
 assert.match(ui,/partyPhone=phone|partyPhone/,"saved transaction retains the phone for sharing");
 assert.match(ui,/sl-select-all/,"inventory includes select all");
