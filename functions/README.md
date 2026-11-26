@@ -13,7 +13,7 @@ The app's Firebase Authentication setup remains separate and is not changed by t
 1. Open SmartLedger and launch AI Business Manager.
 2. Ask a question; when prompted, enter your NVIDIA Build API key.
 3. The key is held in session storage for the current app/browser session. Clear it using **Clear NVIDIA key** when finished.
-4. The current default model is `meta/llama-3.3-70b-instruct`. The account must have access to that model in NVIDIA Build.
+4. The current default model is `nvidia/nemotron-3.5-lightning-30b-a3b`. The account must have access to that model in NVIDIA Build.
 
 NVIDIA API endpoint: `https://integrate.api.nvidia.com/v1/chat/completions`.
 
