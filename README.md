@@ -1,6 +1,6 @@
-# SmartLedger — Version 40.0
+# SmartLedger — Version 69.0
 
-**Release track:** SmartLedger v40.0 unified business suite. This is a consolidated major release on the existing main branch.
+**Release track:** SmartLedger v69.0 Android and PWA release, including offline bill OCR, native invoice sharing and full business accounting workflows.
 
 SmartLedger is a mobile-first business manager for Indian retail and wholesale shops.
 
@@ -19,7 +19,7 @@ SmartLedger is a mobile-first business manager for Indian retail and wholesale s
 - Party-wise outstanding balances and customer gross-profit estimates.
 - Expense register, cash/bank book, stock adjustments and low-stock alerts.
 - GST management summary, profit/loss estimate and stock valuation.
-- Printable invoice preview, browser print / Save as PDF, and WhatsApp invoice summary sharing.
+- Professional sales and purchase invoice previews, print / PDF export, and Android WhatsApp sharing with PDF plus HD invoice image.
 - JSON backup and restore with validation and confirmation.
 - Offline app shell with automatic service-worker cache updates.
 - Android APK: on-device offline supplier-bill OCR for English, Hindi and Urdu. Extracted text stays on the device; review it manually before saving a purchase.
