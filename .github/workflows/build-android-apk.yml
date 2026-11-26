@@ -168,14 +168,14 @@ jobs:
           unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/tessdata/urd.traineddata'
           unzip -l android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'lib/arm64-v8a/libtesseract.so'
           mkdir -p apk-output
-          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v69.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk apk-output/SmartLedger-v70.apk
           if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
-            cp android/app/build/outputs/apk/release/app-release.apk apk-output/SmartLedger-v69-release-signed.apk
+            cp android/app/build/outputs/apk/release/app-release.apk apk-output/SmartLedger-v70-release-signed.apk
             APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner -print | sort -V | tail -n 1)"
             test -n "$APKSIGNER" && test -x "$APKSIGNER"
-            "$APKSIGNER" verify --verbose apk-output/SmartLedger-v69-release-signed.apk
+            "$APKSIGNER" verify --verbose apk-output/SmartLedger-v70-release-signed.apk
           else
-            cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v69-release-unsigned.apk
+            cp android/app/build/outputs/apk/release/app-release-unsigned.apk apk-output/SmartLedger-v70-release-unsigned.apk
             echo "Release keystore secrets are not configured; unsigned release retained."
           fi
           ls -lh apk-output/
@@ -183,7 +183,7 @@ jobs:
       - name: Upload installable APKs
         uses: actions/upload-artifact@v4
         with:
-          name: SmartLedger-Android-APK-v69
+          name: SmartLedger-Android-APK-v70
           path: |
             apk-output/*.apk
           if-no-files-found: error
