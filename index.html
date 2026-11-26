@@ -1015,7 +1015,7 @@ function saveEditItem(e,i){
  if(!name)return alert("Enter an item name.");if(a.some((p,j)=>j!==i&&String(p.name).toLowerCase()===name.toLowerCase()))return alert("Another item already uses this name.");if(code&&a.some((p,j)=>j!==i&&String(p.code||"").toLowerCase()===code.toLowerCase()))return alert("This SKU / barcode is already assigned to another item.");
  if([qty,purchase,price,wholesale,minStock].some(v=>!Number.isFinite(v)||v<0))return alert("Quantity, prices and reorder level must be valid non-negative numbers.");
  try{unitData=readUnitFields("ei")}catch(err){return alert(err.message)}
- const oldName=x.name;a[i]={...x,name,code,qty,...unitData,purchase,price,wholesale,hsn:$("#eihsn").value.trim(),minStock,gst:num($("#eigST").value)};put("items",a);
+ const oldName=x.name,aliases=Array.isArray(x.aliases)?x.aliases.slice():[];if(oldName!==name&&!aliases.includes(oldName))aliases.push(oldName);a[i]={...x,name,code,qty,...unitData,purchase,price,wholesale,hsn:$("#eihsn").value.trim(),minStock,gst:num($("#eigST").value),aliases:[...new Set(aliases)].filter(alias=>alias!==name)};put("items",a);
  if(oldName!==name){let batches=get("batches"),changed=false;batches.forEach(b=>{if(b.item===oldName){b.item=name;changed=true}});if(changed)put("batches",batches)}
  closeModal();render();
 }
@@ -1263,7 +1263,7 @@ function saveReturn(e,kind){
  if(qty>num(line.qty)-already+1e-9)return alert("Return quantity exceeds the unreturned quantity for this item");
  let ratio=qty/Math.max(1e-9,num(line.qty)),stockQty=num(line.stockQty)>0?num(line.stockQty)*ratio:qty*(num(line.unitFactor)||1),discount=num(line.discount)*ratio,amount=Math.max(0,qty*rate-discount),gstRate=num(line.gstRate),tax=gstRate>0?amount*gstRate/100:num(line.tax)*ratio,cost=num(line.cost)*ratio;
  let cgst=tx.supplyType==="intra"?tax/2:(num(tx.cgst)&&num(tx.qty)>0?num(tx.cgst)*stockQty/num(tx.qty):0),sgst=tx.supplyType==="intra"?tax/2:(num(tx.sgst)&&num(tx.qty)>0?num(tx.sgst)*stockQty/num(tx.qty):0),igst=tx.supplyType==="inter"?tax:(num(tx.igst)&&num(tx.qty)>0?num(tx.igst)*stockQty/num(tx.qty):0);
- let items=get("items"),item=items.find(x=>x.name===line.item);
+ let items=get("items"),item=items.find(x=>x.name===line.item||(Array.isArray(x.aliases)&&x.aliases.includes(line.item)));
  if(!item)return alert("Original item no longer exists");
  let batches=get("batches");
  if(sales){
