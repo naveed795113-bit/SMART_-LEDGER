@@ -73,6 +73,18 @@ assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].name, 'Edite
 assert.ok(JSON.parse(window.localStorage.getItem('sl_items'))[0].aliases.includes('Original test item'), 'Renamed item retains its previous name for historical returns');
 assert.equal(JSON.parse(window.localStorage.getItem('sl_batches'))[0].item, 'Edited test item', 'Renaming an item updates its batch records');
 assert.equal(JSON.parse(window.localStorage.getItem('sl_batches')).reduce((sum,b)=>sum+Number(b.remaining||0),0),17, 'Editing stock quantity reconciles batch quantities');
+window.localStorage.setItem('sl_sales', JSON.stringify([{id:9901,date:'2026-11-26',invoice:'RENAME-RETURN-1',party:'Rename Test Customer',item:'Original test item',qty:1,total:15,taxable:15,tax:0,cost:10,paid:15,lines:[{item:'Original test item',qty:1,unit:'pcs',unitFactor:1,stockQty:1,rate:15,discount:0,gstRate:0,taxable:15,tax:0,total:15,cost:10}]}]));
+window.returnForm('sales');
+window.document.querySelector('#returntx').value = '9901';
+window.setReturnMax();
+window.document.querySelector('#returnqty').value = '1';
+window.document.querySelector('#returnrate').value = '15';
+window.saveReturn({preventDefault(){}}, 'sales');
+assert.equal(JSON.parse(window.localStorage.getItem('sl_sales_returns')).at(-1).item, 'Original test item', 'Historical return keeps the invoice item label after rename');
+assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].qty, 18, 'Historical return restores stock to the renamed item through its alias');
+window.localStorage.setItem('sl_sales_returns', JSON.stringify([]));
+window.localStorage.setItem('sl_account_journals', JSON.stringify([]));
+
 assert.equal(JSON.parse(window.localStorage.getItem('sl_items'))[0].qty, 17, 'Edit saves stock quantity');
 window.go('Items');
 assert.match(window.document.querySelector('#itemrows').textContent, /Edited test item/, 'Updated product renders after save');
