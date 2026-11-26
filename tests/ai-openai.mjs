@@ -4,7 +4,7 @@ const ai=readFileSync("ai-assistant-v52.js","utf8");
 const html=readFileSync("index.html","utf8");
 const sw=readFileSync("sw.js","utf8");
 assert.match(ai,/https:\/\/integrate\.api\.nvidia\.com\/v1\/chat\/completions/);
-assert.match(ai,/meta\/llama-3\.3-70b-instruct/);
+assert.match(ai,/nvidia\/nemotron-3\.5-lightning-30b-a3b/);
 assert.match(ai,/Authorization:\s*"Bearer "\+apiKey/);
 assert.match(ai,/sessionStorage\.setItem\("sl_nvidia_api_key"/);
 assert.match(ai,/sessionStorage\.removeItem\("sl_nvidia_api_key"/);
