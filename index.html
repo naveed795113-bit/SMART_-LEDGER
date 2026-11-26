@@ -832,14 +832,24 @@ function restoreData(input){
   const hasData=prepared.length||chart!==undefined||journals!==undefined||profileKeys.some(key=>Object.prototype.hasOwnProperty.call(profile,key));
   if(!hasData){alert("No SmartLedger business data was found in this backup.");input.value="";return}
   if(!confirm("Restore this SmartLedger backup? Matching records on this device will be replaced. Export a backup of the current data first.")){input.value="";return}
+  const updates=new Map();
+  prepared.forEach(([key,value])=>updates.set(key,JSON.stringify(value)));
+  if(chart!==undefined)updates.set("sl_chart_accounts",JSON.stringify(chart));
+  if(journals!==undefined)updates.set("sl_account_journals",JSON.stringify(journals));
+  const profileAliases={bizname:"name",bizaddress:"address",bizphone:"phone",bizphone2:"phone2",gstin:"gstin",bizlogo:"logo",bizsignature:"signature"};
+  profileKeys.forEach(key=>{let alias=profileAliases[key];if(Object.prototype.hasOwnProperty.call(profile,key))updates.set(key,String(profile[key]??""));else if(alias&&Object.prototype.hasOwnProperty.call(profile,alias))updates.set(key,String(profile[alias]??""))});
+  const previous=new Map([...updates.keys()].map(key=>[key,localStorage.getItem(key)]));
   try{
-   const keys=Object.values(db);exportData();
-   keys.forEach(key=>{const entry=prepared.find(([stored])=>stored===key);if(entry)localStorage.setItem(key,JSON.stringify(entry[1]))});
-   if(chart!==undefined)localStorage.setItem("sl_chart_accounts",JSON.stringify(chart));
-   if(journals!==undefined)localStorage.setItem("sl_account_journals",JSON.stringify(journals));
-   const profileAliases={bizname:"name",bizaddress:"address",bizphone:"phone",bizphone2:"phone2",gstin:"gstin",bizlogo:"logo",bizsignature:"signature"};profileKeys.forEach(key=>{let alias=profileAliases[key];if(Object.prototype.hasOwnProperty.call(profile,key))localStorage.setItem(key,String(profile[key]??""));else if(alias&&Object.prototype.hasOwnProperty.call(profile,alias))localStorage.setItem(key,String(profile[alias]??""))});
+   exportData();
+   updates.forEach((value,key)=>localStorage.setItem(key,value));
    alert("Backup restored. SmartLedger will reload the saved business data.");location.reload();
-  }catch(error){alert("Restore could not be completed: "+(error.message||"storage error"))}
+  }catch(error){
+   try{
+    updates.forEach((value,key)=>localStorage.removeItem(key));
+    previous.forEach((value,key)=>{if(value!==null)localStorage.setItem(key,value)});
+   }catch(rollbackError){alert("Restore failed and automatic rollback was incomplete. Keep this device unchanged and contact SmartLedger support.")}
+   alert("Backup restore failed. Existing data was rolled back: "+(error.message||"storage error"));
+  }
   input.value="";
  };
  reader.readAsText(file);
