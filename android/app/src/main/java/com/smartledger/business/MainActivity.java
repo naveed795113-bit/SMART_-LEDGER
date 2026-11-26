@@ -24,6 +24,15 @@ import java.util.concurrent.Executors;
 import android.content.Intent;
 import android.content.ClipData;
 import androidx.core.content.FileProvider;
+import androidx.core.content.ContextCompat;
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialException;
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,6 +51,8 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class MainActivity extends Activity {
+    // OAuth Web client ID is the server client ID used to mint Google ID tokens.
+    private static final String GOOGLE_WEB_CLIENT_ID = "300668500980-0tnrrbavikc17s598f3dtsh1hj5vo42u.apps.googleusercontent.com";
     private static final int FILE_CHOOSER_REQUEST = 4101;
     private static final int CAMERA_PERMISSION_REQUEST = 4102;
     private WebView webView;
@@ -165,6 +176,15 @@ public class MainActivity extends Activity {
         return root;
     }
 
+    private void deliverGoogleAuthResult(String callbackId, String idToken, String error) {
+        if (webView == null) return;
+        String script = "if(window.SmartLedgerGoogleAuth&&window.SmartLedgerGoogleAuth.resolve){window.SmartLedgerGoogleAuth.resolve("
+                + JSONObject.quote(callbackId == null ? "" : callbackId) + ","
+                + JSONObject.quote(idToken == null ? "" : idToken) + ","
+                + JSONObject.quote(error == null ? "" : error) + ")}";
+        runOnUiThread(() -> { if (webView != null) webView.evaluateJavascript(script, null); });
+    }
+
     private void deliverOcrResult(String callbackId, String text, String error) {
         if (webView == null) return;
         String script = "if(window.SmartLedgerOCR&&window.SmartLedgerOCR.resolve){window.SmartLedgerOCR.resolve("
@@ -196,6 +216,58 @@ public class MainActivity extends Activity {
     }
 
     private class NativeBridge {
+        @JavascriptInterface
+        public void signInWithGoogle(String callbackId) {
+            runOnUiThread(() -> {
+                try {
+                    GetGoogleIdOption googleOption = new GetGoogleIdOption.Builder()
+                            .setFilterByAuthorizedAccounts(false)
+                            .setServerClientId(GOOGLE_WEB_CLIENT_ID)
+                            .setAutoSelectEnabled(false)
+                            .build();
+                    GetCredentialRequest request = new GetCredentialRequest.Builder()
+                            .addCredentialOption(googleOption)
+                            .build();
+                    CredentialManager manager = CredentialManager.create(MainActivity.this);
+                    manager.getCredentialAsync(MainActivity.this, request, null,
+                            ContextCompat.getMainExecutor(MainActivity.this),
+                            new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                                @Override public void onResult(GetCredentialResponse response) {
+                                    try {
+                                        Credential credential = response.getCredential();
+                                        if (!(credential instanceof androidx.credentials.CustomCredential)
+                                                || !GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(credential.getType())) {
+                                            deliverGoogleAuthResult(callbackId, "", "Google did not return a valid sign-in credential. Please try again.");
+                                            return;
+                                        }
+                                        GoogleIdTokenCredential googleCredential =
+                                                GoogleIdTokenCredential.createFrom(credential.getData());
+                                        String token = googleCredential.getIdToken();
+                                        if (token == null || token.isEmpty()) {
+                                            deliverGoogleAuthResult(callbackId, "", "Google returned an empty sign-in token. Please try again.");
+                                            return;
+                                        }
+                                        deliverGoogleAuthResult(callbackId, token, "");
+                                    } catch (Exception error) {
+                                        deliverGoogleAuthResult(callbackId, "", error.getMessage() == null
+                                                ? "Could not read the Google sign-in response." : error.getMessage());
+                                    }
+                                }
+
+                                @Override public void onError(GetCredentialException error) {
+                                    String message = error == null || error.getMessage() == null
+                                            ? "Google sign-in was cancelled or could not be completed."
+                                            : error.getMessage();
+                                    deliverGoogleAuthResult(callbackId, "", message);
+                                }
+                            });
+                } catch (Exception error) {
+                    deliverGoogleAuthResult(callbackId, "", error.getMessage() == null
+                            ? "Google sign-in could not start on this device." : error.getMessage());
+                }
+            });
+        }
+
         @JavascriptInterface
         public void shareFilesToWhatsApp(String pdfBase64, String imageBase64, String phone,
                                          String message, String fileStem, String callbackId) {
