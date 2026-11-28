@@ -23,7 +23,7 @@ function syncCatalog(){
   cat.splice(0,cat.length,...merged.values());
  }catch(_){}
 }
-function page(){
+function renderUnits(){
  syncCatalog();
  const units=all(),groups=[...new Set(units.map(x=>x.group))];
  const rows=units.map(u=>'<tr><td><b>'+esc(u.unit)+'</b></td><td>'+esc(u.group)+'</td><td>'+esc(u.baseUnit)+'</td><td>1 '+esc(u.unit)+' = '+Number(u.factor).toLocaleString('en-IN')+' '+esc(u.baseUnit)+'</td><td>'+(u.builtin?'<span class="muted">System</span>':'<button class="btn" onclick="slEditUnit(\''+esc(u.unit)+'\')">Edit</button> <button class="btn danger" onclick="slDeleteUnit(\''+esc(u.unit)+'\')">Delete</button>')+'</td></tr>').join('');
@@ -42,14 +42,14 @@ window.slSaveUnit=function(e,old){
  const previous=all().find(x=>x.unit===old),previousFactor=previous?Number(previous.factor):1,engine=engineGroup(group);
  const next=list.filter(x=>x.unit!==old);next.push({unit,group,baseUnit,factor});write(next);syncCatalog();
  try{const products=get("items");let changed=false;products.forEach(p=>{if(p.unit!==unit)return;const sameBase=(p.baseUnit||baseUnit)===baseUnit,oldFactor=Number(p.unitFactor||1);if(sameBase&&engineGroup(p.unitGroup||engine)===engine&&(oldFactor===previousFactor||oldFactor===1)){p.baseUnit=baseUnit;p.unitFactor=factor;p.unitGroup=engine;changed=true}});if(changed)put("items",products)}catch(_){}
- closeModal();page();
+ closeModal();renderUnits();
 };
 window.slEditUnit=name=>window.slUnitForm(name);
 window.slDeleteUnit=function(name){
  let linked=[];try{linked=get("items").filter(p=>p.unit===name)}catch(_){}
  if(linked.length)return alert("This unit is assigned to "+linked.length+" inventory item(s). Change those products to another unit before deleting it.");
  if(!confirm("Delete unit "+name+" from the unit master?"))return;
- write(read().filter(x=>x.unit!==name));syncCatalog();page();
+ write(read().filter(x=>x.unit!==name));syncCatalog();renderUnits();
 };
 function injectNav(){
  const nav=$('#nav');if(nav&&!nav.querySelector('[data-page="Units"]')){
@@ -68,8 +68,10 @@ function navigate(p){
  injectNav();
  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==="Units"));
  document.querySelectorAll('.mobile-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==="More"));
+ page="Units";
+ if(typeof applyModuleTheme==="function")applyModuleTheme();
  if($('#pagetitle'))$('#pagetitle').textContent="Units & Conversions";
- page();return true;
+ renderUnits();return true;
 }
 function boot(){
  syncCatalog();
@@ -92,5 +94,5 @@ document.addEventListener("change",e=>{
  row.querySelector(".txrate").value=String(baseRate*selectedFactor/primaryFactor);
  if(typeof updateTxnTotals==="function")updateTxnTotals();
 });
-window.addEventListener("storage",e=>{if(e.key===KEY&&document.querySelector('#pagetitle')?.textContent==="Units & Conversions")page()});
+window.addEventListener("storage",e=>{if(e.key===KEY&&document.querySelector('#pagetitle')?.textContent==="Units & Conversions")renderUnits()});
 })();
