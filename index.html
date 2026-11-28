@@ -1065,36 +1065,59 @@ const UNIT_CATALOG=[
  {unit:"pcs",group:"count",base:"pcs",factor:1},{unit:"piece",group:"count",base:"pcs",factor:1},{unit:"unit",group:"count",base:"pcs",factor:1},{unit:"pair",group:"count",base:"pcs",factor:2},{unit:"half-dozen",group:"count",base:"pcs",factor:6},{unit:"dozen",group:"count",base:"pcs",factor:12},
  {unit:"box",group:"count",base:"pcs",factor:1},{unit:"packet",group:"count",base:"pcs",factor:1},{unit:"pack",group:"count",base:"pcs",factor:1},{unit:"bag",group:"count",base:"pcs",factor:1},{unit:"bottle",group:"count",base:"pcs",factor:1},{unit:"carton",group:"count",base:"pcs",factor:1},{unit:"case",group:"count",base:"pcs",factor:1},{unit:"roll",group:"count",base:"pcs",factor:1},{unit:"sheet",group:"count",base:"pcs",factor:1},{unit:"strip",group:"count",base:"pcs",factor:1},{unit:"set",group:"count",base:"pcs",factor:1},{unit:"bundle",group:"count",base:"pcs",factor:1},{unit:"tray",group:"count",base:"pcs",factor:1},{unit:"sack",group:"count",base:"pcs",factor:1},{unit:"dozen pack",group:"count",base:"pcs",factor:12}
 ];
-function unitCatalogOptionHTML(selected){return UNIT_CATALOG.map(u=>'<option value="'+escapeHTML(u.unit)+'" '+(u.unit===selected?'selected':'')+'>'+escapeHTML(u.unit)+' · '+u.group+'</option>').join("")+'<option value="custom" '+(!UNIT_CATALOG.some(u=>u.unit===selected)?'selected':'')+'>Custom unit…</option>'}
-function unitFieldsHTML(prefix,item){
- let u=item||{},known=UNIT_CATALOG.find(x=>x.unit===u.unit),custom=!known,unit=custom?"custom":(u.unit||"pcs"),base=u.baseUnit||(known&&known.base)||"pcs",factor=u.unitFactor??((known&&known.factor)||1),group=u.unitGroup||(known&&known.group)||"count";
- return '<div class="field"><label>Stock / primary unit</label><select id="'+prefix+'unit" onchange="syncUnitFields('+JSON.stringify(prefix)+')">'+unitCatalogOptionHTML(unit)+'</select></div><div class="field '+(custom?'':'hidden')+'" id="'+prefix+'customWrap"><label>Custom unit name</label><input id="'+prefix+'unitCustom" value="'+(custom?escapeHTML(u.unit):'')+'" placeholder="e.g. crate, tin, bundle"></div><div class="field"><label>Conversion base unit</label><input id="'+prefix+'baseUnit" value="'+escapeHTML(base)+'" placeholder="e.g. g, ml, pcs"></div><div class="field"><label>1 '+escapeHTML(custom?(u.unit||"custom unit"):unit)+' equals</label><input id="'+prefix+'unitFactor" type="number" min="0.000001" step="any" value="'+factor+'"><small class="muted">Enter how many base units are in one stock unit. Example: 1 kg = 1000 g; 1 box = 12 pcs.</small></div><input type="hidden" id="'+prefix+'unitGroup" value="'+escapeHTML(group)+'">';
+function unitCatalogOptionHTML(selected,group){
+ return UNIT_CATALOG.filter(u=>!group||u.group===group).map(u=>'<option value="'+escapeHTML(u.unit)+'" '+(u.unit===selected?'selected':'')+'>'+escapeHTML(u.unit)+'</option>').join("")+'<option value="__add_unit__">＋ Add new unit…</option>';
 }
-function syncUnitFields(prefix){
- let sel=document.getElementById(prefix+"unit"),custom=document.getElementById(prefix+"customWrap"),name=document.getElementById(prefix+"unitCustom"),base=document.getElementById(prefix+"baseUnit"),factor=document.getElementById(prefix+"unitFactor"),group=document.getElementById(prefix+"unitGroup");if(!sel)return;
- let u=UNIT_CATALOG.find(x=>x.unit===sel.value),isCustom=sel.value==="custom";
- if(custom)custom.classList.toggle("hidden",!isCustom);
- if(u){if(base)base.value=u.base;if(factor)factor.value=u.factor;if(group)group.value=u.group}
- else if(isCustom){if(base&&!base.value)base.value="pcs";if(factor&&!factor.value)factor.value="1";if(group)group.value="count"}
+function unitFieldsHTML(prefix,item){
+ let u=item||{},known=UNIT_CATALOG.find(x=>x.unit===u.unit),unit=u.unit||"pcs",group=u.unitGroup||(known&&known.group)||"count",base=known&&known.base||u.baseUnit||"pcs",factor=Number(u.unitFactor??((known&&known.factor)||1)),secondary=u.secondaryUnit||((factor!==1&&base!==unit)?base:""),rate=Number(u.conversionRate||((secondary&&factor!==1)?factor:0));
+ let groups=UNIT_CATALOG.map(x=>x.group).filter((x,i,a)=>a.indexOf(x)===i);
+ return '<div class="unit-mapping-box field full"><div class="unit-mapping-title"><b>Item Units</b><small>Set the base unit and, if needed, a second unit for buying or selling.</small></div><div class="formgrid"><div class="field"><label>Base Unit (Stock Unit)</label><select id="'+prefix+'unit" onchange="syncUnitFields(\''+prefix+'\')">'+unitCatalogOptionHTML(unit)+'</select></div><div class="field"><label>Secondary Unit (Optional)</label><select id="'+prefix+'secondaryUnit" onchange="syncUnitFields(\''+prefix+'\',true)"><option value="">No secondary unit</option>'+UNIT_CATALOG.filter(x=>x.group===group&&x.unit!==unit).map(x=>'<option value="'+escapeHTML(x.unit)+'" '+(x.unit===secondary?'selected':'')+'>'+escapeHTML(x.unit)+'</option>').join("")+'<option value="__add_unit__">＋ Add new unit…</option></select></div><div class="field '+(secondary?'':'hidden')+'" id="'+prefix+'conversionWrap"><label>Conversion Rate</label><div class="unit-rate-input"><span>1 '+escapeHTML(unit)+' =</span><input id="'+prefix+'conversionRate" type="number" min="0.000001" step="any" value="'+(rate||1)+'"><span>'+escapeHTML(secondary)+'</span></div><small class="muted">Enter how many secondary units make one base unit.</small></div></div><input type="hidden" id="'+prefix+'baseUnit" value="'+escapeHTML(base)+'"><input type="hidden" id="'+prefix+'unitFactor" value="'+factor+'"><input type="hidden" id="'+prefix+'unitGroup" value="'+escapeHTML(group)+'"><div class="unit-mapping-preview" id="'+prefix+'unitPreview">'+(secondary?'1 '+escapeHTML(unit)+' = '+(rate||1)+' '+escapeHTML(secondary):'Only base unit enabled')+'</div></div>';
+}
+function syncUnitFields(prefix,secondaryChanged){
+ let sel=document.getElementById(prefix+"unit"),secondary=document.getElementById(prefix+"secondaryUnit"),base=document.getElementById(prefix+"baseUnit"),factor=document.getElementById(prefix+"unitFactor"),group=document.getElementById(prefix+"unitGroup"),rate=document.getElementById(prefix+"conversionRate"),wrap=document.getElementById(prefix+"conversionWrap"),preview=document.getElementById(prefix+"unitPreview");
+ if(!sel)return;
+ if(sel.value==="__add_unit__"){sel.value="";window.slUnitForm();return}
+ let u=UNIT_CATALOG.find(x=>x.unit===sel.value);if(!u)return;
+ let oldGroup=group?.value||u.group;
+ if(group)group.value=u.group;if(base)base.value=u.base||u.unit;if(factor)factor.value=Number(u.factor)||1;
+ if(secondary){
+  const old=secondary.value;
+  secondary.innerHTML='<option value="">No secondary unit</option>'+UNIT_CATALOG.filter(x=>x.group===u.group&&x.unit!==u.unit).map(x=>'<option value="'+escapeHTML(x.unit)+'">'+escapeHTML(x.unit)+'</option>').join("")+'<option value="__add_unit__">＋ Add new unit…</option>';
+  if(old&&UNIT_CATALOG.some(x=>x.unit===old&&x.group===u.group&&x.unit!==u.unit))secondary.value=old;
+  else if(!secondaryChanged&&u.base&&u.base!==u.unit&&UNIT_CATALOG.some(x=>x.unit===u.base&&x.group===u.group))secondary.value=u.base;
+  if(secondary.value&&rate&&(!secondaryChanged||!rate.value||Number(rate.value)<=0)){
+   const su=UNIT_CATALOG.find(x=>x.unit===secondary.value);rate.value=String((Number(u.factor)||1)/(Number(su?.factor)||1));
+  }
+  if(secondary.value==="__add_unit__"){secondary.value="";window.slUnitForm();return}
+ }
+ if(wrap)wrap.classList.toggle("hidden",!secondary?.value);
+ if(preview)preview.textContent=secondary?.value?('1 '+u.unit+' = '+(Number(rate?.value)||1)+' '+secondary.value):'Only base unit enabled';
+ if(secondary){secondary.onchange=()=>{if(secondary.value==="__add_unit__"){secondary.value="";window.slUnitForm();return}if(wrap)wrap.classList.toggle("hidden",!secondary.value);const su=UNIT_CATALOG.find(x=>x.unit===secondary.value);if(rate&&secondary.value)rate.value=String((Number(u.factor)||1)/(Number(su?.factor)||1));if(preview)preview.textContent=secondary.value?('1 '+u.unit+' = '+(Number(rate?.value)||1)+' '+secondary.value):'Only base unit enabled';};}
+ if(rate)rate.oninput=()=>{if(preview)preview.textContent=secondary?.value?('1 '+u.unit+' = '+(Number(rate.value)||0)+' '+secondary.value):'Only base unit enabled'};
 }
 function readUnitFields(prefix){
- let selected=document.getElementById(prefix+"unit")?.value||"pcs",custom=selected==="custom",unit=custom?document.getElementById(prefix+"unitCustom")?.value.trim():selected,baseUnit=document.getElementById(prefix+"baseUnit")?.value.trim()||unit,unitFactor=num(document.getElementById(prefix+"unitFactor")?.value),unitGroup=document.getElementById(prefix+"unitGroup")?.value||((UNIT_CATALOG.find(x=>x.unit===unit)||{}).group)||"custom";
- if(!unit||!baseUnit||unitFactor<=0)throw new Error("Enter a valid unit, base unit and conversion factor.");
- return {unit,baseUnit,unitFactor,unitGroup};
+ let unit=document.getElementById(prefix+"unit")?.value||"pcs",secondaryUnit=document.getElementById(prefix+"secondaryUnit")?.value||"",baseUnit=document.getElementById(prefix+"baseUnit")?.value||unit,unitFactor=Number(document.getElementById(prefix+"unitFactor")?.value)||1,unitGroup=document.getElementById(prefix+"unitGroup")?.value||"count",conversionRate=secondaryUnit?Number(document.getElementById(prefix+"conversionRate")?.value):0;
+ if(!unit||unit==="__add_unit__")throw new Error("Select a valid base unit.");
+ if(secondaryUnit==="__add_unit__")throw new Error("Select a valid secondary unit.");
+ if(secondaryUnit&&(!Number.isFinite(conversionRate)||conversionRate<=0))throw new Error("Enter a valid conversion rate greater than zero.");
+ const secondary=UNIT_CATALOG.find(x=>x.unit===secondaryUnit);
+ if(secondaryUnit&&(!secondary||secondary.group!==unitGroup))throw new Error("Base and secondary units must belong to the same unit category.");
+ return {unit,baseUnit,unitFactor,unitGroup,secondaryUnit,conversionRate};
 }
-function itemUnitFactor(item){let n=num(item&&item.unitFactor);if(n>0)return n;let u=UNIT_CATALOG.find(x=>x.unit===(item&&item.unit));return u?u.factor:1}
+function itemUnitFactor(item){let n=Number(item&&item.unitFactor);if(n>0)return n;let u=UNIT_CATALOG.find(x=>x.unit===(item&&item.unit));return u?Number(u.factor)||1:1}
 function itemUnitGroup(item){return item&&item.unitGroup||(UNIT_CATALOG.find(x=>x.unit===(item&&item.unit))||{}).group||"custom"}
 function unitFactorForItem(item,unit){
  if(!item)return 1;
- if(unit===(item.unit||"pcs"))return itemUnitFactor(item);
- if(unit===(item.baseUnit||((UNIT_CATALOG.find(x=>x.unit===item.unit)||{}).base)||item.unit))return 1;
- let u=UNIT_CATALOG.find(x=>x.unit===unit&&x.group===itemUnitGroup(item));return u?u.factor:null;
+ const base=item.unit||"pcs",baseFactor=itemUnitFactor(item),secondary=item.secondaryUnit||(item.baseUnit&&item.baseUnit!==base?item.baseUnit:""),rate=Number(item.conversionRate)||((!item.secondaryUnit&&item.baseUnit&&item.baseUnit!==base)?baseFactor:0);
+ if(unit===base)return baseFactor;
+ if(secondary&&unit===secondary&&rate>0)return baseFactor/rate;
+ if(!item.secondaryUnit&&unit===(item.baseUnit||""))return 1;
+ return null;
 }
 function transactionUnitOptions(item){
- let group=itemUnitGroup(item),opts=UNIT_CATALOG.filter(u=>u.group===group),base=item.baseUnit||((UNIT_CATALOG.find(x=>x.unit===item.unit)||{}).base)||item.unit;
- if(!opts.some(x=>x.unit===item.unit))opts.unshift({unit:item.unit,group,factor:itemUnitFactor(item)});
- if(!opts.some(x=>x.unit===base))opts.unshift({unit:base,group,factor:1});
- return opts.map(u=>'<option value="'+escapeHTML(u.unit)+'" data-factor="'+(u.unit===item.unit?itemUnitFactor(item):u.unit===base?1:u.factor)+'" '+(u.unit===(item.unit||base)?'selected':'')+'>'+escapeHTML(u.unit)+'</option>').join("");
+ const base=item.unit||"pcs",secondary=item.secondaryUnit||(item.baseUnit&&item.baseUnit!==base?item.baseUnit:"");
+ let opts=[base];if(secondary&&secondary!==base)opts.push(secondary);
+ return opts.map((name,i)=>'<option value="'+escapeHTML(name)+'" '+(i===0?'selected':'')+'>'+escapeHTML(name)+'</option>').join("");
 }
 function itemForm(){
  modal("Add inventory item",'<form onsubmit="saveItem(event)"><div class="formgrid">'+field("Item name","iname")+field("SKU / Barcode","icode")+'<div class="field"><label>Barcode scanner</label><button type="button" class="btn" onclick="scanBarcodeFor(\'icode\')">Scan barcode</button></div>'+field("Opening stock","iqty","number",'step="any" value="0"')+field("Low-stock alert at","imin","number",'step="any" value="5"')+unitFieldsHTML("i")+field("Purchase price (₹)","ipurchase","number",'step="any" value="0"')+field("Retail sale price (₹)","iprice","number",'step="any" value="0"')+field("HSN / SAC code","ihsn")+field("Wholesale price (₹)","iwholesale","number",'step="any" value="0"')+'<div class="field"><label>GST rate</label><select id="igst"><option value="0">Exempt / 0%</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option></select></div></div><p class="unit-help">Inventory quantities are stored in the primary unit. Transactions can be entered in compatible units and are converted automatically.</p><p><button class="btn primary">Save item</button></p></form>');
@@ -1485,8 +1508,10 @@ body:has(#modal.show) .mobile-nav{display:none!important;visibility:hidden!impor
  #modal.show>.dialog{height:auto!important;max-height:calc(100dvh - 32px)!important;min-height:0!important}
  #modal.show #modalbody{max-height:calc(100dvh - 110px)!important}
 }
+
+.unit-mapping-box{grid-column:1/-1;padding:14px;border:1px solid #b18b95;border-radius:13px;background:linear-gradient(145deg,#5b303b,#43232d);color:#fff}.unit-mapping-title{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}.unit-mapping-title b{font-size:16px}.unit-mapping-title small{font-size:12px;color:#f1e4e8}.unit-rate-input{display:flex;align-items:center;gap:8px}.unit-rate-input input{flex:1;min-width:70px}.unit-mapping-preview{margin-top:10px;padding:10px;border-radius:9px;background:#37202a;border:1px solid #98717b;color:#fff;font-weight:800;text-align:center}.unit-mapping-box .formgrid{gap:10px}
 </style>
 
 <style id="smartledger-invoice-phone-link">.invoice-phone-link{color:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}.invoice-phone-link:focus-visible{outline:2px solid currentColor;outline-offset:3px}</style>
-<script src="./units-conversions-v1.js?v=1"></script>
+<script src="./units-conversions-v2.js?v=1"></script>
 </body></html>
