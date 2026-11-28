@@ -17,7 +17,7 @@ function engineGroup(group){const g=String(group||"").toLowerCase();if(g==="weig
 function syncCatalog(){
  try{
   const cat=UNIT_CATALOG;
-  if(!originalEngineCatalog)originalEngineCatalog=cat.map(x=>({...x}));
+  if(!originalEngineCatalog)originalEngineCatalog=cat.filter(x=>x.group!=="count"||x.unit==="pcs").map(x=>({...x}));
   const merged=new Map(originalEngineCatalog.map(x=>[x.unit,{...x}]));
   all().forEach(u=>merged.set(u.unit,{unit:u.unit,group:engineGroup(u.group),base:u.baseUnit,factor:Number(u.factor)}));
   cat.splice(0,cat.length,...merged.values());
@@ -39,12 +39,17 @@ window.slSaveUnit=function(e,old){
  if(!unit||!group||!baseUnit||!Number.isFinite(factor)||factor<=0)return alert("Enter a valid unit and conversion factor.");
  if(old&&old!==unit)return alert("To rename a unit, create the new unit and update affected products first.");
  const list=read();if(list.some(x=>x.unit.toLowerCase()===unit.toLowerCase()&&x.unit!==old))return alert("This unit already exists.");
- const next=list.filter(x=>x.unit!==old);next.push({unit,group,baseUnit,factor});write(next);syncCatalog();closeModal();page();
+ const previous=all().find(x=>x.unit===old),previousFactor=previous?Number(previous.factor):1,engine=engineGroup(group);
+ const next=list.filter(x=>x.unit!==old);next.push({unit,group,baseUnit,factor});write(next);syncCatalog();
+ try{const products=get("items");let changed=false;products.forEach(p=>{if(p.unit!==unit)return;const sameBase=(p.baseUnit||baseUnit)===baseUnit,oldFactor=Number(p.unitFactor||1);if(sameBase&&engineGroup(p.unitGroup||engine)===engine&&(oldFactor===previousFactor||oldFactor===1)){p.baseUnit=baseUnit;p.unitFactor=factor;p.unitGroup=engine;changed=true}});if(changed)put("items",products)}catch(_){}
+ closeModal();page();
 };
 window.slEditUnit=name=>window.slUnitForm(name);
 window.slDeleteUnit=function(name){
- if(!confirm("Delete unit "+name+" from the unit master? Existing product records will not be changed."))return;
- write(read().filter(x=>x.unit!==name));page();
+ let linked=[];try{linked=get("items").filter(p=>p.unit===name)}catch(_){}
+ if(linked.length)return alert("This unit is assigned to "+linked.length+" inventory item(s). Change those products to another unit before deleting it.");
+ if(!confirm("Delete unit "+name+" from the unit master?"))return;
+ write(read().filter(x=>x.unit!==name));syncCatalog();page();
 };
 function injectNav(){
  const nav=$('#nav');if(nav&&!nav.querySelector('[data-page="Units"]')){
