@@ -12,7 +12,17 @@ const defaults=[
 ["m","Length","mm",1000],["cm","Length","mm",10],["mm","Length","mm",1]
 ];
 function all(){const saved=read(),map=new Map();defaults.forEach(x=>map.set(x[0],{unit:x[0],group:x[1],baseUnit:x[2],factor:x[3],builtin:true}));saved.forEach(x=>map.set(x.unit,x));return [...map.values()]}
-function syncCatalog(){try{const cat=UNIT_CATALOG;all().forEach(u=>{if(!cat.some(x=>x.unit===u.unit))cat.push({unit:u.unit,group:u.group.toLowerCase(),base:u.baseUnit,factor:Number(u.factor)})})}catch(_){}}
+function engineGroup(group){const g=String(group||"").toLowerCase();if(g==="weight")return "weight";if(g==="volume")return "volume";if(g==="length")return "length";return "count"}
+function syncCatalog(){
+ try{
+  const cat=UNIT_CATALOG;
+  all().forEach(u=>{
+   const entry={unit:u.unit,group:engineGroup(u.group),base:u.baseUnit,factor:Number(u.factor)};
+   const index=cat.findIndex(x=>x.unit===u.unit);
+   if(index>=0)cat[index]=entry;else cat.push(entry);
+  });
+ }catch(_){}
+}
 function page(){
  syncCatalog();
  const units=all(),groups=[...new Set(units.map(x=>x.group))];
