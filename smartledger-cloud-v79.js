@@ -15,7 +15,7 @@ const account=()=>localStorage.getItem(ACCOUNT)||uid();
 const branch=()=>localStorage.getItem(BRANCH)||"main";
 const token=async()=>{if(typeof window.smartLedgerGetIdToken!=="function")throw Error("Sign in before using cloud sync.");const t=await window.smartLedgerGetIdToken();if(!t)throw Error("Your sign-in session has expired.");return t};
 async function hash(s){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("")}
-const docId=k=>btoa(unescape(encodeURIComponent(k))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"").slice(0,120);
+const docId=k=>k;
 const base=()=>ROOT+"/accounts/"+encodeURIComponent(account());
 const branchPath=()=>base()+"/branches/"+encodeURIComponent(branch());
 const recordsPath=()=>branchPath()+"/records";
