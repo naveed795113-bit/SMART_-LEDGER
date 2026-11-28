@@ -1264,6 +1264,16 @@ function selectTxnPickerItem(button){
  closeTxnItemPicker();
 }
 function closeTxnItemPicker(){document.querySelectorAll(".txn-item-picker-backdrop").forEach(x=>x.remove());document.body.classList.remove("txn-picker-open")}
+function chooseTxnProduct(button,index){
+ let card=button&&button.matches&&button.matches("[data-txn-product]")?button:document.querySelector("[data-txn-product][data-index=\""+Number(index)+"\"]");
+ if(!card)return;
+ let row=card.closest(".txnline"),select=row&&row.querySelector(".txitem");
+ if(!select)return;
+ select.value=String(Number(index));txnRate(select);
+ let item=(get("items")||[])[Number(index)],trigger=row.querySelector(".txn-item-trigger");
+ if(trigger&&item){trigger.querySelector(".txn-item-trigger-label").textContent="Selected Item";trigger.querySelector(".txn-item-trigger-value").textContent=item.name;}
+ document.querySelectorAll(".txn-item-picker-backdrop").forEach(x=>x.remove());document.body.classList.remove("txn-picker-open");
+}
 function txnRate(select){
  let raw=select.value,p=raw===""?null:get("items")[Number(raw)],row=select.closest(".txnline");
  if(!row)return;
