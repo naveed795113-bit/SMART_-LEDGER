@@ -43,7 +43,7 @@ unit.value="pcs";unit.dispatchEvent(new w.Event("change",{bubbles:true}));
 assert.equal(Number(w.document.querySelector(".txrate").value),5,"sales rate converts from carton price to piece price");
 w.document.querySelector(".txqty").value="12";w.updateTxnTotals();
 let line=w.readTxnLines()[0];assert.equal(line.stockQty,0.5,"12 pieces converts to half a carton in stock units");
-w.document.querySelector("#tinvoice").value="UNIT-SALE-1";w.document.querySelector("#tpaid").value="1440";
+w.document.querySelector("#tinvoice").value="UNIT-SALE-1";w.document.querySelector("#tpaid").value="60";
 w.saveTransaction({preventDefault(){}}, "sales");
 assert.equal(JSON.parse(w.localStorage.getItem("sl_items"))[0].qty,9.5,"sale deducts converted carton quantity");
 w.transactionForm("purchases");
