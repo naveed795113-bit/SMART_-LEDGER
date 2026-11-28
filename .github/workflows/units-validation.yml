@@ -9,6 +9,7 @@ on:
       - "tests/vyapar-interface.mjs"
       - "tests/units-conversions.mjs"
       - "tests/v40-business-suite.mjs"
+      - "tests/v11-smoke.mjs"
       - ".github/workflows/units-validation.yml"
   pull_request:
     branches: [main]
@@ -35,7 +36,9 @@ jobs:
         run: node tests/units-conversions.mjs
       - name: Test Vyapar-inspired interface isolation and responsive styling
         run: node tests/vyapar-interface.mjs
-      - name: Run existing transaction regression tests
-        run: node tests/v40-business-suite.mjs
+      - name: Run application smoke and transaction regression tests
+        run: |
+          node tests/v11-smoke.mjs
+          node tests/v40-business-suite.mjs
       - name: Run enterprise workflow regression tests
         run: node tests/v78-enterprise.mjs
