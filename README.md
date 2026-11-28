@@ -43,7 +43,7 @@ The dashboard overview design is unchanged. Mobile layouts continue to use the e
 
 # SmartLedger — Version 77.0
 
-**Release track:** SmartLedger v69.0 Android and PWA release, including offline bill OCR, native invoice sharing and full business accounting workflows.
+**Release track:** SmartLedger v79.0 Android and PWA release, including offline bill OCR, native invoice sharing and full business accounting workflows.
 
 SmartLedger is a mobile-first business manager for Indian retail and wholesale shops.
 
