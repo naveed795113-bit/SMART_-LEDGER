@@ -76,6 +76,7 @@ jobs:
           node tests/v77-unified-upgrade.mjs
           node tests/v78-enterprise.mjs
           node tests/v79-cloud-security.mjs
+          node tests/v79-cloud-sync.mjs
           node tests/ai-openai.mjs
 
       - name: Set up Java 17
