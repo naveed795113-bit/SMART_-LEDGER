@@ -14,7 +14,7 @@ assert.match(rules,/request\.auth\.uid == accountId/);
 assert.match(rules,/role == 'cashier'/);
 assert.match(rules,/role == 'accountant'/);
 assert.match(rules,/branchAllowed\(accountId, branchId\)/);
-assert.match(rules,/request\.resource\.data\.recordKey == recordId/);
+assert.match(rules,/request\.resource\.data\.recordKey == recordId/);\n
 assert.match(rules,/allow delete: if false/);
 assert.doesNotMatch(rules,/allow read, write: if true/);
 console.log("v79 cloud sync/security static tests passed");
