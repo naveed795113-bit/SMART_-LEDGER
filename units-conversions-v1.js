@@ -9,7 +9,6 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const defaults=[
 ["kg","Weight","g",1000],["g","Weight","g",1],["mg","Weight","g",.001],["quintal","Weight","g",100000],["tonne","Weight","g",1000000],
 ["litre","Volume","ml",1000],["ml","Volume","ml",1],["pcs","Quantity","pcs",1],["dozen","Quantity","pcs",12],["pair","Quantity","pcs",2],
-["box","Packaging","pcs",1],["carton","Packaging","pcs",1],["packet","Packaging","pcs",1],["bundle","Packaging","pcs",1],
 ["m","Length","mm",1000],["cm","Length","mm",10],["mm","Length","mm",1]
 ];
 function all(){const saved=read(),map=new Map();defaults.forEach(x=>map.set(x[0],{unit:x[0],group:x[1],baseUnit:x[2],factor:x[3],builtin:true}));saved.forEach(x=>map.set(x.unit,x));return [...map.values()]}
