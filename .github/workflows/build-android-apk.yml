@@ -49,7 +49,7 @@ jobs:
           node --check smartledger-v74-upgrades.js
           node --check smartledger-v75-quality-fixes.js
           node --check smartledger-v77-unified-upgrade.js
-          node --check smartledger-enterprise-v78.js
+          node --check smartledger-enterprise-v78.js\n          node --check smartledger-cloud-v79.js
           node --check offline-ocr-v69.js
           node --input-type=module --check < login-gate-v50.js
           node --check accounting.js
@@ -73,7 +73,7 @@ jobs:
           node tests/v73-features.mjs
           node tests/v74-upgrades.mjs
           node tests/v77-unified-upgrade.mjs
-          node tests/v78-enterprise.mjs
+          node tests/v78-enterprise.mjs\n          node tests/v79-cloud-security.mjs
           node tests/ai-openai.mjs
 
       - name: Set up Java 17
@@ -148,7 +148,7 @@ jobs:
           test -s android/app/src/main/assets/www/smartledger-v73-fixes.js
           test -s android/app/src/main/assets/www/smartledger-v74-upgrades.js
           test -s android/app/src/main/assets/www/smartledger-v77-unified-upgrade.js
-          test -s android/app/src/main/assets/www/smartledger-enterprise-v78.js
+          test -s android/app/src/main/assets/www/smartledger-enterprise-v78.js\n          test -s android/app/src/main/assets/www/smartledger-cloud-v79.js
           test -s android/app/src/main/assets/www/login-gate-v50.js
           test -s android/app/src/main/assets/www/vendor/xlsx.full.min.js
           test -s android/app/src/main/assets/www/vendor/html2canvas.min.js
