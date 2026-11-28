@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isOwner(accountId) { return signedIn() && request.auth.uid == accountId; }
+    function memberPath(accountId) {
+      return /databases/$(database)/documents/accounts/$(accountId)/members/$(request.auth.uid);
+    }
+    function hasMember(accountId) {
+      return isOwner(accountId) || (signedIn() && exists(memberPath(accountId)) && get(memberPath(accountId)).data.active == true);
+    }
+    function memberRole(accountId) {
+      return isOwner(accountId) ? 'owner' : get(memberPath(accountId)).data.role;
+    }
+    function branchAllowed(accountId, branchId) {
+      return isOwner(accountId) || (hasMember(accountId) && branchId in get(memberPath(accountId)).data.branches);
+    }
+    function canWriteRecord(accountId, branchId) {
+      let role = memberRole(accountId);
+      let key = request.resource.data.recordKey;
+      return branchAllowed(accountId, branchId) && (
+        role == 'owner' || role == 'manager' ||
+        (role == 'cashier' && key.matches('^(sl_sales|sl_customers|sl_cash|sl_payments|sl_sales_returns|sl_ent_quotes|sl_ent_sales_orders)$')) ||
+        (role == 'accountant' && key.matches('^(sl_sales|sl_purchases|sl_expenses|sl_cash|sl_payments|sl_customers|sl_suppliers|sl_adjustments|sl_sales_returns|sl_purchase_returns|sl_ent_due_dates|sl_ent_allocations|sl_ent_bank_entries|sl_ent_reconciliations|sl_ent_tax_documents|sl_ent_audit|sl_ent_closing)$'))
+      );
+    }
+    match /accounts/{accountId} {
+      allow read: if hasMember(accountId);
+      allow create, update, delete: if isOwner(accountId);
+      match /members/{memberId} {
+        allow read: if isOwner(accountId) || (signedIn() && request.auth.uid == memberId);
+        allow create, update, delete: if isOwner(accountId);
+      }
+      match /branches/{branchId} {
+        allow read: if branchAllowed(accountId, branchId);
+        allow create, update, delete: if isOwner(accountId);
+        match /records/{recordId} {
+          allow read: if branchAllowed(accountId, branchId);
+          allow create, update: if canWriteRecord(accountId, branchId)
+            && request.resource.data.recordKey is string
+            && request.resource.data.payload is string
+            && request.resource.data.payload.size() < 750000
+            && request.resource.data.hash is string
+            && request.resource.data.deleted is bool;
+          allow delete: if false;
+        }
+      }
+    }
+  }
+}
