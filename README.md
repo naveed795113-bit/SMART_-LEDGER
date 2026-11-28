@@ -1,4 +1,4 @@
-# SmartLedger — Version 69.0
+# SmartLedger — Version 77.0
 
 **Release track:** SmartLedger v69.0 Android and PWA release, including offline bill OCR, native invoice sharing and full business accounting workflows.
 
@@ -23,6 +23,26 @@ SmartLedger is a mobile-first business manager for Indian retail and wholesale s
 - JSON backup and restore with validation and confirmation.
 - Offline app shell with automatic service-worker cache updates.
 - Android APK: on-device offline supplier-bill OCR for English, Hindi and Urdu. Extracted text stays on the device; review it manually before saving a purchase.
+
+
+## Version 77.0 — Unified 20-upgrade workspace
+
+The combined upgrade groups existing capabilities and new operational workflows in one **Business Tools → Unified Business Workspace** entry.
+
+- Existing capabilities retained and linked: stock adjustments, low-stock alerts, expiry/batch tracking, barcode scanning, sales and purchase returns, cashbook, GST management summaries, JSON backup/restore, AI business analysis and Business Suite analytics.
+- New registers: quotations/estimates, purchase orders, stock transfer records, product price levels (retail/wholesale/distributor/custom), invoice due-date tracking, bank/UPI entries and day-closing snapshots.
+- New records are included in the existing JSON backup/restore mapping.
+- Mobile-first responsive cards and forms; the dashboard overview and its design are not modified.
+
+### v77 data boundaries
+
+- Quotations and purchase orders are planning records; they do not create sales/purchase invoices, post GST or change stock.
+- Stock transfers record source, destination and quantity but do not change total stock. Location-specific opening stock and per-location balances are not yet implemented.
+- Price levels are stored in a separate price book and can be read through `smartLedgerPriceFor(productName, level)`; existing sales invoice entry does not automatically switch prices by customer tier yet.
+- Due-date reminders are separate tracking records and do not automatically change invoice balances or send notifications.
+- Bank/UPI entries are a separate register and are not automatically reconciled with the existing cashbook or payment transactions.
+- Day closing saves a snapshot of dated sales, purchases and expenses; it does not lock transactions or perform a certified cash reconciliation.
+- Existing cloud-drive backup, login/account separation, AI and analytics capabilities retain their existing limitations. This release does not claim real-time multi-device cloud sync, role-based staff permissions, or statutory GST filing.
 
 ## Run and install
 
