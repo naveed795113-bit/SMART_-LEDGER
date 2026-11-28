@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { JSDOM, VirtualConsole } from "jsdom";
 
 const html=readFileSync("index.html","utf8")
- .replace(/<script src="[^"]+"><\\/script>/g,"")
- .replace(/<script src='[^']+'><\\/script>/g,"");
+ .replace(/<script src="[^"]+"><\/script>/g,"")
+ .replace(/<script src='[^']+'><\/script>/g,"");
 const source=readFileSync("units-conversions-v2.js","utf8");
 const errors=[],alerts=[];
 const vc=new VirtualConsole();vc.on("jsdomError",e=>errors.push(e.message));
