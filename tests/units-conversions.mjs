@@ -6,11 +6,11 @@ const html=readFileSync("index.html","utf8")
  .replace(/<script src="[^"]+"><\/script>/g,"")
  .replace(/<script src='[^']+'><\/script>/g,"");
 const source=readFileSync("units-conversions-v1.js","utf8");
-const errors=[];
+const errors=[],alerts=[];
 const vc=new VirtualConsole();vc.on("jsdomError",e=>errors.push(e.message));
 const dom=new JSDOM(html,{url:"https://smartledger.test/",runScripts:"dangerously",pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){
  w.matchMedia=()=>({matches:false,addEventListener(){}});
- w.alert=m=>{throw new Error(String(m))};w.confirm=()=>true;
+ w.alert=m=>alerts.push(String(m));w.confirm=()=>true;
  w.URL.createObjectURL=()=>"blob:test";w.URL.revokeObjectURL=()=>{};
  w.HTMLAnchorElement.prototype.click=function(){};
 }});
@@ -53,8 +53,11 @@ assert.equal(JSON.parse(w.localStorage.getItem("sl_items"))[0].qty,11.5,"purchas
 w.slUnitForm("carton");
 w.document.querySelector("#sluFactor").value="12";w.slSaveUnit({preventDefault(){}}, "carton");
 assert.equal(w.eval('UNIT_CATALOG.find(x=>x.unit==="carton").factor'),12,"editing a unit updates the conversion catalogue");
+assert.equal(JSON.parse(w.localStorage.getItem("sl_items"))[0].unitFactor,12,"unit master updates linked products still using the previous master ratio");
 w.slDeleteUnit("carton");
-assert.equal(w.eval('UNIT_CATALOG.some(x=>x.unit==="carton")'),false,"deleting a custom unit removes it from the live catalogue");
+assert.match(alerts.at(-1),/assigned to 1 inventory item/,"deleting a unit used by inventory is blocked");
+w.localStorage.setItem("sl_items","[]");w.slDeleteUnit("carton");
+assert.equal(w.eval('UNIT_CATALOG.some(x=>x.unit==="carton")'),false,"deleting an unused custom unit removes it from the live catalogue");
 assert.equal(errors.length,0,"no uncaught DOM runtime errors");
 console.log("Units & conversions integration tests passed.");
 dom.window.close();
