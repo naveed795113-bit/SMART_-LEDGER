@@ -8,6 +8,7 @@ on:
       - "vyapar-android-interface-v2.js"
       - "tests/vyapar-interface.mjs"
       - "tests/units-conversions.mjs"
+      - "tests/v40-business-suite.mjs"
       - ".github/workflows/units-validation.yml"
   pull_request:
     branches: [main]
