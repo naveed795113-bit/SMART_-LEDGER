@@ -20,5 +20,5 @@ jobs:
           test -n "$FIREBASE_SERVICE_ACCOUNT" || { echo "Missing FIREBASE_SERVICE_ACCOUNT_SMART_LEDGER_288A4 repository secret. Add a Firebase service-account JSON before running this workflow." >&2; exit 1; }
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
-      - name: Deploy Firestore rules and Cloud Functions
-        run: firebase deploy --only firestore:rules,functions --project smart-ledger-288a4 --non-interactive
+      - name: Deploy Firestore security rules
+        run: firebase deploy --only firestore:rules --project smart-ledger-288a4 --non-interactive
