@@ -17,6 +17,7 @@ const dom=new JSDOM(html,{url:"https://smartledger.test/",runScripts:"dangerousl
 const w=dom.window;
 await new Promise(resolve=>w.document.readyState==="complete"?resolve():w.addEventListener("DOMContentLoaded",resolve,{once:true}));
 w.eval(source);
+assert.equal(w.eval("db.units"),"sl_units_master_v1","unit master is included in the app database map and full backup exports");
 assert.ok(w.document.querySelector('#nav [data-page="Units"]'),"Units is present in desktop navigation");
 w.go("More");
 assert.ok(w.document.querySelector("[data-units-link]"),"Units is accessible from mobile More tools");
