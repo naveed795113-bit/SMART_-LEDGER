@@ -15,10 +15,11 @@ const labels={weight:"Weight",volume:"Volume",length:"Length",area:"Area",count:
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(_){return []}};
 const write=a=>localStorage.setItem(KEY,JSON.stringify(a));
+function normalizeGroup(group){const g=String(group||"count").toLowerCase();if(["weight","volume","length","area"].includes(g))return g;return "count"}
 function all(){
  const map=new Map();
  defaults.forEach(([unit,group,base,factor])=>map.set(unit,{unit,group,base,factor,builtin:true}));
- read().forEach(x=>map.set(x.unit,{...x,builtin:false}));
+ read().forEach(x=>{const group=normalizeGroup(x.group),base=x.base||x.baseUnit||({weight:"g",volume:"ml",length:"mm",area:"m²",count:"pcs"}[group]);map.set(x.unit,{...x,group,base,factor:1,builtin:false})});
  return [...map.values()].sort((a,b)=>a.group.localeCompare(b.group)||a.unit.localeCompare(b.unit));
 }
 function syncCatalog(){
@@ -65,7 +66,7 @@ window.slApplyBulkUnits=function(e){
  const base=$("#slBulkBase").value,secondary=$("#slBulkSecondary").value,rate=Number($("#slBulkRate").value);
  if(secondary&&secondary===base)return alert("Base and secondary units must be different.");
  if(secondary&&(!Number.isFinite(rate)||rate<=0))return alert("Enter a valid conversion rate.");
- const cat=UNIT_CATALOG.find(x=>x.unit===base);if(!cat)return alert("Select a valid base unit.");
+ const cat=UNIT_CATALOG.find(x=>x.unit===base),secondaryDef=UNIT_CATALOG.find(x=>x.unit===secondary);if(!cat)return alert("Select a valid base unit.");if(secondary&&(!secondaryDef||secondaryDef.group!==cat.group))return alert("Base and secondary units must belong to the same category.");
  const items=get("items");indices.forEach(i=>{items[i]={...items[i],unit:base,unitGroup:cat.group,baseUnit:cat.base||base,unitFactor:Number(cat.factor)||1,secondaryUnit:secondary,conversionRate:secondary?rate:0}});
  put("items",items);closeModal();renderUnits();
 };
