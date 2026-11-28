@@ -38,6 +38,7 @@ service cloud.firestore {
           allow read: if branchAllowed(accountId, branchId);
           allow create, update: if canWriteRecord(accountId, branchId)
             && request.resource.data.recordKey is string
+            && request.resource.data.recordKey == recordId
             && request.resource.data.payload is string
             && request.resource.data.payload.size() < 750000
             && request.resource.data.hash is string
