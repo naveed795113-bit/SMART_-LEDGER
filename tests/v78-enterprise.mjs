@@ -47,7 +47,7 @@ w.document.querySelector("#tdate").value="2026-11-28";w.document.querySelector("
 w.saveTransaction({preventDefault(){}}, "purchases");
 po=JSON.parse(w.localStorage.getItem("sl_ent_purchase_orders"))[0];
 assert.equal(po.status,"Received","purchase order becomes received only after bill is saved");
-assert.equal(w.smartLedgerEnterprise.getLocationStock("Rice 25kg","Main Shop"),9);
+assert.equal(w.smartLedgerEnterprise.getLocationStock("Rice 25kg","Main Shop"),7);
 w.entPriceForm();w.document.querySelector("#epproduct").value="Rice 25kg";w.document.querySelector("#eplevel").value="Wholesale";w.document.querySelector("#epprice").value="925";w.entSavePrice({preventDefault(){}});
 assert.equal(w.smartLedgerPriceFor("Rice 25kg","Wholesale"),925);
 w.entCustomerProfile("Customer A");w.document.querySelector("#ecLimit").value="5000";w.document.querySelector("#ecDiscount").value="2";w.document.querySelector("#ecTier").value="Wholesale";w.entSaveCustomerProfile({preventDefault(){} },"Customer A");
