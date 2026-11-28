@@ -13,13 +13,13 @@ const checks = [
   ['free phone password account creation and sign-in controls', /slCreatePhoneAccount/.test(readFileSync('login-gate-v50.js','utf8')) && /slPhonePasswordSignIn/.test(readFileSync('login-gate-v50.js','utf8')) && /function phonePasswordAuth\(createAccount\)/.test(readFileSync('login-gate-v50.js','utf8'))],
   ['phone number normalized into private Firebase account identifier', readFileSync('login-gate-v50.js','utf8').includes('function phoneAccountEmail(rawPhone)') && readFileSync('login-gate-v50.js','utf8').includes('@accounts.smartledger.invalid')],
   ['phone password login warns number is not SMS-verified and recovery is not yet available', /not verified by SMS/.test(readFileSync('login-gate-v50.js','utf8')) && /password recovery is not available/.test(readFileSync('login-gate-v50.js','utf8'))],
-  ['authentication v65 loader and service worker cache', readFileSync('login-gate-loader-v60.js','utf8').includes('login-gate-v50.js?v=65') && readFileSync('sw.js','utf8').includes('smartledger-v78.0')],
+  ['authentication v65 loader and service worker cache', readFileSync('login-gate-loader-v60.js','utf8').includes('login-gate-v50.js?v=65') && readFileSync('sw.js','utf8').includes('smartledger-v79.0')],
 
   ['release badge', html.includes('SMARTLEDGER v44.0')],
   ['item edit form fix', /function saveEditItem\(e,i\)/.test(html) && /Save Changes/.test(html)],
   ['product card catalogue', /data-item-card/.test(html) && /product-detail-grid/.test(html)],
   ['Business Suite theme uses readable light/dark palette tokens', /--v40-accent:#e2c98e/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8'))],
-  ['version constants', html.includes("APP_VERSION='78.0.0'")],
+  ['version constants', html.includes("APP_VERSION='79.0.0'")],
   ['v47 theme-aware typography runtime syntax', new Script(readFileSync('theme-v47-theme-aware-text.js','utf8'), { filename: 'theme-v47-theme-aware-text.js' })],
   ['v47 theme-aware typography loaded and precached', html.includes('theme-v47-theme-aware-text.js') && readFileSync('sw.js','utf8').includes('theme-v47-theme-aware-text.js')],
   ['v47 black text on light surfaces and white text on dark surfaces', readFileSync('theme-v47-theme-aware-text.js','utf8').includes('function chosen(bgs)') && readFileSync('theme-v47-theme-aware-text.js','utf8').includes('const BLACK="#101010",WHITE="#ffffff"') && readFileSync('theme-v47-theme-aware-text.js','utf8').includes('new MutationObserver')],
@@ -99,7 +99,7 @@ for (const [name, ok] of checks) {
   console.log('PASS ' + name);
 }
 const sw = readFileSync('sw.js', 'utf8');
-assert.ok(sw.includes('smartledger-v78.0') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./interaction-fix-v56.js') && html.includes('./interaction-fix-v56.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
+assert.ok(sw.includes('smartledger-v79.0') && sw.includes('./ai-assistant-v52.js') && html.includes('./ai-assistant-v52.js') && sw.includes('./interaction-fix-v56.js') && html.includes('./interaction-fix-v56.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v42.js') && sw.includes('./theme-v43-contrast.js') && sw.includes('./theme-v44-global-contrast.js') && sw.includes('./theme-v45-contrast.js') && sw.includes('./theme-v46-complete-contrast.js') && sw.includes('./theme-v47-theme-aware-text.js') && sw.includes('./theme-v48-more-theme.js') && sw.includes('./google-drive-v49.js') && sw.includes('./login-gate-v50.js'), 'Service worker cache version and login assets');
 assert.ok(sw.includes("./login-gate-v50.js?v=65") && sw.includes("./login-gate-loader-v60.js?v=65") && sw.includes("./smartledger-enhancements-v67.js?v=67.1") && sw.includes("./offline-ocr-v69.js?v=69.0") && sw.includes("./smartledger-v73-fixes.js?v=73.0") && sw.includes("./smartledger-v74-upgrades.js?v=74.0") && sw.includes("./smartledger-v75-quality-fixes.js?v=75.0") && sw.includes("./smartledger-v77-unified-upgrade.js?v=77.0") && sw.includes("./smartledger-enterprise-v78.js?v=78.0") && html.includes("./smartledger-enterprise-v78.js?v=78.0") && html.includes("./smartledger-v77-unified-upgrade.js?v=77.0"), "Versioned script URLs are precached exactly");
 console.log('PASS service worker cache version');
 const v67 = readFileSync('smartledger-enhancements-v67.js', 'utf8');
