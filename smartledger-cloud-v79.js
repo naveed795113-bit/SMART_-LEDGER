@@ -26,7 +26,10 @@ async function request(url,method="GET",body){const t=await token(),r=await fetc
 function fields(doc){const f=doc?.fields||{};return{recordKey:f.recordKey?.stringValue||"",payload:f.payload?.stringValue||"",hash:f.hash?.stringValue||"",deleted:f.deleted?.booleanValue===true,updateTime:doc.updateTime||null}}
 async function listDocs(path){let docs=[],pageToken="";do{const u=path+"?pageSize=300"+(pageToken?"&pageToken="+encodeURIComponent(pageToken):"");const x=await request(u);docs.push(...(x.documents||[]));pageToken=x.nextPageToken||""}while(pageToken);return docs}
 async function writeDoc(key,payload,deleted,old){const id=docId(key),url=recordsPath()+"/"+id+"?updateMask.fieldPaths=recordKey&updateMask.fieldPaths=payload&updateMask.fieldPaths=hash&updateMask.fieldPaths=deleted&updateMask.fieldPaths=updatedAt"+(old?.updateTime?"&currentDocument.updateTime="+encodeURIComponent(old.updateTime):"");const raw=deleted?"":payload;const body={fields:{recordKey:{stringValue:key},payload:{stringValue:raw},hash:{stringValue:deleted?"__deleted__":hash(raw)},deleted:{booleanValue:!!deleted},updatedAt:{timestampValue:new Date().toISOString()}}};return request(url,"PATCH",body)}
-function cacheKey(b=branch(),a=account()){return a+"::"+b}\nfunction metaFor(){return readJson(META,{})[cacheKey()]||{}}\nfunction saveMeta(value){const root=readJson(META,{});root[cacheKey()]=value;writeJson(META,root)}\nfunction cacheAll(){const c=readJson(BRANCH_CACHE,{});c[cacheKey()]=localRecords();writeJson(BRANCH_CACHE,c)}
+function cacheKey(b=branch(),a=account()){return a+"::"+b}
+function metaFor(){return readJson(META,{})[cacheKey()]||{}}
+function saveMeta(value){const root=readJson(META,{});root[cacheKey()]=value;writeJson(META,root)}
+function cacheAll(){const c=readJson(BRANCH_CACHE,{});c[cacheKey()]=localRecords();writeJson(BRANCH_CACHE,c)}
 function restoreLocal(map){const now=localRecords();Object.keys(now).forEach(k=>{if(!(k in map))localStorage.removeItem(k)});Object.entries(map).forEach(([k,v])=>localStorage.setItem(k,v))}
 async function ensureBranch(){if(uid()===account()){const path=branchPath();try{await request(path)}catch(e){if(e.status!==404)throw e;await request(path,"PATCH",{fields:{name:{stringValue:"Main branch"},createdAt:{timestampValue:new Date().toISOString()},active:{booleanValue:true}}})}}}
 async function sync(){
