@@ -42,7 +42,7 @@ const checks = [
   ['high visibility typography', /app-wide high-visibility typography/.test(html) && /font-size:16px;line-height:1\.5/.test(html)],
   ['app-wide contrast palette', /v40.7 — Business Suite contrast and theme switching/.test(html) && /--module-ink:#fff/.test(html) && /--module-field-ink/.test(html)],
   ['platinum More workspace', /body\.module-more\{--module-bg:#d5d8dc/.test(html) && /body\.module-more #view \.more-link/.test(html) && /b\.classList\.add\('module-more'\)/.test(html)],
-  ['dashboard theme exclusion retained', /if\(page==='Dashboard'\)return;if\(page==='More'\)/.test(html)],
+  ['dashboard theme exclusion retained', /if\(page==='Dashboard'\)\{b\.classList\.add\('module-dashboard'\);return;\}/.test(html)],
   ['Business Suite inherits light and dark palettes', /body\.theme-light #view/.test(readFileSync('business-suite-v40.js','utf8')) && /body\.theme-dark #view/.test(readFileSync('business-suite-v40.js','utf8')) && /background:var\(--v40-card\)!important/.test(readFileSync('business-suite-v40.js','utf8')) && /color:var\(--v40-text\)!important/.test(readFileSync('business-suite-v40.js','utf8')) && /#view \.v40-table td/.test(readFileSync('business-suite-v40.js','utf8'))],
   ['Business Suite no longer forces global dark mode', !/:root\{--blue:#171b1f/.test(readFileSync('business-suite-v40.js','utf8')) && !/body\{background:var\(--bg\);color:var\(--text\)\}/.test(readFileSync('business-suite-v40.js','utf8'))],
 
