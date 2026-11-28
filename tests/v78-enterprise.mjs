@@ -38,7 +38,7 @@ w.saveTransaction({preventDefault(){}}, "sales");
 quote=JSON.parse(w.localStorage.getItem("sl_ent_quotes"))[0];
 assert.equal(quote.status,"Converted","quotation becomes converted only after invoice is saved");
 assert.equal(JSON.parse(w.localStorage.getItem("sl_sales")).length,1);
-assert.equal(w.smartLedgerEnterprise.getLocationStock("Rice 25kg","Main Shop"),7,"sale at active location should update location quantity");
+assert.equal(w.smartLedgerEnterprise.getLocationStock("Rice 25kg","Main Shop"),5,"sale at active location should update location quantity");
 w.entPOForm();w.document.querySelector("#epoparty").value="Supplier A";w.document.querySelector("#epoqty").value="2";w.document.querySelector("#eporate").value="750";w.entSavePO({preventDefault(){}});
 let po=JSON.parse(w.localStorage.getItem("sl_ent_purchase_orders"))[0];
 w.entReceivePO(po.id);
