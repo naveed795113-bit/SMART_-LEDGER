@@ -1,0 +1,17 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+const source=fs.readFileSync(new URL("../smartledger-cloud-v79.js",import.meta.url),"utf8");
+const rules=fs.readFileSync(new URL("../firestore.rules",import.meta.url),"utf8");
+assert.match(source,/both this device and cloud changed/);
+assert.match(source,/currentDocument\.updateTime/);
+assert.match(source,/__sl_cloud_branch_cache_v1/);
+assert.match(source,/accounts\/\+encodeURIComponent\(account\(\)\)\/branches/);
+assert.match(source,/smartledger:login/);
+assert.match(source,/750000/);
+assert.match(rules,/request\.auth\.uid == accountId/);
+assert.match(rules,/role == 'cashier'/);
+assert.match(rules,/role == 'accountant'/);
+assert.match(rules,/branchAllowed\(accountId, branchId\)/);
+assert.match(rules,/allow delete: if false/);
+assert.doesNotMatch(rules,/allow read, write: if true/);
+console.log("v79 cloud sync/security static tests passed");
