@@ -96,3 +96,4 @@ document.addEventListener("change",e=>{
 });
 window.addEventListener("storage",e=>{if(e.key===KEY&&document.querySelector('#pagetitle')?.textContent==="Units & Conversions")renderUnits()});
 })();
+// Release packaging revision: rebuild the signed Android release from the latest main branch.
