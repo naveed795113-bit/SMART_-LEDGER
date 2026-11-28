@@ -38,7 +38,7 @@ window.slSaveUnit=function(e,old){
  e.preventDefault();const unit=$('#sluName').value.trim(),group=$('#sluGroup').value.trim(),baseUnit=$('#sluBase').value.trim(),factor=Number($('#sluFactor').value);
  if(!unit||!group||!baseUnit||!Number.isFinite(factor)||factor<=0)return alert("Enter a valid unit and conversion factor.");
  if(old&&old!==unit)return alert("To rename a unit, create the new unit and update affected products first.");
- const list=read();if(list.some(x=>x.unit.toLowerCase()===unit.toLowerCase()&&x.unit!==old))return alert("This unit already exists.");
+ const list=read();if(all().some(x=>x.unit.toLowerCase()===unit.toLowerCase()&&x.unit!==old))return alert("This unit already exists.");
  const previous=all().find(x=>x.unit===old),previousFactor=previous?Number(previous.factor):1,engine=engineGroup(group);
  const next=list.filter(x=>x.unit!==old);next.push({unit,group,baseUnit,factor});write(next);syncCatalog();
  try{const products=get("items");let changed=false;products.forEach(p=>{if(p.unit!==unit)return;const sameBase=(p.baseUnit||baseUnit)===baseUnit,oldFactor=Number(p.unitFactor||1);if(sameBase&&engineGroup(p.unitGroup||engine)===engine&&(oldFactor===previousFactor||oldFactor===1)){p.baseUnit=baseUnit;p.unitFactor=factor;p.unitGroup=engine;changed=true}});if(changed)put("items",products)}catch(_){}
