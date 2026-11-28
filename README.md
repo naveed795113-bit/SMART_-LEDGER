@@ -1,3 +1,34 @@
+
+## Version 78.0 — Enterprise Suite
+
+SmartLedger v78 combines the planned enterprise programme into one integrated **More → Enterprise Suite** workspace. It builds on the existing item, invoice, customer, supplier, payment, return, GST summary, accounting, AI, backup and reporting modules.
+
+### Enterprise workflows
+
+- Multi-location stock balances and posted location transfers.
+- Quotations and sales orders with conversion into the existing sales invoice workflow.
+- Purchase orders with conversion into the existing purchase bill workflow.
+- Customer-specific retail / wholesale / distributor price rules, default discounts and credit-limit checks.
+- Salesperson profiles, supplier rate comparisons and supplier performance notes.
+- Reorder estimates, stock valuation estimates, product profitability and sales run-rate forecasts.
+- Due-date tracking, invoice-level payment allocation, cash-flow estimates and bank statement CSV matching.
+- GST working CSV, e-invoice / e-way bill preparation records, and supporting document attachments.
+- Recurring expense schedules, approval requests, local branch / role profiles, audit trail and enterprise backup.
+
+### Data integrity and service boundaries
+
+- New sales and purchase invoices continue to use the existing SmartLedger transaction engine and double-entry hooks.
+- Location stock is initialized from current aggregate stock at first use. Transfers change location balances; total stock is preserved. Sales and purchases are posted against the selected location.
+- Quote and order records only change to converted / fulfilled / received after the matching invoice or bill is saved.
+- Historical invoices and balances are not rewritten. Customer credit limits apply to new sales only when configured.
+- Bank reconciliation uses a user-imported CSV; it is not a direct bank feed.
+- GST exports and e-invoice / e-way bill screens are working papers / drafts. They do not submit statutory returns or generate authorised IRNs / e-way bills.
+- Branch and staff profiles are local configuration only. Server-enforced role permissions, true multi-branch data isolation and live multi-device cloud synchronisation require a deployed backend and security rules; these are not represented as active in v78.
+- AI insights shown in the suite are deterministic summaries from saved data; the existing AI assistant remains a separate connected service.
+- Document attachments and enterprise registers are included in SmartLedger account-scoped browser storage. Use the existing full backup export regularly.
+
+The dashboard overview design is unchanged. Mobile layouts continue to use the existing section-specific themes.
+
 # SmartLedger — Version 77.0
 
 **Release track:** SmartLedger v69.0 Android and PWA release, including offline bill OCR, native invoice sharing and full business accounting workflows.
