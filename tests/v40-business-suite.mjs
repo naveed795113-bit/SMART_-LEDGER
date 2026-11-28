@@ -109,7 +109,7 @@ assert.equal(journals[3].lines.reduce((s,x)=>s+Number(x.debit),0),220.5);
 assert.equal(journals[3].lines.reduce((s,x)=>s+Number(x.credit),0),220.5);
 w.localStorage.setItem("sl_items",JSON.stringify([{name:"Rice",code:"RICE-KG",qty:5,unit:"kg",baseUnit:"g",unitFactor:1000,unitGroup:"weight",purchase:80,price:100,wholesale:90,gst:0}]));
 w.transactionForm("sales");
-const kgCard=w.document.querySelector('[data-txn-product][data-index="0"]');w.chooseTxnProduct(kgCard,0);
+w.openTxnItemPicker(w.document.querySelector(".txn-item-trigger"));const kgCard=w.document.querySelector('.txn-item-picker-row[data-index="0"]');assert.ok(kgCard,"Searchable item picker lists the inventory item");w.selectTxnPickerItem(kgCard);
 const unitSelect=w.document.querySelector(".txunit");unitSelect.value="g";w.document.querySelector(".txqty").value="500";w.document.querySelector(".txrate").value="0.1";w.updateTxnTotals();
 const converted=w.readTxnLines()[0];assert.equal(converted.unit,"g");assert.equal(converted.stockQty,0.5,"500 g converts to 0.5 kg stock");
 w.document.querySelector("#tinvoice").value="SALE-GRAM-1";w.document.querySelector("#tpaid").value="50";w.saveTransaction({preventDefault(){}}, "sales");
