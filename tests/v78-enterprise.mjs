@@ -50,7 +50,7 @@ assert.equal(po.status,"Received","purchase order becomes received only after bi
 assert.equal(w.smartLedgerEnterprise.getLocationStock("Rice 25kg","Main Shop"),9);
 w.entPriceForm();w.document.querySelector("#epproduct").value="Rice 25kg";w.document.querySelector("#eplevel").value="Wholesale";w.document.querySelector("#epprice").value="925";w.entSavePrice({preventDefault(){}});
 assert.equal(w.smartLedgerPriceFor("Rice 25kg","Wholesale"),925);
-w.entCustomerProfile("Customer A");w.document.querySelector("#ecLimit").value="5000";w.document.querySelector("#ecTier").value="Wholesale";w.entSaveCustomerProfile({preventDefault(){} },"Customer A");
+w.entCustomerProfile("Customer A");w.document.querySelector("#ecLimit").value="5000";w.document.querySelector("#ecDiscount").value="2";w.document.querySelector("#ecTier").value="Wholesale";w.entSaveCustomerProfile({preventDefault(){} },"Customer A");
 assert.equal(JSON.parse(w.localStorage.getItem("sl_customers"))[0].creditLimit,5000);
 w.entBankForm();w.document.querySelector("#ebamount").value="250";w.document.querySelector("#ebdesc").value="UPI receipt";w.entSaveBank({preventDefault(){}});
 assert.equal(JSON.parse(w.localStorage.getItem("sl_ent_bank_entries")).length,1);
