@@ -11,6 +11,17 @@
 - Record values are transported over HTTPS and protected by Firebase Authentication + Firestore Security Rules. This release does not claim client-side end-to-end encryption; do not store passwords, payment card data or other secrets in business records.
 - Individual record payloads are limited to 750 KB. Large attachments should use a dedicated secure object-storage service.
 
+### Enable the Firebase backend
+
+1. In Firebase Console for project `smart-ledger-288a4`, create the default Firestore database in Native mode if it does not already exist.
+2. Create a Google Cloud service account with permission to deploy Firestore security rules. Store its complete JSON key as the GitHub repository Actions secret `FIREBASE_SERVICE_ACCOUNT_SMART_LEDGER_288A4`.
+3. In GitHub → Actions, run **Deploy SmartLedger Firebase backend**. Wait for the Firestore rules deployment to succeed before using cloud sync.
+4. Open SmartLedger → More → **Cloud & Team Security** and tap **Sync this branch now** on the owner device.
+5. To add staff, have each staff member sign in and share the Firebase UID shown on that page. The owner adds that UID, chooses a role and assigns branch IDs. The staff member then enters the owner's Firebase UID and selects an assigned branch.
+
+Cloud sync is user-initiated, not continuous real-time sync. Use **Sync this branch now** after important changes and before changing devices. The local branch cache is a convenience, not a substitute for a downloadable JSON backup. Branch members can read all records in their assigned branch; server rules restrict writes by role, but do not yet provide per-field or per-record read privacy. The app has not been security-audited or tested with production staff accounts.
+
+
 ## Version 78.0 — Enterprise Suite
 
 SmartLedger v78 combines the planned enterprise programme into one integrated **More → Enterprise Suite** workspace. It builds on the existing item, invoice, customer, supplier, payment, return, GST summary, accounting, AI, backup and reporting modules.
