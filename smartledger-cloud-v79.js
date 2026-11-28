@@ -6,7 +6,7 @@
 "use strict";
 const PROJECT="smart-ledger-288a4",API_KEY="AIzaSyDlzohhg8W95yVcav46Cv-QFvR_tngzFXE";
 const ROOT="https://firestore.googleapis.com/v1/projects/"+PROJECT+"/databases/(default)/documents";
-const META="sl_cloud_sync_meta_v1",BRANCH_CACHE="sl_cloud_branch_cache_v1",ACCOUNT="__sl_cloud_account_uid",BRANCH="__sl_cloud_branch_id";
+const META="__sl_cloud_sync_meta_v1",BRANCH_CACHE="__sl_cloud_branch_cache_v1",ACCOUNT="__sl_cloud_account_uid",BRANCH="__sl_cloud_branch_id";
 const EXCLUDE=new Set(["sl_google_profile","smartledger_logout_pending","slTheme","__sl_active_uid","__sl_legacy_owner_uid",META,BRANCH_CACHE,ACCOUNT,BRANCH]);
 const $=s=>document.querySelector(s), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const profile=()=>{try{return JSON.parse(localStorage.getItem("sl_google_profile")||"{}")}catch(_){return{}}};
@@ -19,25 +19,25 @@ const docId=k=>btoa(unescape(encodeURIComponent(k))).replace(/\+/g,"-").replace(
 const base=()=>ROOT+"/accounts/"+encodeURIComponent(account());
 const branchPath=()=>base()+"/branches/"+encodeURIComponent(branch());
 const recordsPath=()=>branchPath()+"/records";
-function localRecords(){const out={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||EXCLUDE.has(k)||k.startsWith("__sl_")||k.startsWith("firebase:"))continue;const v=localStorage.getItem(k);if(v!==null)out[k]=v}return out}
+function localRecords(){const out={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k||EXCLUDE.has(k)||k.startsWith("__sl_")||k.startsWith("firebase:")||k.startsWith("sl_cloud_"))continue;const v=localStorage.getItem(k);if(v!==null)out[k]=v}return out}
 function readJson(k,fallback){try{return JSON.parse(localStorage.getItem(k)||"null")??fallback}catch(_){return fallback}}
 function writeJson(k,v){localStorage.setItem(k,JSON.stringify(v))}
 async function request(url,method="GET",body){const t=await token(),r=await fetch(url,{method,headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)});const data=await r.json().catch(()=>({}));if(!r.ok){const e=Error(data.error?.message||("Cloud request failed ("+r.status+")"));e.status=r.status;throw e}return data}
 function fields(doc){const f=doc?.fields||{};return{recordKey:f.recordKey?.stringValue||"",payload:f.payload?.stringValue||"",hash:f.hash?.stringValue||"",deleted:f.deleted?.booleanValue===true,updateTime:doc.updateTime||null}}
 async function listDocs(path){let docs=[],pageToken="";do{const u=path+"?pageSize=300"+(pageToken?"&pageToken="+encodeURIComponent(pageToken):"");const x=await request(u);docs.push(...(x.documents||[]));pageToken=x.nextPageToken||""}while(pageToken);return docs}
 async function writeDoc(key,payload,deleted,old){const id=docId(key),url=recordsPath()+"/"+id+"?updateMask.fieldPaths=recordKey&updateMask.fieldPaths=payload&updateMask.fieldPaths=hash&updateMask.fieldPaths=deleted&updateMask.fieldPaths=updatedAt"+(old?.updateTime?"&currentDocument.updateTime="+encodeURIComponent(old.updateTime):"");const raw=deleted?"":payload;const body={fields:{recordKey:{stringValue:key},payload:{stringValue:raw},hash:{stringValue:deleted?"__deleted__":hash(raw)},deleted:{booleanValue:!!deleted},updatedAt:{timestampValue:new Date().toISOString()}}};return request(url,"PATCH",body)}
-function cacheAll(){const c=readJson(BRANCH_CACHE,{});c[branch()]=localRecords();writeJson(BRANCH_CACHE,c)}
+function cacheKey(b=branch(),a=account()){return a+"::"+b}\nfunction metaFor(){return readJson(META,{})[cacheKey()]||{}}\nfunction saveMeta(value){const root=readJson(META,{});root[cacheKey()]=value;writeJson(META,root)}\nfunction cacheAll(){const c=readJson(BRANCH_CACHE,{});c[cacheKey()]=localRecords();writeJson(BRANCH_CACHE,c)}
 function restoreLocal(map){const now=localRecords();Object.keys(now).forEach(k=>{if(!(k in map))localStorage.removeItem(k)});Object.entries(map).forEach(([k,v])=>localStorage.setItem(k,v))}
 async function ensureBranch(){if(uid()===account()){const path=branchPath();try{await request(path)}catch(e){if(e.status!==404)throw e;await request(path,"PATCH",{fields:{name:{stringValue:"Main branch"},createdAt:{timestampValue:new Date().toISOString()},active:{booleanValue:true}}})}}}
 async function sync(){
  if(!uid())throw Error("Sign in first.");if(!account())throw Error("Business account is not selected.");
  await ensureBranch();
- const local=localRecords(),meta=readJson(META,{}),docs=await listDocs(recordsPath()),remote={};
+ const local=localRecords(),meta=metaFor(),docs=await listDocs(recordsPath()),remote={};
  docs.forEach(d=>{const x=fields(d);if(x.recordKey)remote[x.recordKey]=x});
  const keys=new Set([...Object.keys(local),...Object.keys(remote)]),plan=[],conflicts=[];
  for(const k of keys){const l=Object.prototype.hasOwnProperty.call(local,k),r=!!remote[k],lv=l?local[k]:"",rv=r?remote[k].payload:"",lh=l?hash(lv):"__deleted__",rh=r?(remote[k].deleted?"__deleted__":remote[k].hash):"__missing__",baseHash=meta[k];
    if(!r){if(l)plan.push({kind:"upload",key:k,value:lv,old:null});continue}
-   if(!l){if(!baseHash){if(remote[k].deleted)continue;plan.push({kind:"download",key:k,value:rv});continue}if(rh===baseHash){plan.push({kind:"delete",key:k,old:remote[k]});continue}if(rh==="__deleted__")continue;conflicts.push(k);continue}
+   if(!l){if(remote[k].deleted)continue;if(!baseHash){plan.push({kind:"download",key:k,value:rv});continue}if(rh===baseHash){plan.push({kind:"delete",key:k,old:remote[k]});continue}conflicts.push(k);continue}
    if(lh===rh)continue;
    if(!baseHash){conflicts.push(k);continue}
    const lc=lh!==baseHash,rc=rh!==baseHash;
@@ -48,10 +48,10 @@ async function sync(){
  if(conflicts.length){const e=Error("Sync stopped: both this device and cloud changed "+conflicts.length+" record(s). Export a backup and resolve the conflict before syncing.");e.conflicts=conflicts;throw e}
  for(const p of plan){if(p.kind==="upload")await writeDoc(p.key,p.value,false,p.old);else if(p.kind==="delete")await writeDoc(p.key,"",true,p.old)}
  for(const p of plan){if(p.kind==="download")localStorage.setItem(p.key,p.value);else if(p.kind==="remove")localStorage.removeItem(p.key)}
- const after=localRecords(),fresh=await listDocs(recordsPath()),next={};fresh.forEach(d=>{const x=fields(d);if(x.recordKey)next[x.recordKey]=x.deleted?"__deleted__":x.hash});Object.keys(after).forEach(k=>{if(!next[k])next[k]=hash(after[k])});writeJson(META,next);
+ const after=localRecords(),fresh=await listDocs(recordsPath()),next={};fresh.forEach(d=>{const x=fields(d);if(x.recordKey)next[x.recordKey]=x.deleted?"__deleted__":x.hash});Object.keys(after).forEach(k=>{if(!next[k])next[k]=hash(after[k])});saveMeta(next);
  return{uploaded:plan.filter(x=>x.kind==="upload"||x.kind==="delete").length,downloaded:plan.filter(x=>x.kind==="download"||x.kind==="remove").length,unchanged:keys.size-plan.length,branch:branch()};
 }
-async function switchBranch(next){if(!/^[A-Za-z0-9_-]{1,40}$/.test(next))throw Error("Branch ID must use 1–40 letters, numbers, _ or -.");if(next===branch())return;cacheAll();localStorage.setItem(BRANCH,next);writeJson(META,{});let map=readJson(BRANCH_CACHE,{});try{const docs=await listDocs(recordsPath()),remote={};docs.forEach(d=>{const x=fields(d);if(x.recordKey&&!x.deleted)remote[x.recordKey]=x.payload});restoreLocal(remote);const m={};Object.entries(remote).forEach(([k,v])=>m[k]=hash(v));writeJson(META,m)}catch(e){if(map[next])restoreLocal(map[next]);else restoreLocal({});throw e}render();return next}
+async function switchBranch(next){if(!/^[A-Za-z0-9_-]{1,40}$/.test(next))throw Error("Branch ID must use 1–40 letters, numbers, _ or -.");if(next===branch())return;cacheAll();localStorage.setItem(BRANCH,next);writeJson(META,{});let map=readJson(BRANCH_CACHE,{}),cached=map[cacheKey(next)];try{const docs=await listDocs(recordsPath()),remote={};docs.forEach(d=>{const x=fields(d);if(x.recordKey&&!x.deleted)remote[x.recordKey]=x.payload});restoreLocal(Object.keys(remote).length?remote:(cached||{}));const m={};Object.entries(remote).forEach(([k,v])=>m[k]=hash(v));const root=readJson(META,{});root[cacheKey(next)]=m;writeJson(META,root)}catch(e){if(cached)restoreLocal(cached);else restoreLocal({});throw e}render();return next}
 async function createBranch(id,name){if(uid()!==account())throw Error("Only the business owner can create branches.");if(!/^[A-Za-z0-9_-]{1,40}$/.test(id))throw Error("Use a branch ID with letters, numbers, _ or - (max 40).");await request(base()+"/branches/"+encodeURIComponent(id),"PATCH",{fields:{name:{stringValue:name},createdAt:{timestampValue:new Date().toISOString()},active:{booleanValue:true}}});}
 async function saveMember(memberUid,role,branches){if(uid()!==account())throw Error("Only the business owner can manage staff access.");if(!/^[A-Za-z0-9_-]{8,128}$/.test(memberUid))throw Error("Enter the staff member's Firebase UID (8–128 characters).");if(!["manager","accountant","cashier","readonly"].includes(role))throw Error("Choose a supported staff role.");const b=branches.filter(x=>/^[A-Za-z0-9_-]{1,40}$/.test(x));if(!b.length)throw Error("Assign at least one branch.");await request(base()+"/members/"+encodeURIComponent(memberUid),"PATCH",{fields:{role:{stringValue:role},branches:{arrayValue:{values:b.map(x=>({stringValue:x}))}},active:{booleanValue:true},updatedAt:{timestampValue:new Date().toISOString()}}})}
 async function listBranches(){return(await listDocs(base()+"/branches")).map(d=>({id:d.name.split("/").pop(),name:d.fields?.name?.stringValue||d.name.split("/").pop()}))}
@@ -59,7 +59,7 @@ function page(){const owner=uid()===account();$("#view").innerHTML='<div class="
  if(owner)listBranches().then(a=>{const el=$("#slCloudBranchList");if(el)el.innerHTML=a.map(x=>'<p>'+esc(x.name)+' <small>('+esc(x.id)+')</small></p>').join("")}).catch(()=>{});
 }
 window.slCloudSync=async()=>{const el=$("#slCloudStatus");if(el)el.textContent="Synchronising…";try{const x=await sync();if(el)el.textContent="Sync complete · "+x.uploaded+" uploaded · "+x.downloaded+" downloaded · "+x.unchanged+" unchanged · branch "+x.branch;localStorage.setItem("sl_cloud_last_sync_v1",new Date().toISOString())}catch(e){if(el)el.textContent=e.message;console.error("SmartLedger cloud sync:",e)}};
-window.slCloudConnect=()=>{const v=$("#slCloudAccount")?.value.trim();if(!v)return;localStorage.setItem(ACCOUNT,v);writeJson(META,{});page()};
+window.slCloudConnect=()=>{const v=$("#slCloudAccount")?.value.trim();if(!v)return;cacheAll();localStorage.setItem(ACCOUNT,v);localStorage.setItem(BRANCH,"main");page()};
 window.slCloudSwitch=async()=>{const v=$("#slCloudBranch")?.value.trim();try{await switchBranch(v);if($("#slCloudStatus"))$("#slCloudStatus").textContent="Branch loaded. Sync to upload local changes."}catch(e){alert(e.message)}};
 window.slCloudCreateBranch=async()=>{try{await createBranch($("#slNewBranchId").value.trim(),$("#slNewBranchName").value.trim());page()}catch(e){alert(e.message)}};
 window.slCloudSaveMember=async()=>{try{await saveMember($("#slStaffUid").value.trim(),$("#slStaffRole").value,$("#slStaffBranches").value.split(",").map(x=>x.trim()).filter(Boolean));alert("Staff access saved. The staff member can now connect using the business owner UID.")}catch(e){alert(e.message)}};
