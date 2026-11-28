@@ -28,3 +28,7 @@ jobs:
         run: node --check units-conversions-v1.js
       - name: Test unit master, inventory, sales and purchase conversions
         run: node tests/units-conversions.mjs
+      - name: Run existing transaction regression tests
+        run: node tests/v40-business-suite.mjs
+      - name: Run enterprise workflow regression tests
+        run: node tests/v78-enterprise.mjs
