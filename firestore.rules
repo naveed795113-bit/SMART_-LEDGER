@@ -20,8 +20,8 @@ service cloud.firestore {
       let key = request.resource.data.recordKey;
       return branchAllowed(accountId, branchId) && (
         role == 'owner' || role == 'manager' ||
-        (role == 'cashier' && key.matches('^(sl_sales|sl_customers|sl_cash|sl_payments|sl_sales_returns|sl_ent_quotes|sl_ent_sales_orders)$')) ||
-        (role == 'accountant' && key.matches('^(sl_sales|sl_purchases|sl_expenses|sl_cash|sl_payments|sl_customers|sl_suppliers|sl_adjustments|sl_sales_returns|sl_purchase_returns|sl_ent_due_dates|sl_ent_allocations|sl_ent_bank_entries|sl_ent_reconciliations|sl_ent_tax_documents|sl_ent_audit|sl_ent_closing)$'))
+        (role == 'cashier' && key.matches('^(sl_items|sl_sales|sl_customers|sl_cash|sl_payments|sl_sales_returns|sl_ent_quotes|sl_ent_sales_orders|sl_ent_stock|sl_ent_audit)$')) ||
+        (role == 'accountant' && key.matches('^(sl_items|sl_sales|sl_purchases|sl_expenses|sl_cash|sl_payments|sl_customers|sl_suppliers|sl_adjustments|sl_batches|sl_sales_returns|sl_purchase_returns|sl_ent_stock|sl_ent_stock_transfers|sl_ent_due_dates|sl_ent_allocations|sl_ent_bank_entries|sl_ent_reconciliations|sl_ent_tax_documents|sl_ent_audit|sl_ent_closing)$'))
       );
     }
     match /accounts/{accountId} {
