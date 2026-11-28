@@ -764,6 +764,40 @@ body.module-sales #modal .txnline .txn-product-option-bottom small{font-size:10p
 body.module-sales #modal .txnline .txn-product-option-bottom strong{font-size:13px!important;color:#246eaf!important}
 @media(max-width:650px){body.module-sales #modal .txnline .txn-product-grid{max-height:245px!important}body.module-sales #modal .txnline .txn-product-option{min-height:52px!important}}
 
+
+/* Vyapar-inspired item selection: dedicated searchable item list dialog */
+.txn-item-trigger{width:100%;display:grid;grid-template-columns:1fr auto;gap:3px 10px;text-align:left;align-items:center;padding:12px 14px;min-height:58px;border:1px solid #d5dce5;border-radius:8px;background:#fff;color:#263548;box-shadow:none}
+.txn-item-trigger-label{grid-column:1;font-size:14px;font-weight:600;color:#25364a}
+.txn-item-trigger-value{grid-column:1;font-size:11px;color:#778597}
+.txn-item-trigger-arrow{grid-column:2;grid-row:1/3;font-size:24px;color:#68798d}
+.txn-item-picker-backdrop{position:fixed;inset:0;z-index:100000;background:#10182880;display:flex;align-items:stretch;justify-content:center;padding:0}
+.txn-item-picker{width:min(620px,100%);height:100%;max-height:100dvh;display:flex;flex-direction:column;background:#fff;color:#263548;box-shadow:0 12px 40px #0003}
+.txn-item-picker-head{height:58px;flex:0 0 58px;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid #e6eaf0;background:#fff}
+.txn-item-picker-head b{flex:1;font-size:17px;font-weight:650;color:#24364b}
+.txn-picker-back,.txn-picker-close{border:0;background:transparent;color:#40546b;font-size:26px;padding:4px 8px}
+.txn-item-picker-search-wrap{position:relative;margin:14px 14px 8px}
+.txn-item-picker-search{width:100%;height:46px;border:1px solid #cbd5e1;border-radius:7px;padding:0 42px 0 13px;background:#fff;color:#263548;font-size:14px;outline:none}
+.txn-item-picker-search:focus{border-color:#2879c5;box-shadow:0 0 0 2px #2879c51a}
+.txn-picker-search-icon{position:absolute;right:14px;top:7px;font-size:24px;color:#718096;pointer-events:none}
+.txn-item-picker-count{padding:4px 16px 9px;color:#718096;font-size:11px}
+.txn-item-picker-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;border-top:1px solid #edf0f4}
+.txn-item-picker-row{width:100%;min-height:67px;display:flex;align-items:center;gap:12px;padding:10px 16px;border:0;border-bottom:1px solid #e8ecf1;background:#fff;color:#263548;text-align:left}
+.txn-item-picker-row:active,.txn-item-picker-row.active{background:#f0f6fc}
+.txn-picker-radio{width:19px;height:19px;flex:0 0 19px;border:2px solid #a8b3c1;border-radius:50%;position:relative}
+.txn-item-picker-row.active .txn-picker-radio{border-color:#2878bf}
+.txn-item-picker-row.active .txn-picker-radio:after{content:"";position:absolute;inset:4px;border-radius:50%;background:#2878bf}
+.txn-picker-item-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.txn-picker-item-main b{font-size:14px;font-weight:600;overflow-wrap:anywhere;color:#263548}
+.txn-picker-item-main small,.txn-picker-item-meta small{font-size:10px;color:#8190a2}
+.txn-picker-item-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.txn-picker-item-meta b{font-size:13px;font-weight:650;color:#2673b7}
+.txn-picker-no-results{padding:28px 15px;text-align:center;color:#718096;font-size:13px}
+.txn-item-picker-foot{display:flex;justify-content:flex-end;gap:10px;padding:11px 15px calc(11px + env(safe-area-inset-bottom));border-top:1px solid #e5eaf0;background:#fff}
+.txn-item-picker-foot button{min-width:88px;padding:10px 14px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#34465b}
+.txn-item-picker-foot .txn-picker-done{border-color:#2878bf;background:#2878bf;color:#fff}
+body.txn-picker-open{overflow:hidden!important}
+@media(min-width:700px){.txn-item-picker-backdrop{align-items:center;padding:20px}.txn-item-picker{height:min(760px,92dvh);border-radius:10px;overflow:hidden}}
+
 </style></head><body><div class="app"><aside class="side"><div class="brand">◈ SmartLedger<small>BUSINESS MANAGER</small></div><nav class="nav" id="nav"><div class="navlabel">Workspace</div><button class="active" data-page="Dashboard">▦ <span class="txt">Dashboard</span></button><button data-page="Sales">▤ <span class="txt">Sales</span></button><button data-page="Purchases">▣ <span class="txt">Purchases</span></button><button data-page="Items">▧ <span class="txt">Items & Stock</span></button><div class="navlabel">People</div><button data-page="Customers">♙ <span class="txt">Customers</span></button><button data-page="Suppliers">♧ <span class="txt">Suppliers</span></button><button data-page="Expenses">₹ <span class="txt">Expenses</span></button><div class="navlabel">Accounts</div><button data-page="Cash & Bank">▤ <span class="txt">Cash & Bank</span></button><button data-page="Ledgers">⇄ <span class="txt">Ledgers & Payments</span></button><button data-page="Stock Alerts">⚑ <span class="txt">Stock Alerts</span></button><button data-page="Tax Reports">▥ <span class="txt">GST Reports</span></button><button data-page="Reports">▥ <span class="txt">Reports</span></button><button data-page="Settings">⚙ <span class="txt">Settings</span></button><button type="button" class="sidebar-logout" id="slSidebarLogout" aria-label="Log out" title="Log out" ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg></span><span class="txt">Log out</span></button></nav></aside><main class="main"><header class="top"><strong id="pagetitle">Dashboard</strong><div class="topright"><span class="pill" title="SmartLedger major release">✦ SMARTLEDGER v44.0</span><div class="theme-switch" role="group" aria-label="Display mode">
 <button type="button" data-theme-mode="light" aria-label="Light mode" title="Light mode" onclick="setTheme('light')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
 <button type="button" data-theme-mode="dark" aria-label="Dark mode" title="Dark mode" onclick="setTheme('dark')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.7 8.7 0 1 0 20.2 15.1Z"/><path d="M16 3v4m-2-2h4"/></svg></button>
@@ -1202,21 +1236,34 @@ function partyForm(k){modal(k==='customers'?'Add customer':'Add supplier','<form
 function saveParty(e,k){e.preventDefault();let a=get(k),name=$('#pname').value.trim(),opening=num($('#popening').value);if(!name)return alert('Enter a party name');if(a.some(x=>x.name.toLowerCase()===name.toLowerCase()))return alert('This party already exists');if(opening<0)return alert('Opening balance cannot be negative');a.push({name,phone:$('#pphone').value.trim(),address:$('#paddress').value.trim(),opening});put(k,a);closeModal();render()}
 function txnLineHTML(lineIndex){
  let items=get("items"),sales=window.currentTxn==="sales",productOptions=items.map((p,i)=>'<option value="'+i+'">'+escapeHTML(p.name)+'</option>').join(""),cards=items.map((p,i)=>'<button type="button" class="txn-product-option" data-txn-product data-index="'+i+'" data-search="'+escapeHTML([p.name,p.code,p.hsn].join(" ").toLowerCase())+'" onclick="chooseTxnProduct(this,'+i+')"><span class="txn-product-option-top"><b>'+escapeHTML(p.name)+'</b><em>'+escapeHTML(p.code||"No SKU")+'</em></span><span class="txn-product-option-bottom"><small>Stock: '+escapeHTML(p.qty)+' '+escapeHTML(p.unit||"pcs")+'</small><strong>'+money(sales?p.price:p.purchase)+'</strong></span></button>').join("");
- return '<section class="txnline card" data-line-index="'+lineIndex+'"><div class="txnline-heading" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Product '+(lineIndex+1)+'</b><button type="button" class="btn" onclick="removeTxnLine(this)">Remove product</button></div><div class="formgrid"><div class="field full"><label>Search products</label><button type="button" class="btn" onclick="scanTxnLine(this)">▣ Scan barcode</button><input class="txn-product-search" type="search" aria-label="Search products" placeholder="Search product by name, SKU or barcode" oninput="filterTxnProducts(this)"><select class="txitem" aria-hidden="true" tabindex="-1" onchange="txnRate(this)"><option value="">Select product</option>'+productOptions+'</select><div class="txn-selected-product">Select a product to view its details and available stock.</div><div class="txn-product-grid">'+cards+'</div></div><div class="field"><label>Product description / name</label><input class="txdescription" placeholder="Item description" oninput="updateTxnTotals()"></div><div class="field"><label>Quantity</label><input class="txqty" type="number" min="0.001" step="any" value="1" oninput="updateTxnTotals()"></div><div class="field"><label>Unit</label><select class="txunit" onchange="updateTxnTotals()"><option value="">Select product first</option></select></div><div class="field"><label>'+(sales?'Sale':'Purchase')+' rate (₹)</label><input class="txrate" type="number" min="0" step="any" value="0" oninput="updateTxnTotals()"></div><div class="field"><label>Discount (₹)</label><input class="txdiscount" type="number" min="0" step="any" value="0" oninput="updateTxnTotals()"></div><div class="field"><label>GST rate (%)</label><select class="txgst" onchange="updateTxnTotals()"><option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option></select></div>'+(sales?"":'<div class="field"><label>Batch / lot number</label><input class="txbatch" placeholder="Optional batch number"></div><div class="field"><label>Expiry date</label><input class="txexpiry" type="date"></div>')+'</div></section>';
+ return '<section class="txnline card" data-line-index="'+lineIndex+'"><div class="txnline-heading" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Product '+(lineIndex+1)+'</b><button type="button" class="btn" onclick="removeTxnLine(this)">Remove product</button></div><div class="formgrid"><div class="field full"><label>Search products</label><button type="button" class="btn" onclick="scanTxnLine(this)">▣ Scan barcode</button><select class="txitem" aria-hidden="true" tabindex="-1" onchange="txnRate(this)"><option value="">Select product</option>'+productOptions+'</select><button type="button" class="txn-item-trigger" onclick="openTxnItemPicker(this)"><span class="txn-item-trigger-label">Select Item</span><span class="txn-item-trigger-value">Choose an item from your inventory</span><span class="txn-item-trigger-arrow">⌄</span></button><div class="txn-selected-product">Select an item to view its stock and price.</div></div><div class="field"><label>Product description / name</label><input class="txdescription" placeholder="Item description" oninput="updateTxnTotals()"></div><div class="field"><label>Quantity</label><input class="txqty" type="number" min="0.001" step="any" value="1" oninput="updateTxnTotals()"></div><div class="field"><label>Unit</label><select class="txunit" onchange="updateTxnTotals()"><option value="">Select product first</option></select></div><div class="field"><label>'+(sales?'Sale':'Purchase')+' rate (₹)</label><input class="txrate" type="number" min="0" step="any" value="0" oninput="updateTxnTotals()"></div><div class="field"><label>Discount (₹)</label><input class="txdiscount" type="number" min="0" step="any" value="0" oninput="updateTxnTotals()"></div><div class="field"><label>GST rate (%)</label><select class="txgst" onchange="updateTxnTotals()"><option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option></select></div>'+(sales?"":'<div class="field"><label>Batch / lot number</label><input class="txbatch" placeholder="Optional batch number"></div><div class="field"><label>Expiry date</label><input class="txexpiry" type="date"></div>')+'</div></section>';
 }
-function filterTxnProducts(input){
- let grid=input.closest(".txnline").querySelector(".txn-product-grid"),q=input.value.trim().toLowerCase(),shown=0;
- grid.querySelectorAll("[data-txn-product]").forEach(card=>{let match=(card.dataset.search||"").includes(q);card.style.display=match?"":"none";if(match)shown++});
- let empty=grid.querySelector(".txn-product-empty");
- if(!shown&&!empty){empty=document.createElement("div");empty.className="txn-product-empty";empty.textContent="No matching products. Try another name or SKU.";grid.appendChild(empty)}
- else if(empty)empty.style.display=shown?"none":"";
+function openTxnItemPicker(trigger){
+ let row=trigger.closest(".txnline"),items=get("items")||[],select=row.querySelector(".txitem");
+ if(!row||!select)return;
+ document.querySelectorAll(".txn-item-picker-backdrop").forEach(x=>x.remove());
+ let selected=select.value,searchId="txnItemPickerSearch";
+ let backdrop=document.createElement("div");backdrop.className="txn-item-picker-backdrop";
+ backdrop.innerHTML='<section class="txn-item-picker" role="dialog" aria-modal="true" aria-label="Select Item"><header class="txn-item-picker-head"><button type="button" class="txn-picker-back" aria-label="Close" onclick="closeTxnItemPicker()">‹</button><b>Select Item</b><button type="button" class="txn-picker-close" aria-label="Close" onclick="closeTxnItemPicker()">×</button></header><div class="txn-item-picker-search-wrap"><input id="'+searchId+'" type="search" class="txn-item-picker-search" placeholder="Search items by name or item code" autocomplete="off" oninput="filterTxnItemPicker(this)"><span class="txn-picker-search-icon">⌕</span></div><div class="txn-item-picker-count">'+items.length+' Items</div><div class="txn-item-picker-list">'+items.map((p,i)=>'<button type="button" class="txn-item-picker-row '+(String(i)===selected?'active':'')+'" data-index="'+i+'" data-search="'+escapeHTML([p.name,p.code,p.hsn,p.barcode].join(" ").toLowerCase())+'" onclick="selectTxnPickerItem(this)"><span class="txn-picker-radio"></span><span class="txn-picker-item-main"><b>'+escapeHTML(p.name||"Unnamed item")+'</b><small>'+escapeHTML(p.code||p.hsn||"")+'</small></span><span class="txn-picker-item-meta"><b>'+money(window.currentTxn==="sales"?p.price:p.purchase)+'</b><small>Stock: '+escapeHTML(p.qty)+' '+escapeHTML(p.unit||p.baseUnit||"pcs")+'</small></span></button>').join("")+'<div class="txn-picker-no-results" hidden>No items found</div></div><footer class="txn-item-picker-foot"><button type="button" onclick="closeTxnItemPicker()">Cancel</button><button type="button" class="txn-picker-done" onclick="closeTxnItemPicker()">Done</button></footer></section>';
+ backdrop.addEventListener("click",e=>{if(e.target===backdrop)closeTxnItemPicker()});
+ document.body.appendChild(backdrop);document.body.classList.add("txn-picker-open");
+ let input=backdrop.querySelector("#"+searchId);setTimeout(()=>input&&input.focus(),80);
 }
-function chooseTxnProduct(button,index){
- let row=button.closest(".txnline"),select=row.querySelector(".txitem");
- if(!select)return;
+function filterTxnItemPicker(input){
+ let list=input.closest(".txn-item-picker").querySelector(".txn-item-picker-list"),q=input.value.trim().toLowerCase(),shown=0;
+ list.querySelectorAll(".txn-item-picker-row").forEach(row=>{let ok=(row.dataset.search||"").includes(q);row.hidden=!ok;if(ok)shown++});
+ list.querySelector(".txn-picker-no-results").hidden=shown!==0;
+}
+function selectTxnPickerItem(button){
+ let picker=button.closest(".txn-item-picker-backdrop"),index=Number(button.dataset.index),row=document.querySelector(".txnline:has(.txn-item-trigger)"),select=row&&row.querySelector(".txitem");
+ if(!select||!Number.isInteger(index))return;
  select.value=String(index);txnRate(select);
- row.querySelectorAll("[data-txn-product]").forEach(card=>card.classList.toggle("selected",card===button));
+ let item=(get("items")||[])[index],trigger=row.querySelector(".txn-item-trigger");
+ trigger.querySelector(".txn-item-trigger-label").textContent="Selected Item";
+ trigger.querySelector(".txn-item-trigger-value").textContent=item?item.name:"Choose an item from your inventory";
+ closeTxnItemPicker();
 }
+function closeTxnItemPicker(){document.querySelectorAll(".txn-item-picker-backdrop").forEach(x=>x.remove());document.body.classList.remove("txn-picker-open")}
 function txnRate(select){
  let raw=select.value,p=raw===""?null:get("items")[Number(raw)],row=select.closest(".txnline");
  if(!row)return;
