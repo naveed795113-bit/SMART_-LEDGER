@@ -44,6 +44,6 @@ saleDoc.updateTime="2026-11-28T00:01:00Z";
 await assert.rejects(()=>first.w.smartLedgerCloud.sync(),/both this device and cloud changed/,"concurrent edits must stop without overwriting");
 first.w.__slCloudConflicts=["sl_sales"];
 await first.w.slCloudResolve("local");
-assert.equal(saleDoc.fields.payload.stringValue,JSON.stringify([{invoice:"S-1",total:700}]),"explicit keep-local resolution publishes the selected version");
+assert.equal([...remote.values()].find(x=>x.fields?.recordKey?.stringValue==="sl_sales").fields.payload.stringValue,JSON.stringify([{invoice:"S-1",total:700}]),"explicit keep-local resolution publishes the selected version");
 first.dom.window.close();second.dom.window.close();
 console.log("v79 cloud sync integration tests passed (upload, download, conflict protection)");
