@@ -159,26 +159,30 @@ function hook(name,fn){let old=window[name];if(typeof old!=="function"||old.__en
 const original=window.saveTransaction;
 if(typeof original==="function"&&!original.__ent78){
 const wrapped=function(e,k){
- const loc=currentLocation(),before=(k==="sales"?sales():purchases()).length,lines=typeof window.readTxnLines==="function"?window.readTxnLines():[];
- if(k==="sales"){const required={};lines.forEach(l=>required[l.item]=(required[l.item]||0)+N(l.stockQty||l.qty));for(const [name,qty] of Object.entries(required)){if(qty>qtyAt(name,loc)+1e-9){note("Insufficient stock at "+loc+" for "+name+". Available: "+qtyAt(name,loc));return}}}
- const result=original.apply(this,arguments),rows=k==="sales"?sales():purchases();
+ const loc=currentLocation(),before=(k==="sales"?sales():purchases()).length,lines=typeof window.readTxnLines==="function"?window.readTxnLines():[],partyName=$("#tparty")?.value?.trim()||"",customer=customers().find(x=>String(x.name).toLowerCase()===partyName.toLowerCase());
+ if(k==="sales"){const required={};lines.forEach(l=>required[l.item]=(required[l.item]||0)+N(l.stockQty||l.qty));for(const [name,qty] of Object.entries(required)){if(qty>qtyAt(name,loc)+1e-9){note("Insufficient stock at "+loc+" for "+name+". Available: "+qtyAt(name,loc));return}}const limit=N(customer?.creditLimit),projected=(window.partyOutstanding?.("Customer",partyName)||0)+lines.reduce((s,l)=>s+N(l.total),0)-N($("#tpaid")?.value);if(limit>0&&projected>limit+0.005){note("This sale exceeds the customer credit limit of "+M(limit)+". Reduce the due amount or review the credit profile.");return}}
+ const salesperson=$("#esalesperson")?.value||"",result=original.apply(this,arguments),rows=k==="sales"?sales():purchases();
  if(rows.length<=before)return result;
- const tx=rows[rows.length-1];
+ const tx=rows[rows.length-1];if(k==="sales"&&salesperson){tx.salesperson=salesperson;P(k,rows)}
  (tx.lines||[]).forEach(l=>{const q=N(l.stockQty||l.qty);if(k==="sales")setQty(l.item,loc,qtyAt(l.item,loc)-q);else setQty(l.item,loc,qtyAt(l.item,loc)+q)});
  const all=items();all.forEach(p=>{const total=allLocQty(p.name);if(total>=0)p.qty=total});P("items",all);
  tx.location=loc;P(k,rows);
- if(k==="sales"){const q=read("quotes").find(x=>x.invoice===tx.invoice&&x.status==="Preparing");if(q){q.status="Converted";q.convertedAt=new Date().toISOString();write("quotes",read("quotes"))}const so=read("sales_orders").find(x=>x.status==="Preparing"&&x.invoice===tx.invoice);if(so){so.status="Fulfilled";write("sales_orders",read("sales_orders"))}}
- else{const po=read("purchase_orders").find(x=>x.status==="Receiving"&&x.receivingInvoice===tx.invoice);if(po){po.status="Received";po.receivedInvoice=tx.invoice;write("purchase_orders",read("purchase_orders"))}}
+ if(k==="sales"){const qa=read("quotes"),q=qa.find(x=>x.invoice===tx.invoice&&x.status==="Preparing");if(q){q.status="Converted";q.convertedAt=new Date().toISOString();write("quotes",qa)}const soa=read("sales_orders"),so=soa.find(x=>x.status==="Preparing"&&x.invoice===tx.invoice);if(so){so.status="Fulfilled";write("sales_orders",soa)}}
+ else{const poa=read("purchase_orders"),po=poa.find(x=>x.status==="Receiving"&&x.receivingInvoice===tx.invoice);if(po){po.status="Received";po.receivedInvoice=tx.invoice;write("purchase_orders",poa)}}
  log("post",k,tx.invoice,loc+" · "+tx.party+" · "+M(tx.total));return result;
 };wrapped.__ent78=true;window.saveTransaction=wrapped;
 }
 })();
 hook("saveReturn",args=>{let k=args[1],a=k==="sales"?G("salesReturns"):G("purchaseReturns"),x=a.slice(-1)[0];if(x){let original=(k==="sales"?sales():purchases()).find(t=>String(t.id)===String(x.originalId)),loc=original?.location||currentLocation();if(k==="sales")setQty(x.item,loc,qtyAt(x.item,loc)+N(x.stockQty||x.qty));else setQty(x.item,loc,Math.max(0,qtyAt(x.item,loc)-N(x.stockQty||x.qty)));let p=items().find(z=>z.name===x.item);if(p){p.qty=allLocQty(x.item);P("items",items())}log("return",k,x.invoice,x.item+" · "+x.qty)}});
+const oldTxnRate=window.txnRate;
+if(typeof oldTxnRate==="function"&&!oldTxnRate.__ent78){const rateWrap=function(select){const out=oldTxnRate.apply(this,arguments);if(window.currentTxn==="sales"){const row=select.closest(".txnline"),p=items()[N(select.value)],party=$("#tparty")?.value?.trim()||"",c=customers().find(x=>String(x.name).toLowerCase()===party.toLowerCase());if(p&&c){const level=c.priceTier||"Retail",rate=window.smartLedgerPriceFor(p.name,level,party);if(rate>0)row.querySelector(".txrate").value=rate;const discount=N(c.discountPercent);if(discount>0)row.querySelector(".txdiscount").value=(N(row.querySelector(".txqty").value)*N(row.querySelector(".txrate").value)*discount/100).toFixed(2);window.updateTxnTotals()}}return out};rateWrap.__ent78=true;window.txnRate=rateWrap}
+const oldTxnForm=window.transactionForm;
+if(typeof oldTxnForm==="function"&&!oldTxnForm.__ent78){const formWrap=function(k){const out=oldTxnForm.apply(this,arguments);if(k==="sales"){const host=$("#txnLines")?.closest("form")?.querySelector(".formgrid");if(host&&!$("#esalesperson")){const box=document.createElement("div");box.className="field";box.innerHTML='<label for="esalesperson">Salesperson (optional)</label><select id="esalesperson"><option value="">Not assigned</option>'+read("salesPeople").filter(x=>x.active!==false).map(x=>'<option>'+E(x.name)+'</option>').join("")+'</select>';host.appendChild(box)}}return out};formWrap.__ent78=true;window.transactionForm=formWrap}
 hook("saveExpense",()=>{let x=expenses().slice(-1)[0];if(x)log("create","expense",x.id,x.category+" "+M(x.amount))});
 hook("savePayment",()=>{let x=payments().slice(-1)[0];if(x)log("create","payment",x.reference,x.type+" "+x.party+" "+M(x.amount))});
 hook("saveItem",()=>{let x=items().slice(-1)[0];if(x){if(!read("stock").some(v=>v.item===x.name))setQty(x.name,currentLocation(),x.qty);log("create","item",x.name,"Product created")}});
 hook("saveParty",args=>{let k=args[1],x=(k==="customers"?customers():suppliers()).slice(-1)[0];if(x)log("create",k,x.name,"Party created")});
-hook("saveAdjustment",()=>{let x=G("adjustments").slice(-1)[0];if(x)log("adjust","stock",x.item,x.type+" "+x.qty)});
+hook("saveAdjustment",()=>{let x=G("adjustments").slice(-1)[0];if(x){let loc=currentLocation(),delta=N(x.after)-N(x.before);setQty(x.item,loc,Math.max(0,qtyAt(x.item,loc)+delta));let p=items().find(z=>z.name===x.item);if(p){p.qty=allLocQty(x.item);P("items",items())}log("adjust","stock",x.item,x.type+" "+x.qty+" at "+loc)}});
 const oldOpen=window.openSectionMore;if(typeof oldOpen==="function")window.openSectionMore=function(){oldOpen.apply(this,arguments);let body=$("#modalbody");if(body&&!body.querySelector("#ent-more-entry")){let b=document.createElement("button");b.id="ent-more-entry";b.className="btn primary";b.style.cssText="width:100%;margin:10px 0";b.textContent="Open Enterprise Suite";b.onclick=()=>{close();go("Enterprise Suite")};body.appendChild(b)}};
 window.smartLedgerEnterprise={version:78,features:entries.map(x=>x[0]),getLocation:currentLocation,getLocationStock:qtyAt,log};
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{ensureLocations()},{once:true});else ensureLocations();
