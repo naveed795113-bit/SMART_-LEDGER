@@ -1,12 +1,15 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { JSDOM } from "jsdom";
+import { webcrypto } from "node:crypto";
 const source=fs.readFileSync(new URL("../smartledger-cloud-v79.js",import.meta.url),"utf8");
 const remote=new Map();
 let clock=0;
 function makeWindow(seed={}){
  const dom=new JSDOM("<!doctype html><body><div id='view'></div><div id='pagetitle'></div></body>",{url:"https://smartledger.test/",runScripts:"dangerously"});
  const w=dom.window;
+ Object.defineProperty(w,"crypto",{value:webcrypto});
+ w.TextEncoder=TextEncoder;
  w.localStorage.setItem("sl_google_profile",JSON.stringify({sub:"owner-user-12345678"}));
  for(const [k,v] of Object.entries(seed))w.localStorage.setItem(k,v);
  w.smartLedgerGetIdToken=async()=>"test-id-token";
