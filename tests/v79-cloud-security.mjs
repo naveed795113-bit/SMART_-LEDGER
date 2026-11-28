@@ -7,7 +7,7 @@ assert.match(source,/currentDocument\.updateTime/);
 assert.match(source,/__sl_cloud_branch_cache_v1/);
 assert.match(source,/accounts\/\+encodeURIComponent\(account\(\)\)\/branches/);
 assert.match(source,/smartledger:login/);
-assert.match(source,/750000/);
+assert.match(rules,/750000/);
 assert.match(rules,/request\.auth\.uid == accountId/);
 assert.match(rules,/role == 'cashier'/);
 assert.match(rules,/role == 'accountant'/);
