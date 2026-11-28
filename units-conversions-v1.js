@@ -2,6 +2,7 @@
 (function(){
 "use strict";
 const KEY="sl_units_master_v1";
+let originalEngineCatalog=null;
 const $=s=>document.querySelector(s);
 const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(_){return []}};
 const write=a=>localStorage.setItem(KEY,JSON.stringify(a));
@@ -16,11 +17,10 @@ function engineGroup(group){const g=String(group||"").toLowerCase();if(g==="weig
 function syncCatalog(){
  try{
   const cat=UNIT_CATALOG;
-  all().forEach(u=>{
-   const entry={unit:u.unit,group:engineGroup(u.group),base:u.baseUnit,factor:Number(u.factor)};
-   const index=cat.findIndex(x=>x.unit===u.unit);
-   if(index>=0)cat[index]=entry;else cat.push(entry);
-  });
+  if(!originalEngineCatalog)originalEngineCatalog=cat.map(x=>({...x}));
+  const merged=new Map(originalEngineCatalog.map(x=>[x.unit,{...x}]));
+  all().forEach(u=>merged.set(u.unit,{unit:u.unit,group:engineGroup(u.group),base:u.baseUnit,factor:Number(u.factor)}));
+  cat.splice(0,cat.length,...merged.values());
  }catch(_){}
 }
 function page(){
