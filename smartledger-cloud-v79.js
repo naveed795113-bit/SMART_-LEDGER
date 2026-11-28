@@ -30,7 +30,7 @@ function cacheKey(b=branch(),a=account()){return a+"::"+b}
 function metaFor(){return readJson(META,{})[cacheKey()]||{}}
 function saveMeta(value){const root=readJson(META,{});root[cacheKey()]=value;writeJson(META,root)}
 function cacheAll(){const c=readJson(BRANCH_CACHE,{});c[cacheKey()]=localRecords();writeJson(BRANCH_CACHE,c)}
-function restoreLocal(map){const now=localRecords();Object.keys(now).forEach(k=>{if(!(k in map))localStorage.removeItem(k)});Object.entries(map).forEach(([k,v])=>localStorage.setItem(k,v))}
+function restoreLocal(map){const old=localRecords();try{const now=localRecords();Object.keys(now).forEach(k=>{if(!(k in map))localStorage.removeItem(k)});Object.entries(map).forEach(([k,v])=>localStorage.setItem(k,v))}catch(e){try{const now=localRecords();Object.keys(now).forEach(k=>localStorage.removeItem(k));Object.entries(old).forEach(([k,v])=>localStorage.setItem(k,v))}catch(rollback){console.error("Cloud branch restore rollback failed:",rollback)}throw e}}
 async function ensureBranch(){if(uid()===account()){const path=branchPath();try{await request(path)}catch(e){if(e.status!==404)throw e;await request(path,"PATCH",{fields:{name:{stringValue:"Main branch"},createdAt:{timestampValue:new Date().toISOString()},active:{booleanValue:true}}})}}}
 async function sync(){
  if(!uid())throw Error("Sign in first.");if(!account())throw Error("Business account is not selected.");
@@ -69,5 +69,5 @@ window.slCloudSaveMember=async()=>{try{await saveMember($("#slStaffUid").value.t
 const oldGo=window.go;if(typeof oldGo==="function"){window.go=function(p){if(p==="Cloud & Team Security"){document.body.classList.remove("module-inventory","module-sales","module-purchases","module-ledger");document.body.classList.add("module-other");$("#pagetitle").textContent="Cloud & Team Security";page();return}return oldGo.apply(this,arguments)}}
 const oldMore=window.morePage;if(typeof oldMore==="function")window.morePage=function(){oldMore();const host=$("#view");if(host&&!host.querySelector("#sl-cloud-entry")){const b=document.createElement("button");b.id="sl-cloud-entry";b.className="more-link";b.innerHTML='<span class="more-icon">☁</span><span><b>Cloud & Team Security · v79</b><small>Multi-device sync, branches and staff permissions</small></span><span class="more-arrow">›</span>';b.onclick=()=>go("Cloud & Team Security");host.querySelector(".more-grid")?.prepend(b)}};
 window.smartLedgerCloud={sync,switchBranch,createBranch,saveMember,localRecords};
-window.addEventListener("smartledger:login",()=>{setTimeout(()=>{if(uid()===account())sync().catch(e=>console.info("Cloud sync not yet available:",e.message))},1200)});
+
 })();
