@@ -23,7 +23,7 @@ const checks = [
   ['v47 theme-aware typography runtime syntax', new Script(readFileSync('theme-v47-theme-aware-text.js','utf8'), { filename: 'theme-v47-theme-aware-text.js' })],
   ['v47 theme-aware typography loaded and precached', html.includes('theme-v47-theme-aware-text.js') && readFileSync('sw.js','utf8').includes('theme-v47-theme-aware-text.js')],
   ['v47 black text on light surfaces and white text on dark surfaces', readFileSync('theme-v47-theme-aware-text.js','utf8').includes('function chosen(bgs)') && readFileSync('theme-v47-theme-aware-text.js','utf8').includes('const BLACK="#101010",WHITE="#ffffff"') && readFileSync('theme-v47-theme-aware-text.js','utf8').includes('new MutationObserver')],
-  ['searchable 3D sales product picker', /txn-product-search/.test(html) && /txn-product-option/.test(html) && /function filterTxnProducts\(/.test(html)],
+  ['searchable sales item picker', /txn-item-picker-search/.test(html) && /txn-item-picker-row/.test(html) && /function filterTxnItemPicker\(/.test(html)],
   ['inventory unit conversion catalogue', /UNIT_CATALOG/.test(html) && /function unitFactorForItem\(/.test(html) && /baseUnit/.test(html)],
   ['premium invoice with logo and signature', /invoice-logo/.test(html) && /invoice-signature-image/.test(html) && /amountInWordsINR/.test(html)],
   ['purchase rust and denim palette', /module-purchases\{--module-bg:#a64e32;--module-card:#315a7b/.test(html)],
