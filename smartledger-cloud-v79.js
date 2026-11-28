@@ -4,7 +4,7 @@
  */
 (function(){
 "use strict";
-const PROJECT="smart-ledger-288a4",API_KEY="AIzaSyDlzohhg8W95yVcav46Cv-QFvR_tngzFXE";
+const PROJECT="smart-ledger-288a4";
 const ROOT="https://firestore.googleapis.com/v1/projects/"+PROJECT+"/databases/(default)/documents";
 const META="__sl_cloud_sync_meta_v1",BRANCH_CACHE="__sl_cloud_branch_cache_v1",ACCOUNT="__sl_cloud_account_uid",BRANCH="__sl_cloud_branch_id";
 const EXCLUDE=new Set(["sl_google_profile","smartledger_logout_pending","slTheme","__sl_active_uid","__sl_legacy_owner_uid",META,BRANCH_CACHE,ACCOUNT,BRANCH]);
@@ -14,7 +14,7 @@ const uid=()=>String(profile().sub||"");
 const account=()=>localStorage.getItem(ACCOUNT)||uid();
 const branch=()=>localStorage.getItem(BRANCH)||"main";
 const token=async()=>{if(typeof window.smartLedgerGetIdToken!=="function")throw Error("Sign in before using cloud sync.");const t=await window.smartLedgerGetIdToken();if(!t)throw Error("Your sign-in session has expired.");return t};
-const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return(h>>>0).toString(16).padStart(8,"0")};
+async function hash(s){const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("")}
 const docId=k=>btoa(unescape(encodeURIComponent(k))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"").slice(0,120);
 const base=()=>ROOT+"/accounts/"+encodeURIComponent(account());
 const branchPath=()=>base()+"/branches/"+encodeURIComponent(branch());
@@ -25,7 +25,7 @@ function writeJson(k,v){localStorage.setItem(k,JSON.stringify(v))}
 async function request(url,method="GET",body){const t=await token(),r=await fetch(url,{method,headers:{"Authorization":"Bearer "+t,"Content-Type":"application/json"},body:body===undefined?undefined:JSON.stringify(body)});const data=await r.json().catch(()=>({}));if(!r.ok){const e=Error(data.error?.message||("Cloud request failed ("+r.status+")"));e.status=r.status;throw e}return data}
 function fields(doc){const f=doc?.fields||{};return{recordKey:f.recordKey?.stringValue||"",payload:f.payload?.stringValue||"",hash:f.hash?.stringValue||"",deleted:f.deleted?.booleanValue===true,updateTime:doc.updateTime||null}}
 async function listDocs(path){let docs=[],pageToken="";do{const u=path+"?pageSize=300"+(pageToken?"&pageToken="+encodeURIComponent(pageToken):"");const x=await request(u);docs.push(...(x.documents||[]));pageToken=x.nextPageToken||""}while(pageToken);return docs}
-async function writeDoc(key,payload,deleted,old){const id=docId(key),url=recordsPath()+"/"+id+"?updateMask.fieldPaths=recordKey&updateMask.fieldPaths=payload&updateMask.fieldPaths=hash&updateMask.fieldPaths=deleted&updateMask.fieldPaths=updatedAt"+(old?.updateTime?"&currentDocument.updateTime="+encodeURIComponent(old.updateTime):"");const raw=deleted?"":payload;const body={fields:{recordKey:{stringValue:key},payload:{stringValue:raw},hash:{stringValue:deleted?"__deleted__":hash(raw)},deleted:{booleanValue:!!deleted},updatedAt:{timestampValue:new Date().toISOString()}}};return request(url,"PATCH",body)}
+async function writeDoc(key,payload,deleted,old){const id=docId(key),url=recordsPath()+"/"+id+"?updateMask.fieldPaths=recordKey&updateMask.fieldPaths=payload&updateMask.fieldPaths=hash&updateMask.fieldPaths=deleted&updateMask.fieldPaths=updatedAt"+(old?.updateTime?"&currentDocument.updateTime="+encodeURIComponent(old.updateTime):"");const raw=deleted?"":payload;if(new TextEncoder().encode(raw).length>700000)throw Error("Record "+key+" is larger than the 700 KB cloud sync limit. Keep attachments outside this record.");const body={fields:{recordKey:{stringValue:key},payload:{stringValue:raw},hash:{stringValue:deleted?"__deleted__":await hash(raw)},deleted:{booleanValue:!!deleted},updatedAt:{timestampValue:new Date().toISOString()}}};return request(url,"PATCH",body)}
 function cacheKey(b=branch(),a=account()){return a+"::"+b}
 function metaFor(){return readJson(META,{})[cacheKey()]||{}}
 function saveMeta(value){const root=readJson(META,{});root[cacheKey()]=value;writeJson(META,root)}
@@ -38,7 +38,7 @@ async function sync(){
  const local=localRecords(),meta=metaFor(),docs=await listDocs(recordsPath()),remote={};
  docs.forEach(d=>{const x=fields(d);if(x.recordKey)remote[x.recordKey]=x});
  const keys=new Set([...Object.keys(local),...Object.keys(remote)]),plan=[],conflicts=[];
- for(const k of keys){const l=Object.prototype.hasOwnProperty.call(local,k),r=!!remote[k],lv=l?local[k]:"",rv=r?remote[k].payload:"",lh=l?hash(lv):"__deleted__",rh=r?(remote[k].deleted?"__deleted__":remote[k].hash):"__missing__",baseHash=meta[k];
+ for(const k of keys){const l=Object.prototype.hasOwnProperty.call(local,k),r=!!remote[k],lv=l?local[k]:"",rv=r?remote[k].payload:"",lh=l?await hash(lv):"__deleted__",rh=r?(remote[k].deleted?"__deleted__":remote[k].hash):"__missing__",baseHash=meta[k];
    if(!r){if(l)plan.push({kind:"upload",key:k,value:lv,old:null});continue}
    if(!l){if(remote[k].deleted)continue;if(!baseHash){plan.push({kind:"download",key:k,value:rv});continue}if(rh===baseHash){plan.push({kind:"delete",key:k,old:remote[k]});continue}conflicts.push(k);continue}
    if(lh===rh)continue;
@@ -51,10 +51,10 @@ async function sync(){
  if(conflicts.length){const e=Error("Sync stopped: both this device and cloud changed "+conflicts.length+" record(s). Export a backup and resolve the conflict before syncing.");e.conflicts=conflicts;throw e}
  for(const p of plan){if(p.kind==="upload")await writeDoc(p.key,p.value,false,p.old);else if(p.kind==="delete")await writeDoc(p.key,"",true,p.old)}
  for(const p of plan){if(p.kind==="download")localStorage.setItem(p.key,p.value);else if(p.kind==="remove")localStorage.removeItem(p.key)}
- const after=localRecords(),fresh=await listDocs(recordsPath()),next={};fresh.forEach(d=>{const x=fields(d);if(x.recordKey)next[x.recordKey]=x.deleted?"__deleted__":x.hash});Object.keys(after).forEach(k=>{if(!next[k])next[k]=hash(after[k])});saveMeta(next);
+ const after=localRecords(),fresh=await listDocs(recordsPath()),next={};fresh.forEach(d=>{const x=fields(d);if(x.recordKey)next[x.recordKey]=x.deleted?"__deleted__":x.hash});for(const k of Object.keys(after)){if(!next[k])next[k]=await hash(after[k])}saveMeta(next);
  return{uploaded:plan.filter(x=>x.kind==="upload"||x.kind==="delete").length,downloaded:plan.filter(x=>x.kind==="download"||x.kind==="remove").length,unchanged:keys.size-plan.length,branch:branch()};
 }
-async function switchBranch(next){if(!/^[A-Za-z0-9_-]{1,40}$/.test(next))throw Error("Branch ID must use 1–40 letters, numbers, _ or -.");if(next===branch())return;cacheAll();localStorage.setItem(BRANCH,next);let map=readJson(BRANCH_CACHE,{}),cached=map[cacheKey(next)];try{const docs=await listDocs(recordsPath()),remote={};docs.forEach(d=>{const x=fields(d);if(x.recordKey&&!x.deleted)remote[x.recordKey]=x.payload});restoreLocal(Object.keys(remote).length?remote:(cached||{}));const m={};Object.entries(remote).forEach(([k,v])=>m[k]=hash(v));const root=readJson(META,{});root[cacheKey(next)]=m;writeJson(META,root)}catch(e){if(cached)restoreLocal(cached);else restoreLocal({});throw e}render();return next}
+async function switchBranch(next){if(!/^[A-Za-z0-9_-]{1,40}$/.test(next))throw Error("Branch ID must use 1–40 letters, numbers, _ or -.");if(next===branch())return;cacheAll();localStorage.setItem(BRANCH,next);let map=readJson(BRANCH_CACHE,{}),cached=map[cacheKey(next)];try{const docs=await listDocs(recordsPath()),remote={};docs.forEach(d=>{const x=fields(d);if(x.recordKey&&!x.deleted)remote[x.recordKey]=x.payload});restoreLocal(Object.keys(remote).length?remote:(cached||{}));const m={};for(const [k,v] of Object.entries(remote))m[k]=await hash(v);const root=readJson(META,{});root[cacheKey(next)]=m;writeJson(META,root)}catch(e){if(cached)restoreLocal(cached);else restoreLocal({});throw e}render();return next}
 async function createBranch(id,name){if(uid()!==account())throw Error("Only the business owner can create branches.");if(!/^[A-Za-z0-9_-]{1,40}$/.test(id))throw Error("Use a branch ID with letters, numbers, _ or - (max 40).");if(!String(name||"").trim())throw Error("Enter a branch name.");await request(base()+"/branches/"+encodeURIComponent(id),"PATCH",{fields:{name:{stringValue:name},createdAt:{timestampValue:new Date().toISOString()},active:{booleanValue:true}}});}
 async function saveMember(memberUid,role,branches){if(uid()!==account())throw Error("Only the business owner can manage staff access.");if(!/^[A-Za-z0-9_-]{8,128}$/.test(memberUid))throw Error("Enter the staff member's Firebase UID (8–128 characters).");if(!["manager","accountant","cashier","readonly"].includes(role))throw Error("Choose a supported staff role.");const b=branches.filter(x=>/^[A-Za-z0-9_-]{1,40}$/.test(x));if(!b.length)throw Error("Assign at least one branch.");await request(base()+"/members/"+encodeURIComponent(memberUid),"PATCH",{fields:{role:{stringValue:role},branches:{arrayValue:{values:b.map(x=>({stringValue:x}))}},active:{booleanValue:true},updatedAt:{timestampValue:new Date().toISOString()}}})}
 async function listBranches(){return(await listDocs(base()+"/branches")).map(d=>({id:d.name.split("/").pop(),name:d.fields?.name?.stringValue||d.name.split("/").pop()}))}
