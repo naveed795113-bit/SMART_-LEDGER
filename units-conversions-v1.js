@@ -51,22 +51,29 @@ function injectNav(){
   const b=document.createElement('button');b.dataset.page='Units';b.innerHTML='⚖ <span class="txt">Units &amp; Conversions</span>';
   const items=nav.querySelector('[data-page="Items"]');if(items)items.insertAdjacentElement('afterend',b);else nav.appendChild(b);
  }
- const more=$('#mobileNav');if(more&&!more.querySelector('[data-page="Units"]')){
-  const b=document.createElement('button');b.dataset.page='Units';b.innerHTML='<span class="mi">⚖</span>Units';
-  more.appendChild(b);
- }
+}
+function addUnitsMoreLink(){
+ const view=$('#view'),grid=view&&view.querySelector('.more-grid');
+ if(!grid||grid.querySelector('[data-units-link]'))return;
+ const b=document.createElement('button');b.className='more-link';b.dataset.unitsLink='true';b.innerHTML='<span class="more-icon">⚖</span><span><b>Units &amp; Conversions</b><small>Manage measurement units, pack sizes and conversion ratios</small></span><span class="more-arrow">›</span>';
+ b.addEventListener('click',()=>window.go('Units'));grid.insertBefore(b,grid.firstChild);
 }
 function navigate(p){
  if(p!=="Units")return false;
- injectNav();document.querySelectorAll('.nav button,.mobile-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==="Units"));
+ injectNav();
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==="Units"));
+ document.querySelectorAll('.mobile-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page==="More"));
  if($('#pagetitle'))$('#pagetitle').textContent="Units & Conversions";
  page();return true;
 }
 function boot(){
- if(!document.getElementById("sl-units-nav-style")){const st=document.createElement("style");st.id="sl-units-nav-style";st.textContent="@media(max-width:850px){.mobile-nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}.mobile-nav button{font-size:9px;padding:0 1px}}";document.head.appendChild(st)}
  syncCatalog();
  injectNav();
- if(window.go&&!window.go.__unitsWrapped){const original=window.go;const wrapped=function(p){if(navigate(p))return;return original.apply(this,arguments)};wrapped.__unitsWrapped=true;window.go=wrapped}
+ if(window.go&&!window.go.__unitsWrapped){
+  const original=window.go;
+  const wrapped=function(p){if(navigate(p))return;const out=original.apply(this,arguments);if(p==="More")addUnitsMoreLink();return out};
+  wrapped.__unitsWrapped=true;window.go=wrapped;
+ }
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
 window.addEventListener("storage",e=>{if(e.key===KEY&&document.querySelector('#pagetitle')?.textContent==="Units & Conversions")page()});
