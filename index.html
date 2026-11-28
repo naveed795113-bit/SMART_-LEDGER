@@ -694,6 +694,58 @@ body.theme-dark.module-ledger .dialog select,
 body.theme-dark.module-ledger .dialog textarea{background:#211d19!important;color:#fff3e2!important;border:2px solid #8b7458!important}
 
 .sidebar-logout{width:100%;display:flex;align-items:center;min-height:44px;margin-top:10px;padding:11px 12px;border:1px solid #a86c78;border-radius:10px;background:linear-gradient(145deg,#8a4353,#5b2533);color:#fff;text-align:left;font-weight:750;box-shadow:inset 1px 1px 2px #ffffff35,0 5px 12px #17091035}.sidebar-logout .nav-icon{margin-right:8px}.sidebar-logout svg{width:18px;height:18px}.sidebar-logout:hover{filter:brightness(1.12)}.item-select-label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--text);margin-right:8px}.item-select-box{width:18px;height:18px;accent-color:var(--blue)}#bulkDeleteItemsBtn:disabled{opacity:.45;cursor:not-allowed}
+
+/* Sales invoice: clean MyBillBook-inspired classic workspace (dashboard excluded) */
+body.module-sales #modal .dialog:has(.txnline){width:min(760px,100%);max-height:94dvh;height:auto;padding:0;display:flex;flex-direction:column;overflow:hidden;border:1px solid #dce3eb;border-radius:14px;background:#fff;box-shadow:0 18px 55px #14263d35}
+body.module-sales #modal .dialog:has(.txnline) .dialoghead{flex:0 0 auto;margin:0;padding:16px 18px;background:#fff;border-bottom:1px solid #e6ebf1;position:relative;z-index:2}
+body.module-sales #modal .dialog:has(.txnline) .dialoghead h2{font-size:18px;font-weight:700;color:#1d2b3a!important}
+body.module-sales #modal .dialog:has(.txnline) .close{width:36px;height:36px;border-radius:8px;background:#f1f4f7;color:#34445a}
+body.module-sales #modal .dialog:has(.txnline) #modalbody{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px;background:#f5f7fa;color:#253448}
+body.module-sales #modal .dialog:has(.txnline) #modalbody form{display:block}
+body.module-sales #modal .dialog:has(.txnline) #modalbody .formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+body.module-sales #modal .dialog:has(.txnline) #modalbody .field{min-width:0}
+body.module-sales #modal .dialog:has(.txnline) #modalbody .field label{display:block;margin-bottom:6px;color:#526174!important;font-size:12px;font-weight:600}
+body.module-sales #modal .dialog:has(.txnline) #modalbody .field input,
+body.module-sales #modal .dialog:has(.txnline) #modalbody .field select,
+body.module-sales #modal .dialog:has(.txnline) #modalbody .field textarea{min-height:44px;padding:11px 12px;border:1px solid #d5dde7;border-radius:8px;background:#fff!important;color:#1e293b!important;box-shadow:none}
+body.module-sales #modal .dialog:has(.txnline) #modalbody .field input:focus,
+body.module-sales #modal .dialog:has(.txnline) #modalbody .field select:focus{border-color:#2875c7;box-shadow:0 0 0 3px #2875c71a}
+body.module-sales #modal .dialog:has(.txnline) .txnline{margin:14px 0;padding:14px;border:1px solid #dce3eb!important;border-radius:11px;background:#fff!important;box-shadow:0 2px 8px #1e344a0b!important;color:#263548}
+body.module-sales #modal .dialog:has(.txnline) .txnline .field label{color:#526174!important}
+body.module-sales #modal .dialog:has(.txnline) .txnline .field input,
+body.module-sales #modal .dialog:has(.txnline) .txnline .field select{background:#fff!important;color:#1e293b!important}
+body.module-sales #modal .dialog:has(.txnline) .txnline-heading{padding-bottom:10px;border-bottom:1px solid #edf0f4;color:#23364b}
+body.module-sales #modal .dialog:has(.txnline) .txnline-heading .btn{padding:7px 10px;border:1px solid #dce3eb;background:#fff;color:#53657a}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-search{margin:8px 0 10px;background:#fff!important;color:#1e293b!important}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-grid{display:grid;grid-template-columns:1fr;gap:7px;max-height:260px;margin-top:9px;padding:2px;overflow:auto}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-option{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #dfe5ec;border-radius:9px;background:#fff!important;color:#253448!important;box-shadow:none!important;text-align:left}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-option.selected{outline:2px solid #2b79c2;outline-offset:0;border-color:#2b79c2;background:#f0f7ff!important}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-option-top,
+body.module-sales #modal .dialog:has(.txnline) .txn-product-option-bottom{align-items:center;gap:8px}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-option-top b{font-size:13px;color:#24364a!important}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-option-top em{font-size:10px;color:#78879a!important}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-option-bottom small{font-size:11px;color:#6b7889!important}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-option-bottom strong{font-size:13px;color:#1f6db3!important}
+body.module-sales #modal .dialog:has(.txnline) .txn-selected-product{margin:8px 0 10px;padding:10px 12px;border:1px solid #dce8f5;border-left:3px solid #2d79bf;border-radius:8px;background:#f0f6fc!important;color:#43566b!important}
+body.module-sales #modal .dialog:has(.txnline) .txn-product-empty{border-color:#cbd5e1;color:#64748b}
+body.module-sales #modal .dialog:has(.txnline) #modalbody form>p:last-child{position:sticky;bottom:-16px;z-index:3;margin:16px -16px -16px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #e1e7ef;background:#fff}
+body.module-sales #modal .dialog:has(.txnline) #modalbody form>p:last-child .btn.primary{width:100%;min-height:48px;border:0;border-radius:9px;background:#2475bd!important;color:#fff!important;font-size:15px;font-weight:700;box-shadow:0 3px 8px #2475bd30}
+body.module-sales #modal .dialog:has(.txnline) #modalbody form>p:not(:last-child) .btn{border:1px solid #cbd8e6;background:#fff;color:#276da9}
+body.module-sales #modal .dialog:has(.txnline) #modalbody strong{color:#253448}
+@media(max-width:650px){
+ body.module-sales #modal{padding:0;align-items:stretch}
+ body.module-sales #modal .dialog:has(.txnline){width:100%;height:100dvh;max-height:100dvh;border:0;border-radius:0}
+ body.module-sales #modal .dialog:has(.txnline) .dialoghead{padding:14px 16px}
+ body.module-sales #modal .dialog:has(.txnline) #modalbody{padding:12px}
+ body.module-sales #modal .dialog:has(.txnline) #modalbody .formgrid{grid-template-columns:1fr}
+ body.module-sales #modal .dialog:has(.txnline) #modalbody .field.full{grid-column:1}
+ body.module-sales #modal .dialog:has(.txnline) .txn-product-grid{max-height:230px}
+ body.module-sales #modal .dialog:has(.txnline) .txn-product-option{padding:10px;gap:8px}
+ body.module-sales #modal .dialog:has(.txnline) .txn-product-option-top{flex:1;min-width:0;flex-direction:column;align-items:flex-start}
+ body.module-sales #modal .dialog:has(.txnline) .txn-product-option-bottom{flex-direction:column;align-items:flex-end}
+ body.module-sales #modal .dialog:has(.txnline) #modalbody form>p:last-child{bottom:-12px;margin:12px -12px -12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}
+}
+
 </style></head><body><div class="app"><aside class="side"><div class="brand">◈ SmartLedger<small>BUSINESS MANAGER</small></div><nav class="nav" id="nav"><div class="navlabel">Workspace</div><button class="active" data-page="Dashboard">▦ <span class="txt">Dashboard</span></button><button data-page="Sales">▤ <span class="txt">Sales</span></button><button data-page="Purchases">▣ <span class="txt">Purchases</span></button><button data-page="Items">▧ <span class="txt">Items & Stock</span></button><div class="navlabel">People</div><button data-page="Customers">♙ <span class="txt">Customers</span></button><button data-page="Suppliers">♧ <span class="txt">Suppliers</span></button><button data-page="Expenses">₹ <span class="txt">Expenses</span></button><div class="navlabel">Accounts</div><button data-page="Cash & Bank">▤ <span class="txt">Cash & Bank</span></button><button data-page="Ledgers">⇄ <span class="txt">Ledgers & Payments</span></button><button data-page="Stock Alerts">⚑ <span class="txt">Stock Alerts</span></button><button data-page="Tax Reports">▥ <span class="txt">GST Reports</span></button><button data-page="Reports">▥ <span class="txt">Reports</span></button><button data-page="Settings">⚙ <span class="txt">Settings</span></button><button type="button" class="sidebar-logout" id="slSidebarLogout" aria-label="Log out" title="Log out" ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg></span><span class="txt">Log out</span></button></nav></aside><main class="main"><header class="top"><strong id="pagetitle">Dashboard</strong><div class="topright"><span class="pill" title="SmartLedger major release">✦ SMARTLEDGER v44.0</span><div class="theme-switch" role="group" aria-label="Display mode">
 <button type="button" data-theme-mode="light" aria-label="Light mode" title="Light mode" onclick="setTheme('light')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button>
 <button type="button" data-theme-mode="dark" aria-label="Dark mode" title="Dark mode" onclick="setTheme('dark')"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.7 8.7 0 1 0 20.2 15.1Z"/><path d="M16 3v4m-2-2h4"/></svg></button>
