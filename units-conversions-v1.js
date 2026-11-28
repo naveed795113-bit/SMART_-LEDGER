@@ -81,5 +81,16 @@ function boot(){
  }
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+document.addEventListener("change",e=>{
+ const select=e.target;
+ if(!select||!select.matches||!select.matches(".txnline .txunit"))return;
+ const row=select.closest(".txnline"),index=Number(row.querySelector(".txitem")?.value),item=get("items")[index];
+ if(!item)return;
+ const selectedFactor=unitFactorForItem(item,select.value),primaryFactor=itemUnitFactor(item);
+ if(selectedFactor===null||!primaryFactor)return;
+ const baseRate=window.currentTxn==="sales"?Number(item.price||0):Number(item.purchase||0);
+ row.querySelector(".txrate").value=String(baseRate*selectedFactor/primaryFactor);
+ if(typeof updateTxnTotals==="function")updateTxnTotals();
+});
 window.addEventListener("storage",e=>{if(e.key===KEY&&document.querySelector('#pagetitle')?.textContent==="Units & Conversions")page()});
 })();
