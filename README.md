@@ -1,4 +1,16 @@
 
+## Version 79.0 — Cloud sync, isolated branches and server-enforced staff roles
+
+- Firestore stores each business record under `accounts/{ownerUid}/branches/{branchId}/records`; staff membership is stored separately under the account.
+- The cloud client compares local and remote record hashes. If both sides changed the same record since the last successful sync, it stops and reports a conflict rather than silently overwriting either copy.
+- Branch switching caches the current local branch snapshot before loading the selected branch. Each branch uses a separate Firestore collection; browser-side branch caches are separated by business account and branch.
+- Firestore rules enforce owner, manager, accountant, cashier and read-only roles on every record write. Membership and branch assignments are controlled by the owner.
+- Sync is explicit and offline-first. The login flow attempts a background sync only when the signed-in user is the business owner; staff can connect to the owner's UID from More → Cloud & Team Security.
+- Staff access setup requires the staff member's Firebase UID. The owner creates the role and allowed branch assignment. The staff member then connects using the owner's UID.
+- Firebase backend deployment is manual and requires the GitHub Actions secret `FIREBASE_SERVICE_ACCOUNT_SMART_LEDGER_288A4`. Until the Firestore rules workflow has completed successfully, cloud sync and server-enforced staff controls are not active in the live service.
+- Record values are transported over HTTPS and protected by Firebase Authentication + Firestore Security Rules. This release does not claim client-side end-to-end encryption; do not store passwords, payment card data or other secrets in business records.
+- Individual record payloads are limited to 750 KB. Large attachments should use a dedicated secure object-storage service.
+
 ## Version 78.0 — Enterprise Suite
 
 SmartLedger v78 combines the planned enterprise programme into one integrated **More → Enterprise Suite** workspace. It builds on the existing item, invoice, customer, supplier, payment, return, GST summary, accounting, AI, backup and reporting modules.
