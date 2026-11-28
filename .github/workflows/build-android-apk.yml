@@ -211,7 +211,7 @@ jobs:
       - name: Upload installable APKs
         uses: actions/upload-artifact@v4
         with:
-          name: SmartLedger-Android-APK-v76
+          name: SmartLedger-Android-APK-v78
           path: |
             apk-output/*.apk
           if-no-files-found: error
